@@ -61,8 +61,6 @@ function Headline({
     h4: "text-lg font-semibold tracking-tight",
   };
 
-  console.log(type && _type[type]);
-
   return (
     <h1
       className={cn(

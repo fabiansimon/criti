@@ -10,8 +10,12 @@ import {
 } from "hugeicons-react";
 import Text from "~/components/typography/Text";
 import Dropdown, { type MenuOption } from "~/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
+import { route, ROUTES } from "~/constants/routes";
 
 export default function Home() {
+  const router = useRouter();
+
   return (
     <div className="bg-accent flex min-h-screen flex-col items-center justify-center">
       <Card
@@ -23,13 +27,19 @@ export default function Home() {
           {/* Track List */}
           <div className="no-scrollbar max-h-[400px] space-y-2 overflow-y-auto pb-2">
             {Array.from({ length: 2 }).map((_, index) => (
-              <ProjectListItem key={index} />
+              <ProjectListItem
+                onClick={() => router.push(route(ROUTES.listen))}
+                key={index}
+              />
             ))}
           </div>
 
           {/* Add new Button */}
           <div className="border-t border-neutral-100" />
-          <div className="flex w-full cursor-pointer items-center space-x-3 rounded-md p-2 hover:bg-neutral-50">
+          <div
+            onClick={() => router.push(route(ROUTES.upload))}
+            className="flex w-full cursor-pointer items-center space-x-3 rounded-md p-2 hover:bg-neutral-50"
+          >
             <IconContainer icon={<PlusSignIcon size={20} />} />
             <Text.Body>Add new track</Text.Body>
           </div>
@@ -39,7 +49,11 @@ export default function Home() {
   );
 }
 
-function ProjectListItem() {
+interface ProjectListItemProps {
+  onClick: () => void;
+}
+
+function ProjectListItem({ onClick }: ProjectListItemProps) {
   const menuOptions: MenuOption[] = [
     {
       title: "Delete",
@@ -52,7 +66,10 @@ function ProjectListItem() {
   ];
 
   return (
-    <div className="flex w-full cursor-pointer items-center justify-between rounded-md p-2 hover:bg-neutral-50">
+    <div
+      onClick={onClick}
+      className="flex w-full cursor-pointer items-center justify-between rounded-md p-2 hover:bg-neutral-50"
+    >
       <div className="flex space-x-3">
         <IconContainer icon={<MusicNote02Icon fill="black" size={16} />} />
         <div>

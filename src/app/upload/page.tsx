@@ -14,12 +14,20 @@ import {
 } from "hugeicons-react";
 import Text from "~/components/typography/Text";
 import { Button } from "~/components/ui/button";
-import { useMemo, useState } from "react";
+import {
+  type DragEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
-import { cn } from "~/lib/utils";
-import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons";
+import { cn, fileToBase64 } from "~/lib/utils";
 import { REGEX } from "~/constants/regex";
+import { useToast } from "~/hooks/use-toast";
+import { api } from "~/trpc/react";
 
 interface Input {
   title: string;
@@ -35,13 +43,45 @@ export default function UploadPage() {
   const [input, setInput] = useState<Input>({
     email: "",
     password: "",
-    title: "Autpilot_224hz.wav",
+    title: "",
   });
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const { toast } = useToast();
+
+  const { mutateAsync: uploadTrack, isPending: isLoading } =
+    api.track.uploadTrack.useMutation();
 
   const validEmail = useMemo(
     () => REGEX.email.test(input.email),
     [input.email],
   );
+
+  const validInput = useMemo(() => {
+    return file && input.title;
+  }, [file, input.title]);
+
+  useEffect(() => {
+    if (!file) return;
+    handleInputChange("title", file.name);
+  }, [file]);
+
+  const handleUpload = async () => {
+    if (!file) return;
+
+    const { title, password } = input;
+    const { type: contentType } = file;
+    const fileContent = await fileToBase64(file);
+
+    await uploadTrack({
+      contentType,
+      fileContent,
+      title,
+      locked,
+      password: locked ? password : undefined,
+      emails: [...emails],
+    });
+  };
 
   const handleInputChange = (type: keyof Input, value: string) => {
     setInput((prev) => {
@@ -56,6 +96,32 @@ export default function UploadPage() {
           return prev;
       }
     });
+  };
+
+  const triggerInput = () => {
+    if (inputRef.current) inputRef.current.click();
+  };
+
+  const handleDragging = useCallback(
+    (e: DragEvent<HTMLDivElement>, status: boolean) => {
+      console.log("STATUS===", status);
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    [],
+  );
+
+  const handleFileInput = (rawFile: File) => {
+    if (!rawFile?.type.includes("audio")) {
+      toast({
+        title: "Wrong format.",
+        description: "This service is only made for audio files.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFile(rawFile);
   };
 
   const addEmail = () => {
@@ -77,28 +143,46 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="bg-accent flex min-h-screen flex-col items-center justify-center">
+    <div
+      onDragEnter={(e) => handleDragging(e, true)}
+      onDragLeave={(e) => handleDragging(e, false)}
+      onDragOver={(e) => handleDragging(e, true)}
+      onDrop={(e) => handleFileInput(e.dataTransfer.files[0]!)}
+      className="flex min-h-screen flex-col items-center justify-center bg-accent"
+    >
       <Card
         title="Upload new track"
         subtitle="Sharing is caring"
         className="w-full max-w-screen-sm"
       >
+        <input
+          onChange={(e) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            handleFileInput(files[0]!);
+          }}
+          ref={inputRef}
+          type="file"
+          id="fileInput"
+          style={{ display: "none" }}
+        />
+
         {/* Upload File Container */}
-        {file && (
+        {!file && (
           <div className="my-32 flex flex-col items-center">
             <IconContainer
               className="size-14"
               icon={<MusicNote02Icon fill="black" size={24} />}
             />
             <div className="mt-5 space-y-2 text-center">
-              <Button title="Select File" />
+              <Button title="Select File" onClick={triggerInput} />
               <Text.Body className="text-xs" subtle>
                 Or drag it in here
               </Text.Body>
             </div>
           </div>
         )}
-        {!file && (
+        {file && (
           <div className="mt-4">
             {/* Title Input */}
             <div className="space-y-1">
@@ -116,7 +200,12 @@ export default function UploadPage() {
                     handleInputChange("title", value)
                   }
                 />
-                <Button dense className="h-full" title="Replace file" />
+                <Button
+                  onClick={triggerInput}
+                  dense
+                  className="h-full"
+                  title="Replace file"
+                />
               </div>
             </div>
             <div className="my-4 border-t border-neutral-200" />
@@ -199,7 +288,12 @@ export default function UploadPage() {
                 />
               ))}
             </div>
-            <Button className="mt-8 h-12 w-full" title="Upload" />
+            <Button
+              onClick={handleUpload}
+              disabled={!validInput || isLoading}
+              className="mt-8 h-12 w-full"
+              title="Upload"
+            />
           </div>
         )}
       </Card>

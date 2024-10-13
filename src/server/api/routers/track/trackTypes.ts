@@ -6,6 +6,7 @@ export const UploadTrackInput = z.object({
   contentType: z.string(),
   locked: z.boolean().default(false),
   password: z.string().optional(),
+  emails: z.array(z.string().email()),
 });
 
 export type UploadTrackInput = z.infer<typeof UploadTrackInput>;

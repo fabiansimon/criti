@@ -49,7 +49,7 @@ export const env = createEnv({
   runtimeEnv: {
     SUPABASE_KEY: process.env.SUPABASE_KEY,
     SUPABASE_URL: process.env.SUPABASE_URL,
-    SUPABASE_BUCKET: process.env.DATABASE_BUCKET,
+    SUPABASE_BUCKET: process.env.SUPABASE_BUCKET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_SECRET: process.env.GOOGLE_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,

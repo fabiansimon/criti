@@ -9,9 +9,11 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     DIRECT_URL: z.string().url(),
-    DATABASE_BUCKEt: z.string(),
+    SUPABASE_BUCKET: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_SECRET: z.string(),
+    SUPABASE_URL: z.string().url(),
+    SUPABASE_KEY: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -45,11 +47,13 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
+    SUPABASE_KEY: process.env.SUPABASE_KEY,
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_BUCKET: process.env.DATABASE_BUCKET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_SECRET: process.env.GOOGLE_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     DIRECT_URL: process.env.DIRECT_URL,
-    DATABASE_BUCKEt: process.env.DATABASE_BUCKET,
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,

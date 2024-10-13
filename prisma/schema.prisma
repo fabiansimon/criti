@@ -28,20 +28,38 @@ model Post {
 }
 
 model Track {
-  id     String @id @default(uuid())
-  title  String
-  fileId String @unique
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  title     String
+  fileId    String   @unique
+  locked    Boolean  @default(false)
+  password  String?
 
-  file       File    @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  isArchived Boolean @default(false)
+  file       File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  comments   Comment[]
+  isArchived Boolean   @default(false)
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String
+  timestamp Int?
+  trackId   String
+
+  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
 }
 
 model File {
-  id       String @id @default(uuid())
-  mime     String
-  url      String
-  byteSize Int
-  track    Track? @relation
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  mime      String
+  url       String
+  byteSize  Int
+  track     Track?   @relation
 }
 
 // Necessary for Next auth

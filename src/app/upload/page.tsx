@@ -28,6 +28,8 @@ import { cn, fileToBase64 } from "~/lib/utils";
 import { REGEX } from "~/constants/regex";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
+import { route, ROUTES } from "~/constants/routes";
 
 interface Input {
   title: string;
@@ -48,6 +50,7 @@ export default function UploadPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { toast } = useToast();
+  const router = useRouter();
 
   const { mutateAsync: uploadTrack, isPending: isLoading } =
     api.track.upload.useMutation();
@@ -58,8 +61,8 @@ export default function UploadPage() {
   );
 
   const validInput = useMemo(() => {
-    return file && input.title;
-  }, [file, input.title]);
+    return file && input.title.trim();
+  }, [file, input.title, input.password]);
 
   useEffect(() => {
     if (!file) return;
@@ -73,7 +76,7 @@ export default function UploadPage() {
     const { type: contentType } = file;
     const fileContent = await fileToBase64(file);
 
-    await uploadTrack({
+    const track = await uploadTrack({
       contentType,
       fileContent,
       title,
@@ -81,6 +84,9 @@ export default function UploadPage() {
       password: locked ? password : undefined,
       emails: [...emails],
     });
+
+    if (!track) return;
+    router.push(route(ROUTES.listen, track.id));
   };
 
   const handleInputChange = (type: keyof Input, value: string) => {
@@ -290,6 +296,7 @@ export default function UploadPage() {
             </div>
             <Button
               onClick={handleUpload}
+              isLoading={isLoading}
               disabled={!validInput || isLoading}
               className="mt-8 h-12 w-full"
               title="Upload"

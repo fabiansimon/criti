@@ -105,7 +105,32 @@ const getTrackById = publicProcedure
     }
   });
 
+const getAllTracksByUser = protectedProcedure.query(
+  async ({ ctx: { db, session } }) => {
+    const {
+      user: { id: userId },
+    } = session;
+
+    try {
+      const track = await db.track.findMany({
+        where: { creatorId: userId },
+      });
+
+      return track ?? [];
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }
+  },
+);
+
 export const trackRouter = createTRPCRouter({
   upload: uploadTrack,
+  getAll: getAllTracksByUser,
   getById: getTrackById,
 });

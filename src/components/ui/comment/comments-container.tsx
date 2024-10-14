@@ -55,10 +55,7 @@ export function CommentsContainer({
         {!empty && (
           <div>
             {comments.map((comment) => (
-              <>
-                <CommentTile key={comment.id} comment={comment} />
-                <div className="border-t border-white" />
-              </>
+              <CommentTile key={comment.id} comment={comment} />
             ))}
           </div>
         )}

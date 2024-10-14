@@ -12,13 +12,19 @@ import Text from "~/components/typography/text";
 import Dropdown, { type MenuOption } from "~/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { route, ROUTES } from "~/constants/routes";
+import { api } from "~/trpc/react";
+import { Track } from "@prisma/client";
+import { getDateDifference } from "~/lib/utils";
 
 export default function Home() {
   const router = useRouter();
 
+  const { data: tracks, isLoading } = api.track.getAll.useQuery();
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-accent">
       <Card
+        isLoading={isLoading}
         title="Your shared projects"
         subtitle="3 Tracks shared"
         className="md:min-w-[60%] md:max-w-[400px]"
@@ -26,9 +32,10 @@ export default function Home() {
         <div className="-mx-3 my-7">
           {/* Track List */}
           <div className="max-h-[400px] space-y-2 overflow-y-auto pb-2 no-scrollbar">
-            {Array.from({ length: 2 }).map((_, index) => (
+            {(tracks ?? []).map((track, index) => (
               <ProjectListItem
-                onClick={() => router.push(route(ROUTES.listen))}
+                track={track}
+                onClick={() => router.push(route(ROUTES.listen, track.id))}
                 key={index}
               />
             ))}
@@ -50,10 +57,12 @@ export default function Home() {
 }
 
 interface ProjectListItemProps {
+  track: Track;
   onClick: () => void;
 }
 
-function ProjectListItem({ onClick }: ProjectListItemProps) {
+function ProjectListItem({ track, onClick }: ProjectListItemProps) {
+  const { title, createdAt } = track;
   const menuOptions: MenuOption[] = [
     {
       title: "Delete",
@@ -74,7 +83,7 @@ function ProjectListItem({ onClick }: ProjectListItemProps) {
         <IconContainer icon={<MusicNote02Icon fill="black" size={16} />} />
         <div>
           <div className="flex space-x-3 space-y-1">
-            <Text.Body>Autpilot_224hz.wav</Text.Body>
+            <Text.Body>{title}</Text.Body>
             <div className="mt-1 flex h-6 items-center rounded-full bg-green-300/30 px-2">
               <Text.Subtitle className="text-[10px] font-normal text-green-700">
                 open comments
@@ -82,7 +91,7 @@ function ProjectListItem({ onClick }: ProjectListItemProps) {
             </div>
           </div>
           <Text.Subtitle className="font-normal" subtle>
-            Created 2 months ago
+            {getDateDifference(createdAt.toString()).text}
           </Text.Subtitle>
         </div>
       </div>

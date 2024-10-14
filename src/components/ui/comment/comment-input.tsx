@@ -45,7 +45,7 @@ export function CommentInput({
   }, [input, timestamp]);
 
   return (
-    <div className={cn("flex h-11 space-x-2 bg-white", className)}>
+    <div className={cn("flex h-11 space-x-2", className)}>
       <div
         className={cn(
           "flex min-h-9 w-full grow rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:file:text-zinc-50 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300",
@@ -75,18 +75,20 @@ export function CommentInput({
           onBlur={() => setIsFocused(false)}
         />
       </div>
-      <Button
-        disabled={!validInput || isLoading}
-        onClick={handleCreate}
-        className="min-h-full w-14"
-        icon={
-          isLoading ? (
-            <LoadingSpinner className="size-5" />
-          ) : (
-            <PlusSignIcon size={18} />
-          )
-        }
-      />
+      <div className="rounded-md bg-white">
+        <Button
+          disabled={!validInput || isLoading}
+          onClick={handleCreate}
+          className="min-h-full w-14"
+          icon={
+            isLoading ? (
+              <LoadingSpinner className="size-5" />
+            ) : (
+              <PlusSignIcon size={18} />
+            )
+          }
+        />
+      </div>
     </div>
   );
 }

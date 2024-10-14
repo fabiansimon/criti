@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "~/lib/utils";
 import Text from "../typography/text";
+import LoadingSpinner from "./loading-spinner";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-zinc-300",
@@ -42,11 +43,22 @@ interface ButtonProps
   asChild?: boolean;
   dense?: boolean;
   icon?: React.ReactNode;
+  isLoading?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, title, variant, dense, size, icon, asChild = false, ...props },
+    {
+      className,
+      title,
+      variant,
+      isLoading,
+      dense,
+      size,
+      icon,
+      asChild = false,
+      ...props
+    },
     ref,
   ) => {
     const Comp = asChild ? Slot : "button";
@@ -56,9 +68,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {icon && icon}
-        {title && (
-          <Text.Body className={!dense ? "mx-5" : "mx-1"}>{title}</Text.Body>
+        {isLoading && <LoadingSpinner />}
+        {!isLoading && (
+          <>
+            {icon && icon}
+            {title && (
+              <Text.Body className={!dense ? "mx-5" : "mx-1"}>
+                {title}
+              </Text.Body>
+            )}
+          </>
         )}
       </Comp>
     );

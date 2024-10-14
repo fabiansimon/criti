@@ -14,3 +14,9 @@ export function fileToBase64(file: File): Promise<string> {
       reject(new Error("Failed converting file to base64."));
   });
 }
+
+export function convertTimestamp(timestamp: string) {
+  const [minutes, seconds] = timestamp.split(":");
+  if (!minutes || !seconds) return;
+  return parseInt(minutes) * parseInt(seconds);
+}

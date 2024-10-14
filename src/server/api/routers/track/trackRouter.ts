@@ -1,20 +1,19 @@
 import * as bcrypt from "bcrypt";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { UploadTrackInput } from "./trackTypes";
+import { GetTrackByIdInput, UploadTrackInput } from "./trackTypes";
 import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
 
 const uploadTrack = protectedProcedure
   .input(UploadTrackInput)
-  .mutation(async ({ input, ctx: { db } }) => {
-    console.log("CALLED");
-    const { contentType, fileContent, title, locked, emails } = input;
-
-    console.log("=== Sending out emails to:", emails);
+  .mutation(async ({ input, ctx: { db, session } }) => {
+    const { contentType, fileContent, title, locked, emails, password } = input;
+    const {
+      user: { id: creatorId },
+    } = session;
 
     let hashedPassword = "";
     if (locked) {
-      const { password } = input;
       if (!password)
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -49,10 +48,12 @@ const uploadTrack = protectedProcedure
         },
       });
 
+      console.log("==== creatorId", creatorId);
       const track = await db.track.create({
         data: {
           title,
           locked,
+          creatorId,
           password: locked ? hashedPassword : null,
           fileId: file.id,
         },
@@ -62,7 +63,37 @@ const uploadTrack = protectedProcedure
       return track;
     } catch (error) {
       if (error instanceof Error) {
-        console.log(error);
+        console.error(error);
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }
+  });
+
+const getTrackById = protectedProcedure
+  .input(GetTrackByIdInput)
+  .query(async ({ input, ctx: { db } }) => {
+    const { id } = input;
+
+    try {
+      const track = await db.track.findUnique({
+        where: { id },
+        include: { file: true, comments: true },
+      });
+
+      if (!track) {
+        throw new TRPCError({
+          message: "Track not found.",
+          code: "NOT_FOUND",
+        });
+      }
+
+      return track;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
         throw new TRPCError({
           message: error.message,
           code: "INTERNAL_SERVER_ERROR",
@@ -72,5 +103,6 @@ const uploadTrack = protectedProcedure
   });
 
 export const trackRouter = createTRPCRouter({
-  uploadTrack,
+  upload: uploadTrack,
+  getById: getTrackById,
 });

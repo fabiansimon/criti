@@ -50,7 +50,7 @@ export default function UploadPage() {
   const { toast } = useToast();
 
   const { mutateAsync: uploadTrack, isPending: isLoading } =
-    api.track.uploadTrack.useMutation();
+    api.track.upload.useMutation();
 
   const validEmail = useMemo(
     () => REGEX.email.test(input.email),

@@ -31,10 +31,14 @@ model Track {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  title     String
-  fileId    String   @unique
-  locked    Boolean  @default(false)
-  password  String?
+
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+
+  title    String
+  fileId   String  @unique
+  locked   Boolean @default(false)
+  password String?
 
   file       File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
   comments   Comment[]
@@ -48,6 +52,8 @@ model Comment {
   content   String
   timestamp Int?
   trackId   String
+  open      Boolean  @default(true)
+  byAdmin   Boolean
 
   track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
 }
@@ -99,6 +105,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
+  tracks        Track[]
 }
 
 model VerificationToken {

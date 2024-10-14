@@ -1,7 +1,9 @@
 import { cn } from "~/lib/utils";
-import Text from "../typography/Text";
+import Text from "../typography/text";
+import LoadingSpinner from "./loading-spinner";
 
 interface CardProps {
+  isLoading?: boolean;
   children?: React.ReactNode;
   title?: string;
   subtitle?: string;
@@ -14,6 +16,7 @@ export default function Card({
   subtitle,
   children,
   className,
+  isLoading,
 }: CardProps) {
   return (
     <div
@@ -22,9 +25,14 @@ export default function Card({
         className,
       )}
     >
-      <Text.Headline type="h2">{title}</Text.Headline>
-      <Text.Body subtle>{subtitle}</Text.Body>
-      {children}
+      {isLoading && <LoadingSpinner />}
+      {!isLoading && (
+        <div>
+          <Text.Headline type="h2">{title}</Text.Headline>
+          <Text.Body subtle>{subtitle}</Text.Body>
+          {children}
+        </div>
+      )}
     </div>
   );
 }

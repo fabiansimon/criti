@@ -1,17 +1,11 @@
 "use client";
 
-import { type Comment } from "@prisma/client";
-import { PlusSignIcon } from "hugeicons-react";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Text from "~/components/typography/text";
-import { Button } from "~/components/ui/button";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
-import { Input } from "~/components/ui/input";
 import { Switch } from "~/components/ui/switch";
-import { REGEX } from "~/constants/regex";
-import { cn, convertTimestamp } from "~/lib/utils";
 
 import { api } from "~/trpc/react";
 
@@ -35,7 +29,7 @@ export default function ListenPage() {
         subtitle={"Shared by Fabian Simon"}
         className="relative w-full max-w-screen-lg"
       >
-        <div className="absolute right-4 top-14 flex space-x-2">
+        <div className="absolute right-6 top-14 flex space-x-2">
           <Text.Body className="text-xs">Live Comments</Text.Body>
           <Switch
             className="opacity-100"
@@ -43,7 +37,11 @@ export default function ListenPage() {
             onCheckedChange={setLiveComments}
           />
         </div>
-        <CommentsContainer comments={track?.comments ?? []} className="mt-2" />
+        <CommentsContainer
+          trackId={id}
+          comments={track?.comments ?? []}
+          className="mt-2"
+        />
       </Card>
     </div>
   );

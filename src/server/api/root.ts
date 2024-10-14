@@ -1,4 +1,5 @@
 import { trackRouter } from "./routers/track/trackRouter";
+import { commentRouter } from "./routers/comment/commentRouter";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -8,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   track: trackRouter,
+  comment: commentRouter,
 });
 
 // export type definition of API

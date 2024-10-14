@@ -131,3 +131,20 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Semi Protected (authenticated) procedure
+ *
+ */
+export const anonPossibleProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    const anon = !ctx.session || !ctx.session.user;
+
+    return next({
+      ctx: {
+        // infers the `session` as non-nullable
+        session: anon ? undefined : { ...ctx.session, user: ctx.session!.user },
+      },
+    });
+  });

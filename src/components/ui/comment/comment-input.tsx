@@ -3,18 +3,24 @@ import { useMemo, useState } from "react";
 import { REGEX } from "~/constants/regex";
 import { cn, convertTimestamp } from "~/lib/utils";
 import { Button } from "../button";
+import LoadingSpinner from "../loading-spinner";
 
 interface CommentInputProps {
   onCreate: ({ content, timestamp }: CommentContent) => void;
+  isLoading?: boolean;
   className?: string;
 }
 
-interface CommentContent {
+export interface CommentContent {
   content: string;
   timestamp?: number;
 }
 
-export function CommentInput({ onCreate, className }: CommentInputProps) {
+export function CommentInput({
+  onCreate,
+  className,
+  isLoading,
+}: CommentInputProps) {
   const [timestamp, setTimestamp] = useState<string>("");
   const [input, setInput] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -25,8 +31,8 @@ export function CommentInput({ onCreate, className }: CommentInputProps) {
   };
 
   const handleCreate = () => {
-    const convertedTimestamp = convertTimestamp(timestamp);
-    onCreate({ content: input, timestamp: convertedTimestamp });
+    const converted = convertTimestamp(timestamp);
+    onCreate({ content: input, timestamp: converted });
     setInput("");
     setTimestamp("");
   };
@@ -39,7 +45,7 @@ export function CommentInput({ onCreate, className }: CommentInputProps) {
   }, [input, timestamp]);
 
   return (
-    <div className={cn("flex h-11 space-x-2", className)}>
+    <div className={cn("flex h-11 space-x-2 bg-white", className)}>
       <div
         className={cn(
           "flex min-h-9 w-full grow rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:file:text-zinc-50 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300",
@@ -59,23 +65,27 @@ export function CommentInput({ onCreate, className }: CommentInputProps) {
           />
         </span>
         <div className="w-px bg-neutral-200" />
-        <span>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.currentTarget.value)}
-            placeholder="Add comment"
-            className="bg-transparent px-3 py-2 focus:outline-none"
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-          />
-        </span>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.currentTarget.value)}
+          placeholder="Add comment"
+          className="flex w-full grow bg-transparent px-3 py-2 focus:outline-none"
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+        />
       </div>
       <Button
-        disabled={!validInput}
+        disabled={!validInput || isLoading}
         onClick={handleCreate}
-        className="min-h-full"
-        icon={<PlusSignIcon size={18} />}
+        className="min-h-full w-14"
+        icon={
+          isLoading ? (
+            <LoadingSpinner className="size-5" />
+          ) : (
+            <PlusSignIcon size={18} />
+          )
+        }
       />
     </div>
   );

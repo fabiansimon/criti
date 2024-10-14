@@ -1,5 +1,9 @@
 import * as bcrypt from "bcrypt";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 import { GetTrackByIdInput, UploadTrackInput } from "./trackTypes";
 import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
@@ -48,7 +52,6 @@ const uploadTrack = protectedProcedure
         },
       });
 
-      console.log("==== creatorId", creatorId);
       const track = await db.track.create({
         data: {
           title,
@@ -72,7 +75,7 @@ const uploadTrack = protectedProcedure
     }
   });
 
-const getTrackById = protectedProcedure
+const getTrackById = publicProcedure
   .input(GetTrackByIdInput)
   .query(async ({ input, ctx: { db } }) => {
     const { id } = input;

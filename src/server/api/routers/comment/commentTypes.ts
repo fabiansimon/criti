@@ -9,5 +9,11 @@ export const RemoveCommentInput = z.object({
   id: z.string().uuid(),
 });
 
+export const UpdateCommentInput = z.object({
+  id: z.string().uuid(),
+  done: z.boolean(),
+});
+
 export type CreateCommentInput = z.infer<typeof CreateCommentInput>;
 export type RemoveCommentInput = z.infer<typeof RemoveCommentInput>;
+export type UpdateCommentInput = z.infer<typeof UpdateCommentInput>;

@@ -16,7 +16,50 @@ export function fileToBase64(file: File): Promise<string> {
 }
 
 export function convertTimestamp(timestamp: string) {
-  const [minutes, seconds] = timestamp.split(":");
-  if (!minutes || !seconds) return;
-  return parseInt(minutes) * parseInt(seconds);
+  const [minutes = "0", seconds = "0"] = timestamp.split(":");
+
+  const parsedMinutes = parseInt(minutes, 10) || 0;
+  const parsedSeconds = parseInt(seconds, 10) || 0;
+
+  return parsedMinutes * 60 + parsedSeconds;
+}
+
+export function generateTimestamp(time: number) {
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
+
+  const paddedMinutes = String(minutes).padStart(2, "0");
+  const paddedSeconds = String(seconds).padStart(2, "0");
+
+  return `${paddedMinutes}:${paddedSeconds}`;
+}
+
+export function getDateDifference(date: string) {
+  const now = new Date();
+  const difference = now.getTime() - new Date(date).getTime();
+
+  const units = [
+    { name: "year", value: 365 * 24 * 60 * 60 * 1000 },
+    { name: "month", value: 30 * 24 * 60 * 60 * 1000 },
+    { name: "week", value: 7 * 24 * 60 * 60 * 1000 },
+    { name: "day", value: 24 * 60 * 60 * 1000 },
+    { name: "hour", value: 60 * 60 * 1000 },
+    { name: "minute", value: 60 * 1000 },
+    { name: "second", value: 1000 },
+  ];
+
+  for (const unit of units) {
+    const amount = Math.floor(difference / unit.value);
+    if (amount >= 1) {
+      return {
+        text: `${amount} ${unit.name}${amount > 1 ? "s" : ""} ago`,
+        unit: unit.name,
+      };
+    }
+  }
+
+  return {
+    text: "just now",
+    unit: "seconds",
+  };
 }

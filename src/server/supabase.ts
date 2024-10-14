@@ -9,8 +9,6 @@ const SUPABASE_BUCKET = env.SUPABASE_BUCKET;
 const SUPABASE_URL = env.SUPABASE_URL;
 const SUPABASE_KEY = env.SUPABASE_KEY;
 
-console.log(SUPABASE_BUCKET, SUPABASE_URL, SUPABASE_KEY);
-
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   throw new Error("Missing Supabase URL or Key");
 }

@@ -12,7 +12,7 @@ import {
   ViewIcon,
   ViewOffSlashIcon,
 } from "hugeicons-react";
-import Text from "~/components/typography/Text";
+import Text from "~/components/typography/text";
 import { Button } from "~/components/ui/button";
 import {
   type DragEvent,

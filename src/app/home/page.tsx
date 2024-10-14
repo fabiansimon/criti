@@ -8,7 +8,7 @@ import {
   MusicNote02Icon,
   PlusSignIcon,
 } from "hugeicons-react";
-import Text from "~/components/typography/Text";
+import Text from "~/components/typography/text";
 import Dropdown, { type MenuOption } from "~/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { route, ROUTES } from "~/constants/routes";
@@ -17,7 +17,7 @@ export default function Home() {
   const router = useRouter();
 
   return (
-    <div className="bg-accent flex min-h-screen flex-col items-center justify-center">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-accent">
       <Card
         title="Your shared projects"
         subtitle="3 Tracks shared"
@@ -25,7 +25,7 @@ export default function Home() {
       >
         <div className="-mx-3 my-7">
           {/* Track List */}
-          <div className="no-scrollbar max-h-[400px] space-y-2 overflow-y-auto pb-2">
+          <div className="max-h-[400px] space-y-2 overflow-y-auto pb-2 no-scrollbar">
             {Array.from({ length: 2 }).map((_, index) => (
               <ProjectListItem
                 onClick={() => router.push(route(ROUTES.listen))}

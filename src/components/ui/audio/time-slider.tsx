@@ -17,7 +17,8 @@ export default function TimeSlider({ curr, max, onChange }: TimeSliderProps) {
       <Slider
         onValueChange={(values) => onChange(values[0]!)}
         defaultValue={[curr]}
-        max={100}
+        max={max}
+        value={[curr]}
         step={1}
         className={cn("w-full")}
       />

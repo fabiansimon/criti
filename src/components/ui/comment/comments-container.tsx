@@ -1,35 +1,75 @@
 import Text from "~/components/typography/text";
-import { cn, generateTimestamp, getDateDifference } from "~/lib/utils";
-import { type CommentContent, CommentInput } from "./comment-input";
+import { cn } from "~/lib/utils";
+import CommentInput, { type CommentContent } from "./comment-input";
 import { type Comment } from "@prisma/client";
 import { api } from "~/trpc/react";
 import { useMemo, useState } from "react";
-import Dropdown, { type MenuOption } from "../dropdown-menu";
-import { MoreVerticalCircle01Icon } from "hugeicons-react";
-import { Checkbox } from "../checkbox";
-import { motion } from "framer-motion";
+import { ArrowDown01Icon } from "hugeicons-react";
+import { CommentTile } from "./comment-tile";
 
 interface CommentsContainerProps {
+  time: number;
   trackId: string;
   comments: Comment[];
+  markComments: boolean;
+  onTimestamp: (timestamp: number) => void;
   className?: string;
 }
 
-interface CommenTileProps {
-  comment: Comment;
-}
+type SortFilter = "timestamp" | "posted";
 
 export function CommentsContainer({
+  time,
   trackId,
   className,
+  markComments,
   comments,
+  onTimestamp,
 }: CommentsContainerProps) {
+  const [sortBy, setSortBy] = useState<SortFilter>("timestamp");
+  const [ascending, setAscending] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const utils = api.useUtils();
 
   const { mutateAsync: createComment } = api.comment.create.useMutation();
 
   const empty = comments.length === 0;
+
+  const sortedComments = useMemo(() => {
+    const sorted = comments.sort((a, b) => {
+      if (sortBy === "timestamp")
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      return (b.timestamp ?? 0) - (a.timestamp ?? 0);
+    });
+
+    return ascending ? sorted : sorted.reverse();
+  }, [comments, ascending, sortBy]);
+
+  const liveCommentId = useMemo(() => {
+    if (empty) return;
+
+    let closest: { id: string; delta: number } | undefined = undefined;
+
+    for (const { id, timestamp } of sortedComments) {
+      if (!timestamp) continue;
+      const diff = Math.abs(timestamp - time);
+      if (diff > 4) continue;
+
+      if (!closest || diff < closest.delta) {
+        closest = {
+          id,
+          delta: diff,
+        };
+      }
+    }
+
+    return closest?.id ?? undefined;
+  }, [time, empty, sortedComments]);
+
+  const triggerSort = (filter: SortFilter) => {
+    setSortBy(filter);
+    setAscending((prev) => !prev);
+  };
 
   const handleAddComment = async ({ content, timestamp }: CommentContent) => {
     setIsLoading(true);
@@ -52,111 +92,65 @@ export function CommentsContainer({
             <Text.Subtitle subtle>Be the first one to critique.</Text.Subtitle>
           </div>
         )}
+
+        {/* Sorting Container */}
+        {!empty && (
+          <div
+            className={
+              "sticky left-0 right-0 top-0 z-10 flex h-[40px] items-center justify-between border-b border-b-neutral-100 bg-white px-[10px]"
+            }
+          >
+            <div
+              onClick={() => triggerSort("timestamp")}
+              className="flex cursor-pointer items-center space-x-1 rounded-md px-2 py-1 hover:bg-neutral-100"
+            >
+              <Text.Subtitle subtle>{"Timestamp"}</Text.Subtitle>
+              <ArrowDown01Icon
+                size={18}
+                className={cn(
+                  "text-black/50",
+                  !ascending && sortBy === "timestamp" && "rotate-180",
+                )}
+              />
+            </div>
+            <div
+              onClick={() => triggerSort("posted")}
+              className="flex cursor-pointer items-center space-x-1 rounded-md px-2 py-1 hover:bg-neutral-100"
+            >
+              <Text.Subtitle subtle>{"Posted"}</Text.Subtitle>
+              <ArrowDown01Icon
+                size={18}
+                className={cn(
+                  "text-black/50",
+                  !ascending && sortBy === "posted" && "rotate-180",
+                )}
+              />
+            </div>
+          </div>
+        )}
+
         {!empty && (
           <div>
-            {comments.map((comment) => (
-              <CommentTile key={comment.id} comment={comment} />
+            {sortedComments.map((comment) => (
+              <CommentTile
+                markable={markComments}
+                onClick={() =>
+                  comment.timestamp && onTimestamp(comment.timestamp)
+                }
+                key={comment.id}
+                comment={comment}
+                live={comment.id === liveCommentId}
+              />
             ))}
           </div>
         )}
       </div>
+
       <CommentInput
         className="absolute bottom-3 left-3 right-3"
         onCreate={handleAddComment}
         isLoading={isLoading}
       />
     </div>
-  );
-}
-
-function CommentTile({ comment }: CommenTileProps) {
-  const [deleted, setDeleted] = useState<boolean>(false);
-  const [checked, setChecked] = useState<boolean>(!comment.open);
-  const { byAdmin, content, timestamp, createdAt, id } = comment;
-
-  const { mutate: updateComment } = api.comment.update.useMutation({
-    onError: () => setChecked((prev) => !prev),
-  });
-  const { mutate: removeComment } = api.comment.delete.useMutation({
-    onError: () => setDeleted(false),
-  });
-
-  const menuOptions: MenuOption[] = [
-    {
-      title: `Mark as ${checked ? "un" : ""}done`,
-      onClick: () => handleUpdateCheck(!checked),
-    },
-    {
-      title: "Delete",
-      onClick: () => handleDeleteComment(),
-    },
-  ];
-
-  const { bg, label } = useMemo(
-    () => ({
-      bg: timestamp ? "bg-neutral-950" : "bg-neutral-200",
-      label: timestamp ? (
-        <Text.Subtitle className="text-white">
-          {generateTimestamp(timestamp)}
-        </Text.Subtitle>
-      ) : (
-        <Text.Subtitle>{"General"}</Text.Subtitle>
-      ),
-    }),
-    [timestamp],
-  );
-
-  const handleDeleteComment = () => {
-    removeComment({ id });
-    setDeleted(true);
-  };
-
-  const handleUpdateCheck = (status: boolean) => {
-    updateComment({ done: status, id: id });
-    setChecked(status);
-  };
-
-  return (
-    <motion.div
-      initial="visible"
-      animate={deleted ? "hidden" : "visible"}
-      variants={{
-        hidden: { height: 0 },
-        visible: { height: "auto" },
-      }}
-      className={cn(
-        "flex items-center space-x-2 overflow-hidden px-[15px]",
-        byAdmin && "bg-green-400/10",
-        !deleted && "min-h-[45px]",
-      )}
-    >
-      <Checkbox checked={checked} onCheckedChange={handleUpdateCheck} />
-      <div className="min-w-[60px]">
-        <div
-          className={cn(
-            "my-auto flex h-6 items-center justify-center space-x-1 rounded-full",
-            bg,
-          )}
-        >
-          {label}
-        </div>
-      </div>
-
-      <div className="my-3 flex w-full grow flex-col -space-y-1">
-        {byAdmin && (
-          <Text.Subtitle className="text-[11px] text-green-900">
-            {"Admin:"}
-          </Text.Subtitle>
-        )}
-        <Text.Body className="font-light">{content}</Text.Body>
-      </div>
-      <Text.Subtitle className="min-w-24 text-right" subtle>
-        {getDateDifference(createdAt.toString()).text}
-      </Text.Subtitle>
-
-      <Dropdown className="mr-4" options={menuOptions}>
-        <MoreVerticalCircle01Icon fill="black" size={18} />
-      </Dropdown>
-    </motion.div>
   );
 }

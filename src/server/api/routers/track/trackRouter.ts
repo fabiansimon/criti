@@ -4,7 +4,11 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { GetTrackByIdInput, UploadTrackInput } from "./trackTypes";
+import {
+  GetTrackByIdInput,
+  GetTracksByUserOutput,
+  UploadTrackInput,
+} from "./trackTypes";
 import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
 
@@ -83,7 +87,7 @@ const getTrackById = publicProcedure
     try {
       const track = await db.track.findUnique({
         where: { id },
-        include: { file: true, comments: true },
+        include: { file: true, comments: true, creator: true },
       });
 
       if (!track) {
@@ -92,7 +96,6 @@ const getTrackById = publicProcedure
           code: "NOT_FOUND",
         });
       }
-
       return track;
     } catch (error) {
       console.error(error);
@@ -105,18 +108,27 @@ const getTrackById = publicProcedure
     }
   });
 
-const getAllTracksByUser = protectedProcedure.query(
-  async ({ ctx: { db, session } }) => {
+const getAllTracksByUser = protectedProcedure
+  .output(GetTracksByUserOutput)
+  .query(async ({ ctx: { db, session } }) => {
     const {
       user: { id: userId },
     } = session;
 
     try {
-      const track = await db.track.findMany({
+      let tracks = await db.track.findMany({
         where: { creatorId: userId },
+        include: { comments: { where: { open: true } } },
       });
 
-      return track ?? [];
+      const formatted = tracks.map((track) => ({
+        id: track.id,
+        title: track.title,
+        createdAt: track.createdAt,
+        openComments: track.comments.length > 0,
+      }));
+
+      return formatted;
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
@@ -126,8 +138,7 @@ const getAllTracksByUser = protectedProcedure.query(
         });
       }
     }
-  },
-);
+  });
 
 export const trackRouter = createTRPCRouter({
   upload: uploadTrack,

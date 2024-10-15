@@ -57,12 +57,16 @@ export default function Home() {
 }
 
 interface ProjectListItemProps {
-  track: Track;
+  track: {
+    title: string;
+    openComments: boolean;
+    createdAt: Date;
+  };
   onClick: () => void;
 }
 
 function ProjectListItem({ track, onClick }: ProjectListItemProps) {
-  const { title, createdAt } = track;
+  const { title, createdAt, openComments } = track;
   const menuOptions: MenuOption[] = [
     {
       title: "Delete",
@@ -84,11 +88,13 @@ function ProjectListItem({ track, onClick }: ProjectListItemProps) {
         <div>
           <div className="flex space-x-3 space-y-1">
             <Text.Body>{title}</Text.Body>
-            <div className="mt-1 flex h-6 items-center rounded-full bg-green-300/30 px-2">
-              <Text.Subtitle className="text-[10px] font-normal text-green-700">
-                open comments
-              </Text.Subtitle>
-            </div>
+            {openComments && (
+              <div className="mt-1 flex h-6 items-center rounded-full bg-green-300/30 px-2">
+                <Text.Subtitle className="text-[10px] font-normal text-green-700">
+                  open comments
+                </Text.Subtitle>
+              </div>
+            )}
           </div>
           <Text.Subtitle className="font-normal" subtle>
             {getDateDifference(createdAt.toString()).text}

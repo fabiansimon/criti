@@ -13,6 +13,7 @@ import { cn } from "~/lib/utils";
 export interface MenuOption {
   title: string;
   onClick: () => void;
+  disabled?: boolean;
 }
 
 interface DropdownProps {
@@ -40,15 +41,19 @@ export default function Dropdown({
             <DropdownMenuSeparator />
           </>
         )}
-        {options.map(({ title, onClick }, index) => (
-          <DropdownMenuItem
-            className="cursor-pointer"
-            key={index}
-            onClick={onClick}
-          >
-            {title}
-          </DropdownMenuItem>
-        ))}
+        {options.map(({ title, onClick, disabled }, index) => {
+          if (disabled) return;
+
+          return (
+            <DropdownMenuItem
+              className="cursor-pointer"
+              key={index}
+              onClick={onClick}
+            >
+              {title}
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

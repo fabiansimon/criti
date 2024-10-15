@@ -2,7 +2,7 @@
 
 import { Download04Icon } from "hugeicons-react";
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Text from "~/components/typography/text";
 import IconButton from "~/components/ui/animated-icon-button";
 import AudioControls from "~/components/ui/audio/audio-controls";
@@ -14,70 +14,64 @@ import { Switch } from "~/components/ui/switch";
 
 import { api } from "~/trpc/react";
 
-interface AudioSettings {
-  looping: boolean;
-  shuffle: boolean;
-}
-
 export default function ListenPage() {
-  const [liveComments, setLiveComments] = useState<boolean>(false);
-  const [volume, setVolume] = useState<number>(100);
+  const [markComments, setMarkComments] = useState<boolean>(false);
   const [time, setTime] = useState<number>(0);
-  const [settings, setSettings] = useState<AudioSettings>({
-    looping: false,
-    shuffle: false,
-  });
+  const [play, setPlay] = useState<boolean>(false);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { id } = useParams<{ id: string }>();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { data: track, isLoading } = api.track.getById.useQuery(
     { id },
     { enabled: !!id },
   );
 
-  const trackMax = audioRef?.current?.duration ?? 0;
-
-  useEffect(() => {
+  const handleVolume = (volume: number) => {
     if (!audioRef.current) return;
     audioRef.current.volume = volume / 100;
-  }, [volume]);
-
-  useEffect(() => {
-    if (!audioRef.current) return;
-    audioRef.current.currentTime = time;
-  }, [time]);
-
-  const triggerPlay = (play: boolean) => {
-    if (!audioRef.current) return;
-    if (play) {
-      audioRef.current.play();
-    } else {
-      audioRef.current.pause();
-    }
   };
 
-  console.log("hello");
+  const triggerPlay = (state?: boolean) => {
+    if (!audioRef.current) return;
+    setPlay((prev) => {
+      const status = state ?? !prev;
+      if (status) void audioRef.current!.play();
+      else void audioRef.current!.pause();
+      return status;
+    });
+  };
+
+  const handleTimeUpdate = (time: number) => {
+    if (!audioRef.current) return;
+    triggerPlay(true);
+    audioRef.current.currentTime = time;
+  };
+
+  const duration = audioRef.current?.duration ?? 0;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-accent">
       <Card
         isLoading={isLoading}
         title={track?.title}
-        subtitle={"Shared by Fabian Simon"}
+        subtitle={`Shared by ${track?.creator.name}`}
         className="relative w-full max-w-screen-lg"
       >
         <div className="absolute right-6 top-14 flex space-x-2">
-          <Text.Body className="text-xs">Live Comments</Text.Body>
+          <Text.Body className="text-xs">Mark comments</Text.Body>
           <Switch
             className="opacity-100"
-            checked={liveComments}
-            onCheckedChange={setLiveComments}
+            checked={markComments}
+            onCheckedChange={setMarkComments}
           />
         </div>
 
         {/* Comments Container */}
         <CommentsContainer
+          markComments={markComments}
+          onTimestamp={handleTimeUpdate}
+          time={time}
           trackId={id}
           comments={track?.comments ?? []}
           className="mt-2"
@@ -94,29 +88,25 @@ export default function ListenPage() {
 
           <div className="absolute left-0 right-0 mx-[30%] flex items-center justify-center">
             <AudioControls
-              onLoop={(status) =>
-                setSettings((prev) => ({ ...prev, looping: status }))
-              }
-              onRewind={() => setTime(0)}
-              onPlay={triggerPlay}
-              onForward={() => setTime(trackMax)}
-              onShuffle={(status) =>
-                setSettings((prev) => ({ ...prev, shuffle: status }))
-              }
+              isPlaying={play}
+              onPlay={() => triggerPlay()}
+              onBackward={() => handleTimeUpdate(Math.min(duration, time - 15))}
+              onForward={() => handleTimeUpdate(Math.max(0, time + 15))}
             />
           </div>
 
-          <VolumeControl onChange={setVolume} />
+          <VolumeControl onChange={handleVolume} />
         </div>
 
         {/* Time Slider */}
-        <TimeSlider curr={time} max={trackMax} onChange={setTime} />
+        <TimeSlider curr={time} max={duration} onChange={handleTimeUpdate} />
 
         {/* Hidden Audio Element */}
         <audio
-          ref={audioRef}
+          onEnded={() => setPlay(false)}
+          onTimeUpdate={() => setTime(audioRef.current?.currentTime ?? 0)}
           src={track?.file.url}
-          // onTimeUpdate={() => setTime(audioRef?.current?.currentTime ?? 0)}
+          ref={audioRef}
           hidden
         />
       </Card>

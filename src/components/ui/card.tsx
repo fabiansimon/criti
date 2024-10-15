@@ -28,8 +28,12 @@ export default function Card({
       <div>
         <Text.Headline type="h2">{title}</Text.Headline>
         <Text.Body subtle>{subtitle}</Text.Body>
-        {isLoading && <LoadingSpinner />}
-        {children}
+        {isLoading && (
+          <div className="flex w-full grow items-center justify-center">
+            <LoadingSpinner className="size-8" />
+          </div>
+        )}
+        {!isLoading && children}
       </div>
     </div>
   );

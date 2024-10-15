@@ -16,7 +16,7 @@ export interface CommentContent {
   timestamp?: number;
 }
 
-export function CommentInput({
+export default function CommentInput({
   onCreate,
   className,
   isLoading,

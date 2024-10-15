@@ -19,7 +19,13 @@ export default function NavBar() {
 
   const options: NavOption[] = [
     {
-      icon: <Home11Icon size={18} className="text-neutral-700" />,
+      icon: (
+        <Home11Icon
+          fill="text-neutral-700"
+          size={16}
+          className="text-neutral-700"
+        />
+      ),
       title: "Home",
       route: ROUTES.home,
       onClick: () => router.push(route(ROUTES.home)),

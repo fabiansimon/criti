@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { route, ROUTES } from "~/constants/routes";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -62,4 +63,18 @@ export function getDateDifference(date: string) {
     text: "just now",
     unit: "seconds",
   };
+}
+
+export function copyToClipboard(value: string) {
+  void navigator.clipboard.writeText(value);
+}
+
+export function getBaseUrl() {
+  if (typeof window !== "undefined") return window.location.origin;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return `http://localhost:${process.env.PORT ?? 3000}`;
+}
+
+export function generateShareableLink(id: string) {
+  return `${getBaseUrl()}${route(ROUTES.listen, id)} `;
 }

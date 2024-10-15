@@ -5,12 +5,66 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import {
+  ArchiveProjectInput,
   GetTrackByIdInput,
   GetTracksByUserOutput,
   UploadTrackInput,
 } from "./trackTypes";
 import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
+
+const archiveTrack = protectedProcedure
+  .input(ArchiveProjectInput)
+  .mutation(async ({ input, ctx: { db, session } }) => {
+    const { id } = input;
+    const {
+      user: { id: userId },
+    } = session;
+
+    try {
+      const track = await db.track.findUnique({
+        where: { id },
+        include: { creator: true },
+      });
+
+      if (!track) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Track not found.",
+        });
+      }
+
+      const {
+        creator: { id: creatorId },
+        fileId,
+      } = track;
+
+      if (creatorId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Unallowed action.",
+        });
+      }
+
+      await db.track.update({
+        where: { id },
+        data: { isArchived: true },
+      });
+
+      await db.file.update({
+        where: { id: fileId },
+        data: { isArchived: true },
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error);
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }
+  });
 
 const uploadTrack = protectedProcedure
   .input(UploadTrackInput)
@@ -86,7 +140,7 @@ const getTrackById = publicProcedure
 
     try {
       const track = await db.track.findUnique({
-        where: { id },
+        where: { id, isArchived: false },
         include: { file: true, comments: true, creator: true },
       });
 
@@ -116,17 +170,20 @@ const getAllTracksByUser = protectedProcedure
     } = session;
 
     try {
-      let tracks = await db.track.findMany({
-        where: { creatorId: userId },
+      const tracks = await db.track.findMany({
+        where: { creatorId: userId, isArchived: false },
         include: { comments: { where: { open: true } } },
       });
 
-      const formatted = tracks.map((track) => ({
-        id: track.id,
-        title: track.title,
-        createdAt: track.createdAt,
-        openComments: track.comments.length > 0,
-      }));
+      const formatted = tracks.map(
+        ({ id, title, createdAt, comments, locked }) => ({
+          id: id,
+          title: title,
+          createdAt: createdAt,
+          locked,
+          openComments: comments.length > 0,
+        }),
+      );
 
       return formatted;
     } catch (error) {
@@ -142,6 +199,7 @@ const getAllTracksByUser = protectedProcedure
 
 export const trackRouter = createTRPCRouter({
   upload: uploadTrack,
+  archive: archiveTrack,
   getAll: getAllTracksByUser,
   getById: getTrackById,
 });

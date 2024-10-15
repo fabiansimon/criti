@@ -26,7 +26,7 @@ export default function AudioControls({
         onClick={onBackward}
         className="flex size-8 cursor-pointer items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100"
       >
-        <GoBackward15SecIcon size={20} />
+        <GoBackward15SecIcon size={22} />
       </div>
 
       <div
@@ -44,7 +44,7 @@ export default function AudioControls({
         onClick={onForward}
         className="flex size-8 cursor-pointer items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100"
       >
-        <GoForward15SecIcon size={20} />
+        <GoForward15SecIcon size={22} />
       </div>
     </div>
   );

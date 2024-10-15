@@ -65,7 +65,9 @@ model File {
   mime      String
   url       String
   byteSize  Int
+  
   track     Track?   @relation
+  isArchived Boolean   @default(false)
 }
 
 // Necessary for Next auth

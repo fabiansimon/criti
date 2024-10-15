@@ -83,9 +83,18 @@ export function CommentTile({
         !deleted && "min-h-[45px]",
       )}
     >
-      {markable && (
+      <motion.div
+        variants={{
+          visible: { width: "auto", opacity: 1 },
+          hidden: { width: 0, opacity: 0 },
+        }}
+        transition={{ duration: 0.05 }}
+        initial={"hidden"}
+        animate={markable ? "visible" : "hidden"}
+      >
         <Checkbox checked={checked} onCheckedChange={handleUpdateCheck} />
-      )}
+      </motion.div>
+
       <div className="min-w-[65px]">
         <div
           className={cn(

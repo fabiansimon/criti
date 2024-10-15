@@ -48,7 +48,10 @@ export default function Dropdown({
             <DropdownMenuItem
               className="cursor-pointer"
               key={index}
-              onClick={onClick}
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
             >
               {title}
             </DropdownMenuItem>

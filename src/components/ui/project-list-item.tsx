@@ -15,6 +15,9 @@ import {
 import Text from "../typography/text";
 import { api } from "~/trpc/react";
 import { useState } from "react";
+import { useDialog } from "~/providers/dialog-provider";
+import { useModal } from "~/providers/modal-provider";
+import TrackInputContainer, { type UpdateState } from "./track-input-container";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;
@@ -29,10 +32,34 @@ export default function ProjectListItem({
   const { createdAt, locked, title, openComments, id } = track;
 
   const { toast } = useToast();
+  const { show: showDialog, hide: hideDialog } = useDialog();
+  const { show: showModal, hide: hideModal } = useModal();
+
   const utils = api.useUtils();
+
   const { mutateAsync: deleteTrack } = api.track.archive.useMutation({
     onError: () => setDeleted(false),
   });
+  const { mutateAsync: updateTrack, isPending: isLoading } =
+    api.track.update.useMutation({
+      onError: () => setDeleted(false),
+    });
+
+  const handleUpdate = async (data: UpdateState) => {
+    await updateTrack({ ...data });
+    await utils.track.invalidate();
+    hideModal();
+  };
+
+  const handleEdit = () => {
+    showModal(
+      <TrackInputContainer
+        isLoading={isLoading}
+        updateState={track}
+        onClick={(data) => handleUpdate(data as UpdateState)}
+      />,
+    );
+  };
 
   const handleShare = () => {
     const url = generateShareableLink(id);
@@ -44,10 +71,26 @@ export default function ProjectListItem({
   };
 
   const handleDelete = async () => {
-    console.log("hello world", id);
-    setDeleted(true);
-    await deleteTrack({ id });
-    void utils.track.invalidate();
+    showDialog({
+      title: "Delete Track",
+      subtitle: "This action cannot be undone. Are you sure?",
+      actions: [
+        {
+          title: "Cancel",
+          onClick: hideDialog,
+        },
+        {
+          title: "Delete",
+          destructive: true,
+          onClick: async () => {
+            setDeleted(true);
+            hideDialog();
+            await deleteTrack({ id });
+            void utils.track.invalidate();
+          },
+        },
+      ],
+    });
   };
 
   const menuOptions: MenuOption[] = [
@@ -61,7 +104,7 @@ export default function ProjectListItem({
     },
     {
       title: "Edit",
-      onClick: () => console.log("Edit item"),
+      onClick: handleEdit,
     },
   ];
 

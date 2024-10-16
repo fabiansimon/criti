@@ -29,8 +29,18 @@ export const UploadTrackInput = z.object({
   emails: z.array(z.string().email()),
 });
 
+export const UpdateTrackInput = UploadTrackInput.omit({
+  contentType: true,
+  fileContent: true,
+})
+  .partial()
+  .extend({
+    id: z.string().uuid(),
+  });
+
 export type UploadTrackInput = z.infer<typeof UploadTrackInput>;
 export type GetTrackByIdInput = z.infer<typeof GetTrackByIdInput>;
 export type GetTracksByUserOutput = z.infer<typeof GetTracksByUserOutput>;
 export type ArchiveProjectInput = z.infer<typeof ArchiveProjectInput>;
+export type UpdateTrackInput = z.infer<typeof UpdateTrackInput>;
 export type SimplfiedTrack = z.infer<typeof GetTracksByUserOutput>[number];

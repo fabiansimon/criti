@@ -8,10 +8,12 @@ import {
   ArchiveProjectInput,
   GetTrackByIdInput,
   GetTracksByUserOutput,
+  UpdateTrackInput,
   UploadTrackInput,
 } from "./trackTypes";
 import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
+import { UpdateCommentInput } from "../comment/commentTypes";
 
 const archiveTrack = protectedProcedure
   .input(ArchiveProjectInput)
@@ -55,6 +57,54 @@ const archiveTrack = protectedProcedure
         where: { id: fileId },
         data: { isArchived: true },
       });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error);
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }
+  });
+
+const updateTrack = protectedProcedure
+  .input(UpdateTrackInput)
+  .mutation(async ({ input, ctx: { db, session } }) => {
+    const { id, ...updates } = input;
+    const {
+      user: { id: userId },
+    } = session;
+    try {
+      const track = await db.track.findUnique({
+        where: { id },
+        include: { creator: true },
+      });
+
+      if (!track) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Track not found.",
+        });
+      }
+
+      const {
+        creator: { id: creatorId },
+      } = track;
+
+      if (creatorId !== userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Unallowed action.",
+        });
+      }
+
+      await db.track.update({
+        where: { id },
+        data: updates,
+      });
+
+      return track;
     } catch (error) {
       if (error instanceof Error) {
         console.error(error);
@@ -199,6 +249,7 @@ const getAllTracksByUser = protectedProcedure
 
 export const trackRouter = createTRPCRouter({
   upload: uploadTrack,
+  update: updateTrack,
   archive: archiveTrack,
   getAll: getAllTracksByUser,
   getById: getTrackById,

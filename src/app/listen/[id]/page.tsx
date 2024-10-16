@@ -1,6 +1,6 @@
 "use client";
 
-import { Download04Icon } from "hugeicons-react";
+import { Download04Icon, Share05Icon } from "hugeicons-react";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 import Text from "~/components/typography/text";
@@ -11,6 +11,8 @@ import VolumeControl from "~/components/ui/audio/volume-control";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
 import { Switch } from "~/components/ui/switch";
+import { useToast } from "~/hooks/use-toast";
+import { copyToClipboard, generateShareableLink } from "~/lib/utils";
 
 import { api } from "~/trpc/react";
 
@@ -20,12 +22,24 @@ export default function ListenPage() {
   const [play, setPlay] = useState<boolean>(false);
 
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { data: track, isLoading } = api.track.getById.useQuery(
     { id },
     { enabled: !!id },
   );
+
+  const handleShare = () => {
+    const url = generateShareableLink(id);
+    console.log(url);
+    copyToClipboard(url);
+    toast({
+      title: "Link copied",
+      description: "Share the link with your friends.",
+    });
+  };
 
   const handleVolume = (volume: number) => {
     if (!audioRef.current) return;
@@ -58,13 +72,9 @@ export default function ListenPage() {
         subtitle={`Shared by ${track?.creator.name}`}
         className="relative w-full max-w-screen-lg"
       >
-        <div className="absolute right-6 top-14 flex space-x-2">
+        <div className="absolute right-6 top-12 flex space-x-2">
           <Text.Body className="text-xs">Mark comments</Text.Body>
-          <Switch
-            className="opacity-100"
-            checked={markComments}
-            onCheckedChange={setMarkComments}
-          />
+          <Switch checked={markComments} onCheckedChange={setMarkComments} />
         </div>
 
         {/* Comments Container */}
@@ -79,12 +89,20 @@ export default function ListenPage() {
 
         {/* Audio Controls */}
         <div className="relative my-6 flex w-full grow items-center justify-between">
-          <IconButton
-            className="z-10"
-            icon={<Download04Icon />}
-            text="Download"
-            onClick={() => console.log("Hello")}
-          />
+          <div className="flex space-x-2">
+            <IconButton
+              className="z-10"
+              icon={<Download04Icon size={18} />}
+              text="Download"
+              onClick={() => console.log("Hello")}
+            />
+            <IconButton
+              className="z-10"
+              icon={<Share05Icon size={16} />}
+              text="Share"
+              onClick={handleShare}
+            />
+          </div>
 
           <div className="absolute left-0 right-0 mx-[30%] flex items-center justify-center">
             <AudioControls

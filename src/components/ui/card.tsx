@@ -25,16 +25,18 @@ export default function Card({
         className,
       )}
     >
-      <div>
-        <Text.Headline type="h2">{title}</Text.Headline>
-        <Text.Body subtle>{subtitle}</Text.Body>
-        {isLoading && (
-          <div className="flex w-full grow items-center justify-center">
-            <LoadingSpinner className="size-8" />
-          </div>
-        )}
-        {!isLoading && children}
-      </div>
+      {isLoading && (
+        <div className="flex w-full grow items-center justify-center">
+          <LoadingSpinner className="size-8" />
+        </div>
+      )}
+      {!isLoading && (
+        <div>
+          <Text.Headline type="h2">{title}</Text.Headline>
+          <Text.Body subtle>{subtitle}</Text.Body>
+          {children}
+        </div>
+      )}
     </div>
   );
 }

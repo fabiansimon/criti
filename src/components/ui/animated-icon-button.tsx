@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import Text from "../typography/text";
 import { useState } from "react";
+import { cn } from "~/lib/utils";
 
 interface IconButtonProps {
   icon: React.ReactNode;
@@ -18,9 +19,13 @@ export default function IconButton({
 
   return (
     <div
+      onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="flex h-10 cursor-pointer items-center overflow-hidden rounded-md bg-accent hover:bg-accent/80"
+      className={cn(
+        "flex h-10 cursor-pointer items-center overflow-hidden rounded-md bg-accent hover:bg-accent/80",
+        className,
+      )}
     >
       <div className="flex w-10 items-center justify-center">{icon}</div>
       <motion.div

@@ -25,7 +25,7 @@ function Body({
 }: TextProps): JSX.Element {
   return (
     <p
-      className={cn("text-sm leading-7", subtle && subtleColor, className)}
+      className={cn("leading-2 text-sm", subtle && subtleColor, className)}
       {...rest}
     >
       {children}

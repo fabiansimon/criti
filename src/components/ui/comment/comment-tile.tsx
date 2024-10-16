@@ -92,7 +92,11 @@ export function CommentTile({
         initial={"hidden"}
         animate={markable ? "visible" : "hidden"}
       >
-        <Checkbox checked={checked} onCheckedChange={handleUpdateCheck} />
+        <Checkbox
+          className="mb-2"
+          checked={checked}
+          onCheckedChange={handleUpdateCheck}
+        />
       </motion.div>
 
       <div className="min-w-[65px]">

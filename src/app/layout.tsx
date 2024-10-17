@@ -1,14 +1,11 @@
 import "~/styles/globals.css";
-
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "~/components/ui/toaster";
-import NavBar from "~/components/ui/navbar/navbar";
-import Dialog from "~/providers/dialog-provider";
-import DialogProvider from "~/providers/dialog-provider";
-import ModalProvider from "~/providers/modal-provider";
+import InitRoot from "~/components/ui/init-root";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Criti",
@@ -23,12 +20,7 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
         <TRPCReactProvider>
-          <ModalProvider>
-            <DialogProvider>
-              <NavBar />
-              {children}
-            </DialogProvider>
-          </ModalProvider>
+          <InitRoot>{children}</InitRoot>
         </TRPCReactProvider>
         <Toaster />
       </body>

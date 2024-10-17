@@ -108,3 +108,8 @@ export async function downloadFile({
     throw new Error("Error when downloading file.");
   }
 }
+
+export function getInitials(name: string) {
+  const [first, last] = name.split(" ");
+  return `${first ? first[0] : ""} ${last ? last[0] : ""}`;
+}

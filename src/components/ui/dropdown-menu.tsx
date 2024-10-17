@@ -13,6 +13,7 @@ import { cn } from "~/lib/utils";
 export interface MenuOption {
   title: string;
   onClick: () => void;
+  destructive?: boolean;
   disabled?: boolean;
 }
 
@@ -41,12 +42,12 @@ export default function Dropdown({
             <DropdownMenuSeparator />
           </>
         )}
-        {options.map(({ title, onClick, disabled }, index) => {
+        {options.map(({ title, onClick, disabled, destructive }, index) => {
           if (disabled) return;
 
           return (
             <DropdownMenuItem
-              className="cursor-pointer"
+              className={cn("cursor-pointer", destructive && "text-red-700")}
               key={index}
               onClick={(e) => {
                 e.stopPropagation();

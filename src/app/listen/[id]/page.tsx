@@ -11,6 +11,7 @@ import VolumeControl from "~/components/ui/audio/volume-control";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
 import { Switch } from "~/components/ui/switch";
+import useDownload from "~/hooks/use-download";
 import { useToast } from "~/hooks/use-toast";
 import { copyToClipboard, generateShareableLink } from "~/lib/utils";
 
@@ -22,6 +23,7 @@ export default function ListenPage() {
   const [play, setPlay] = useState<boolean>(false);
 
   const { id } = useParams<{ id: string }>();
+  const { isLoading: downloadLoading, download } = useDownload();
   const { toast } = useToast();
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -94,7 +96,13 @@ export default function ListenPage() {
               className="z-10"
               icon={<Download04Icon size={18} />}
               text="Download"
-              onClick={() => console.log("Hello")}
+              isLoading={downloadLoading}
+              onClick={() =>
+                download({
+                  url: track?.file.url ?? "",
+                  name: track?.title ?? "",
+                })
+              }
             />
             <IconButton
               className="z-10"

@@ -75,6 +75,7 @@ const updateTrack = protectedProcedure
     const {
       user: { id: userId },
     } = session;
+
     try {
       const track = await db.track.findUnique({
         where: { id },
@@ -104,6 +105,7 @@ const updateTrack = protectedProcedure
         data: updates,
       });
 
+      console.log("==== UPDATES: ", updates);
       return track;
     } catch (error) {
       if (error instanceof Error) {

@@ -79,3 +79,32 @@ export function getBaseUrl() {
 export function generateShareableLink(id: string) {
   return `${getBaseUrl()}${route(ROUTES.listen, id)} `;
 }
+
+export async function downloadFile({
+  url,
+  name,
+}: {
+  url: string;
+  name: string;
+}) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+
+    const _url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+
+    a.style.display = "none";
+    a.href = _url;
+    a.download = name;
+
+    document.body.appendChild(a);
+    a.click();
+
+    window.URL.revokeObjectURL(_url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error when downloading file.");
+  }
+}

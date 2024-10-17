@@ -2,16 +2,19 @@ import { motion } from "framer-motion";
 import Text from "../typography/text";
 import { useState } from "react";
 import { cn } from "~/lib/utils";
+import LoadingSpinner from "./loading-spinner";
 
 interface IconButtonProps {
   icon: React.ReactNode;
   text?: string;
   className?: string;
+  isLoading?: boolean;
   onClick: () => void;
 }
 export default function IconButton({
   icon,
   text,
+  isLoading,
   className,
   onClick,
 }: IconButtonProps) {
@@ -19,7 +22,7 @@ export default function IconButton({
 
   return (
     <div
-      onClick={onClick}
+      onClick={() => !isLoading && onClick()}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={cn(
@@ -27,7 +30,9 @@ export default function IconButton({
         className,
       )}
     >
-      <div className="flex w-10 items-center justify-center">{icon}</div>
+      <div className="flex w-10 items-center justify-center">
+        {!isLoading ? icon : <LoadingSpinner className="size-4" />}
+      </div>
       <motion.div
         transition={{ duration: 0.1 }}
         animate={hovered ? "visible" : "hidden"}

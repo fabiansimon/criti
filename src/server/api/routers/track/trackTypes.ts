@@ -35,7 +35,7 @@ export const UpdateTrackInput = UploadTrackInput.omit({
 })
   .partial()
   .extend({
-    id: z.string().uuid(),
+    id: z.string(),
   });
 
 export type UploadTrackInput = z.infer<typeof UploadTrackInput>;

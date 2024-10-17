@@ -18,6 +18,7 @@ import { useState } from "react";
 import { useDialog } from "~/providers/dialog-provider";
 import { useModal } from "~/providers/modal-provider";
 import TrackInputContainer, { type UpdateState } from "./track-input-container";
+import Card from "./card";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;
@@ -40,24 +41,28 @@ export default function ProjectListItem({
   const { mutateAsync: deleteTrack } = api.track.archive.useMutation({
     onError: () => setDeleted(false),
   });
-  const { mutateAsync: updateTrack, isPending: isLoading } =
-    api.track.update.useMutation({
-      onError: () => setDeleted(false),
-    });
+  const { mutateAsync: updateTrack } = api.track.update.useMutation({
+    onError: () => setDeleted(false),
+  });
 
-  const handleUpdate = async (data: UpdateState) => {
-    await updateTrack({ ...data });
-    await utils.track.invalidate();
+  const handleUpdate = async (updates: UpdateState) => {
     hideModal();
+    await updateTrack({ ...updates, id: track.id });
+    await utils.track.invalidate();
   };
 
   const handleEdit = () => {
     showModal(
-      <TrackInputContainer
-        isLoading={isLoading}
-        updateState={track}
-        onClick={(data) => handleUpdate(data as UpdateState)}
-      />,
+      <Card
+        title="Update Track"
+        subtitle="Sharing is caring"
+        className="w-full max-w-screen-sm"
+      >
+        <TrackInputContainer
+          updateState={{ ...track, password: "" }}
+          onClick={(data) => handleUpdate(data as UpdateState)}
+        />
+      </Card>,
     );
   };
 
@@ -99,12 +104,13 @@ export default function ProjectListItem({
       onClick: handleShare,
     },
     {
-      title: "Delete",
-      onClick: () => void handleDelete(),
-    },
-    {
       title: "Edit",
       onClick: handleEdit,
+    },
+    {
+      title: "Delete",
+      destructive: true,
+      onClick: () => void handleDelete(),
     },
   ];
 

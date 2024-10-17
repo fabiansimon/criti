@@ -27,6 +27,8 @@ interface InputType {
 export interface UpdateState {
   id: string;
   title: string;
+  locked: boolean;
+  password: string;
 }
 
 export interface CreateState {
@@ -37,8 +39,8 @@ export interface CreateState {
 }
 
 interface TrackInputContainerProps {
-  isLoading: boolean;
   onClick: (data: UpdateState | CreateState) => void;
+  isLoading?: boolean;
   updateState?: UpdateState;
   file?: File;
   onFile?: () => void;
@@ -86,9 +88,11 @@ export default function TrackInputContainer({
 
     if (update) {
       const { id } = updateState;
-      onClick({
+      return onClick({
         id,
         title,
+        locked,
+        password,
       });
     }
 
@@ -134,7 +138,7 @@ export default function TrackInputContainer({
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 md:min-w-[500px]">
       {/* Title Input */}
       <div className="space-y-1">
         <Text.Body className="mb-2 ml-1 text-xs" subtle>
@@ -149,12 +153,14 @@ export default function TrackInputContainer({
               handleInputChange("title", value)
             }
           />
-          <Button
-            onClick={onFile}
-            dense
-            className="h-full"
-            title="Replace file"
-          />
+          {!update && (
+            <Button
+              onClick={onFile}
+              dense
+              className="h-full"
+              title="Replace file"
+            />
+          )}
         </div>
       </div>
       <div className="my-4 border-t border-neutral-200" />
@@ -202,30 +208,32 @@ export default function TrackInputContainer({
       </div>
 
       {/* Email Input */}
-      <div className={"mt-4 space-y-1"}>
-        <div className="mb-2 flex justify-between">
-          <Text.Body className="ml-1 text-xs" subtle>
-            Send out reminders (optional)
-          </Text.Body>
+      {!update && (
+        <div className={"mt-4 space-y-1"}>
+          <div className="mb-2 flex justify-between">
+            <Text.Body className="ml-1 text-xs" subtle>
+              Send out reminders (optional)
+            </Text.Body>
+          </div>
+          <div className={"flex h-12 space-x-2"}>
+            <IconContainer icon={<Mail01Icon size={16} />} />
+            <Input
+              placeholder="youremail@gmail.com"
+              value={input.email}
+              onChange={({ currentTarget: { value } }) =>
+                handleInputChange("email", value)
+              }
+            />
+            <Button
+              disabled={!validEmail}
+              onClick={addEmail}
+              dense
+              className="h-full"
+              icon={<PlusSignIcon size={18} />}
+            />
+          </div>
         </div>
-        <div className={"flex h-12 space-x-2"}>
-          <IconContainer icon={<Mail01Icon size={16} />} />
-          <Input
-            placeholder="youremail@gmail.com"
-            value={input.email}
-            onChange={({ currentTarget: { value } }) =>
-              handleInputChange("email", value)
-            }
-          />
-          <Button
-            disabled={!validEmail}
-            onClick={addEmail}
-            dense
-            className="h-full"
-            icon={<PlusSignIcon size={18} />}
-          />
-        </div>
-      </div>
+      )}
 
       {/* Email List */}
       <div className="mt-3 flex flex-wrap gap-1">
@@ -242,7 +250,7 @@ export default function TrackInputContainer({
         isLoading={isLoading}
         disabled={!validInput || isLoading}
         className="mt-8 h-12 w-full"
-        title="Upload"
+        title={update ? "Update" : "Create"}
       />
     </div>
   );

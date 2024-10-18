@@ -23,15 +23,16 @@ export default {
     },
   },
   plugins: [
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require("tailwindcss-animate"),
-    function ({ addUtilities }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function ({ addUtilities }: { addUtilities: any }) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
       addUtilities({
         ".no-scrollbar": {
-          /* Hide scrollbar for Chrome, Safari and Opera */
           "&::-webkit-scrollbar": {
             display: "none",
           },
-          /* Hide scrollbar for IE, Edge, and Firefox */
           "-ms-overflow-style": "none" /* IE and Edge */,
           "scrollbar-width": "none" /* Firefox */,
         },

@@ -100,8 +100,8 @@ function UserTile({ user, className }: UserTileProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut();
     router.push(route(ROUTES.landing));
+    await signOut();
   };
 
   const options: MenuOption[] = [

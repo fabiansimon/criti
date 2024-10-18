@@ -1,12 +1,15 @@
 import { PlusSignIcon } from "hugeicons-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { REGEX } from "~/constants/regex";
-import { cn, convertTimestamp } from "~/lib/utils";
+import { cn, convertTimestamp, generateTimestamp } from "~/lib/utils";
 import { Button } from "../button";
 import LoadingSpinner from "../loading-spinner";
+import { Popover, type PopoverRef } from "../tooltip";
 
 interface CommentInputProps {
   onCreate: ({ content, timestamp }: CommentContent) => void;
+  time: number;
+  maxTime: number;
   isLoading?: boolean;
   className?: string;
 }
@@ -20,10 +23,28 @@ export default function CommentInput({
   onCreate,
   className,
   isLoading,
+  time,
+  maxTime,
 }: CommentInputProps) {
   const [timestamp, setTimestamp] = useState<string>("");
   const [input, setInput] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+
+  const timestampErrorRef = useRef<PopoverRef | null>(null);
+
+  useEffect(() => {
+    if (!error) return timestampErrorRef.current?.hide();
+    timestampErrorRef.current?.show();
+  }, [error]);
+
+  useEffect(() => {
+    if (timestamp.length > 0 && !REGEX.timestamp.test(timestamp))
+      return setError("Invalid timestamp");
+
+    if (convertTimestamp(timestamp) > maxTime)
+      return setError("Not within range");
+  }, [timestamp, maxTime]);
 
   const handleTimestampChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -37,10 +58,16 @@ export default function CommentInput({
   };
 
   const handleBlur = () => {
-    setIsFocused(false);
-    if (!/^\d{2}:\d{2}$/.test(timestamp)) {
-      setTimestamp("");
-    }
+    setTimestamp("");
+    handleFocus(false);
+    // if (!/^\d{2}:\d{2}$/.test(timestamp)) {
+    // }
+  };
+
+  const handleFocus = (status: boolean) => {
+    setIsFocused(status);
+    if (!status || timestamp.length > 0) return;
+    setTimestamp(generateTimestamp(time));
   };
 
   const handleCreate = () => {
@@ -66,17 +93,24 @@ export default function CommentInput({
           "bg-neutral-50",
         )}
       >
-        <span className="flex w-14">
-          <input
-            type="text"
-            onChange={handleTimestampChange}
-            value={timestamp}
-            placeholder="00:00"
-            className="mx-1 w-14 bg-transparent focus:outline-none"
-            onFocus={() => setIsFocused(true)}
-            onBlur={handleBlur}
-          />
-        </span>
+        <Popover
+          className="mb-1 mr-3"
+          text={error}
+          destructive
+          ref={timestampErrorRef}
+        >
+          <span className="flex w-14">
+            <input
+              type="text"
+              onChange={handleTimestampChange}
+              value={timestamp}
+              placeholder="00:00"
+              className="mx-1 w-14 bg-transparent focus:outline-none"
+              onFocus={() => handleFocus(true)}
+              onBlur={handleBlur}
+            />
+          </span>
+        </Popover>
         <div className="w-px bg-neutral-200" />
         <input
           type="text"
@@ -84,8 +118,11 @@ export default function CommentInput({
           onChange={(e) => setInput(e.currentTarget.value)}
           placeholder="Add comment"
           className="flex w-full grow bg-transparent px-3 py-2 focus:outline-none"
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={() => {
+            setIsFocused(true);
+            setTimestamp(generateTimestamp(time));
+          }}
+          onBlur={handleBlur}
         />
       </div>
       <div className="rounded-md bg-white">
@@ -95,7 +132,7 @@ export default function CommentInput({
           className="min-h-full w-14"
           icon={
             isLoading ? (
-              <LoadingSpinner className="size-5" />
+              <LoadingSpinner className="size-4" />
             ) : (
               <PlusSignIcon size={18} />
             )

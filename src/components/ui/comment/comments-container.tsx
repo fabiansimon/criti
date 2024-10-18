@@ -13,6 +13,7 @@ interface CommentsContainerProps {
   trackId: string;
   comments: Comment[];
   markComments: boolean;
+  maxTime: number;
   isAdmin: boolean;
   onTimestamp: (timestamp: number) => void;
   className?: string;
@@ -22,6 +23,7 @@ type SortFilter = "timestamp" | "posted";
 
 export function CommentsContainer({
   time,
+  maxTime,
   trackId,
   className,
   markComments,
@@ -155,6 +157,8 @@ export function CommentsContainer({
       </div>
 
       <CommentInput
+        maxTime={maxTime}
+        time={time}
         className="absolute bottom-3 left-3 right-3"
         onCreate={handleAddComment}
         isLoading={isLoading}

@@ -14,7 +14,6 @@ import { CommentsContainer } from "~/components/ui/comment/comments-container";
 import { Switch } from "~/components/ui/switch";
 import useDownload from "~/hooks/use-download";
 import { useToast } from "~/hooks/use-toast";
-import { LocalStorage } from "~/lib/localStorage";
 import { copyToClipboard, generateShareableLink, pluralize } from "~/lib/utils";
 
 import { api } from "~/trpc/react";
@@ -96,6 +95,7 @@ export default function ListenPage() {
 
         {/* Comments Container */}
         <CommentsContainer
+          maxTime={duration ?? Infinity}
           isAdmin={isAdmin}
           markComments={markComments}
           onTimestamp={handleTimeUpdate}

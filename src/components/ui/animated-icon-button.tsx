@@ -34,6 +34,7 @@ export default function IconButton({
         {!isLoading ? icon : <LoadingSpinner className="size-4" />}
       </div>
       <motion.div
+        initial="hidden"
         transition={{ duration: 0.1 }}
         animate={hovered ? "visible" : "hidden"}
         variants={{

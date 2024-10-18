@@ -8,6 +8,11 @@ import { route, ROUTES } from "~/constants/routes";
 import { cn } from "~/lib/utils";
 import Avatar from "../avatar";
 import Dropdown, { type MenuOption } from "../dropdown-menu";
+import { type DefaultSession } from "next-auth";
+
+type SessionUser = {
+  id: string;
+} & DefaultSession["user"];
 
 interface NavOption {
   title: string;
@@ -40,24 +45,22 @@ export default function NavBar() {
   ];
 
   return (
-    <div className="fixed left-0 right-0 top-0 flex items-center justify-between border-b border-b-neutral-200 bg-white">
-      <div className="mx-auto flex space-x-2">
-        {options.map((option, index) => (
-          <NavItem
-            active={path.includes(option.route)}
-            key={index}
-            option={option}
-          />
-        ))}
+    <div className="fixed left-0 right-0 top-0 flex items-center border-b border-b-neutral-200 bg-white">
+      <div className="mx-auto flex w-full max-w-screen-xl justify-between">
+        <div />
+        {data?.user && <UserTile className="z-10 my-1" user={data.user} />}
       </div>
-      {data?.user && (
-        <UserTile
-          className="my-1"
-          email={data.user.email!}
-          name={data.user.name!}
-          imageUri={data.user.image ?? undefined}
-        />
-      )}
+      <div className="absolute flex w-full items-center">
+        <div className="mx-auto flex space-x-2">
+          {options.map((option, index) => (
+            <NavItem
+              active={path.includes(option.route)}
+              key={index}
+              option={option}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -87,16 +90,18 @@ function NavItem({ option, active }: NavItemProps) {
 }
 
 interface UserTileProps {
-  name: string;
-  email: string;
-  imageUri?: string;
+  user: SessionUser;
   className?: string;
 }
 
-function UserTile({ imageUri, name, className, email }: UserTileProps) {
+function UserTile({ user, className }: UserTileProps) {
+  const { image, name } = user;
+
+  const router = useRouter();
+
   const handleLogout = async () => {
     await signOut();
-    console.log("hello");
+    router.push(route(ROUTES.landing));
   };
 
   const options: MenuOption[] = [
@@ -114,13 +119,8 @@ function UserTile({ imageUri, name, className, email }: UserTileProps) {
           className,
         )}
       >
-        <Avatar className="size-8" url={imageUri} name={name} />
-        <div>
-          <Text.Body className="text-xs">{name}</Text.Body>
-          <Text.Subtitle className="text-[11px]" subtle>
-            {email}
-          </Text.Subtitle>
-        </div>
+        <Text.Body className="text-sm">{"Profile"}</Text.Body>
+        <Avatar className="size-7" url={image ?? ""} name={name ?? ""} />
       </div>
     </Dropdown>
   );

@@ -11,6 +11,7 @@ import { MoreVerticalCircle01Icon } from "hugeicons-react";
 interface CommenTileProps {
   live: boolean;
   markable: boolean;
+  editable: boolean;
   comment: Comment;
   onClick: () => void;
 }
@@ -19,6 +20,7 @@ export function CommentTile({
   comment,
   live,
   markable,
+  editable,
   onClick,
 }: CommenTileProps) {
   const [deleted, setDeleted] = useState<boolean>(false);
@@ -138,9 +140,11 @@ export function CommentTile({
         {getDateDifference(createdAt.toString()).text}
       </Text.Subtitle>
 
-      <Dropdown className="mr-4" options={menuOptions}>
-        <MoreVerticalCircle01Icon fill="black" size={18} />
-      </Dropdown>
+      {editable && (
+        <Dropdown className="mr-4" options={menuOptions}>
+          <MoreVerticalCircle01Icon fill="black" size={18} />
+        </Dropdown>
+      )}
     </motion.div>
   );
 }

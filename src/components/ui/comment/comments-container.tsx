@@ -12,6 +12,7 @@ interface CommentsContainerProps {
   trackId: string;
   comments: Comment[];
   markComments: boolean;
+  isAdmin: boolean;
   onTimestamp: (timestamp: number) => void;
   className?: string;
 }
@@ -23,6 +24,7 @@ export function CommentsContainer({
   trackId,
   className,
   markComments,
+  isAdmin,
   comments,
   onTimestamp,
 }: CommentsContainerProps) {
@@ -133,6 +135,7 @@ export function CommentsContainer({
           <div>
             {sortedComments.map((comment) => (
               <CommentTile
+                editable={isAdmin}
                 markable={markComments}
                 onClick={() =>
                   comment.timestamp && onTimestamp(comment.timestamp)

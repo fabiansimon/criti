@@ -24,7 +24,9 @@ function Root({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
 
-  if (openRoutes.has(path.split("/")[1] ?? "")) {
+  const auth = status === "authenticated";
+
+  if (!auth && openRoutes.has(path.split("/")[1] ?? "")) {
     return children;
   }
 

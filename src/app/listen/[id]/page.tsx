@@ -1,6 +1,7 @@
 "use client";
 
 import { Download04Icon, Share05Icon } from "hugeicons-react";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 import Text from "~/components/typography/text";
@@ -26,12 +27,15 @@ export default function ListenPage() {
   const { isLoading: downloadLoading, download } = useDownload();
   const { toast } = useToast();
 
+  const { data } = useSession();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { data: track, isLoading } = api.track.getById.useQuery(
     { id },
     { enabled: !!id },
   );
+
+  const isAdmin = data?.user.id === track?.creatorId;
 
   const handleShare = () => {
     const url = generateShareableLink(id);
@@ -74,13 +78,17 @@ export default function ListenPage() {
         subtitle={`Shared by ${track?.creator.name}`}
         className="relative w-full max-w-screen-lg"
       >
-        <div className="absolute right-6 top-12 flex space-x-2">
-          <Text.Body className="text-xs">Mark comments</Text.Body>
-          <Switch checked={markComments} onCheckedChange={setMarkComments} />
-        </div>
+        {/* Toggle for marking comments */}
+        {isAdmin && (
+          <div className="absolute right-6 top-12 flex space-x-2">
+            <Text.Body className="text-xs">Mark comments</Text.Body>
+            <Switch checked={markComments} onCheckedChange={setMarkComments} />
+          </div>
+        )}
 
         {/* Comments Container */}
         <CommentsContainer
+          isAdmin={isAdmin}
           markComments={markComments}
           onTimestamp={handleTimeUpdate}
           time={time}

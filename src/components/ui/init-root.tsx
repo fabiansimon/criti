@@ -6,21 +6,32 @@ import NavBar from "./navbar/navbar";
 import DialogProvider from "~/providers/dialog-provider";
 import { usePathname, useRouter } from "next/navigation";
 import { openRoutes, route, ROUTES } from "~/constants/routes";
+import { useEffect } from "react";
+import { v4 as uuid } from "uuid";
+import { LocalStorage } from "~/lib/localStorage";
+import LoadingProvider from "~/providers/loading-provider";
 
 export default function InitRoot({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    const sessionId = uuid();
+    LocalStorage.storeSessionId(sessionId);
+  }, []);
+
   return (
     <SessionProvider>
-      <ModalProvider>
-        <DialogProvider>
-          <Root>{children}</Root>
-        </DialogProvider>
-      </ModalProvider>
+      <LoadingProvider>
+        <ModalProvider>
+          <DialogProvider>
+            <Root>{children}</Root>
+          </DialogProvider>
+        </ModalProvider>
+      </LoadingProvider>
     </SessionProvider>
   );
 }
 
 function Root({ children }: { children: React.ReactNode }) {
-  const { data, status } = useSession();
+  const { status } = useSession();
   const path = usePathname();
   const router = useRouter();
 

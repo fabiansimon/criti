@@ -23,6 +23,7 @@ export default function UploadPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const utils = api.useUtils();
   const { mutateAsync: uploadTrack, isPending: isLoading } =
     api.track.upload.useMutation();
 
@@ -43,6 +44,7 @@ export default function UploadPage() {
     });
 
     if (!track) return;
+    void utils.track.invalidate();
     router.push(route(ROUTES.listen, track.id));
   };
 
@@ -83,6 +85,7 @@ export default function UploadPage() {
       <Card
         title="Upload new track"
         subtitle="Sharing is caring"
+        onRefresh={void utils.track.invalidate()}
         className="w-full max-w-screen-sm"
       >
         <input

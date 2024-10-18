@@ -27,7 +27,20 @@ export default function CommentInput({
 
   const handleTimestampChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setTimestamp(value);
+    const clean = value.replace(/[^0-9:]/g, "");
+    if (clean.length > 5) return;
+
+    let formatted = clean;
+    if (clean.length === 2 && !clean.includes(":")) formatted += ":";
+
+    setTimestamp(formatted);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    if (!/^\d{2}:\d{2}$/.test(timestamp)) {
+      setTimestamp("");
+    }
   };
 
   const handleCreate = () => {
@@ -61,7 +74,7 @@ export default function CommentInput({
             placeholder="00:00"
             className="mx-1 w-14 bg-transparent focus:outline-none"
             onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onBlur={handleBlur}
           />
         </span>
         <div className="w-px bg-neutral-200" />

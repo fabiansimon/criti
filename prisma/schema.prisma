@@ -53,7 +53,9 @@ model Comment {
   timestamp Int?
   trackId   String
   open      Boolean  @default(true)
-  byAdmin   Boolean
+  byAdmin   Boolean  @default(false)
+  creatorId String?
+  sessionId String?
 
   track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
 }

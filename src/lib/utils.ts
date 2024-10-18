@@ -113,3 +113,7 @@ export function getInitials(name: string) {
   const [first, last] = name.split(" ");
   return `${first ? first[0] : ""} ${last ? last[0] : ""}`;
 }
+
+export function pluralize(amount: number, post: string) {
+  return `${amount || "No"} ${post}${amount > 1 || amount === 0 ? "s" : ""}`;
+}

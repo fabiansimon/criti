@@ -9,11 +9,25 @@ import { useRouter } from "next/navigation";
 import { route, ROUTES } from "~/constants/routes";
 import { api } from "~/trpc/react";
 import ProjectListItem from "~/components/ui/project-list-item";
+import { useEffect } from "react";
+import { useLoading } from "~/providers/loading-provider";
 
 export default function Home() {
   const router = useRouter();
 
-  const { data: tracks, isLoading } = api.track.getAll.useQuery();
+  const { start, stop } = useLoading();
+
+  const {
+    data: tracks,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = api.track.getAll.useQuery();
+
+  useEffect(() => {
+    if (isRefetching) return start();
+    stop();
+  }, [isRefetching]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-accent">
@@ -21,16 +35,17 @@ export default function Home() {
         isLoading={isLoading}
         title="Your shared projects"
         subtitle="3 Tracks shared"
+        onRefresh={refetch}
         className="md:min-w-[60%] md:max-w-[400px]"
       >
         <div className="-mx-3 my-7">
           {/* Track List */}
           <div className="max-h-[400px] space-y-2 overflow-y-auto pb-2 no-scrollbar">
-            {(tracks ?? []).map((track, index) => (
+            {(tracks ?? []).map((track) => (
               <ProjectListItem
+                key={track.id}
                 track={track}
                 onClick={() => router.push(route(ROUTES.listen, track.id))}
-                key={index}
               />
             ))}
           </div>

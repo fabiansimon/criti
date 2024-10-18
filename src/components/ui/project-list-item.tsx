@@ -19,6 +19,7 @@ import { useDialog } from "~/providers/dialog-provider";
 import { useModal } from "~/providers/modal-provider";
 import TrackInputContainer, { type UpdateState } from "./track-input-container";
 import Card from "./card";
+import { useLoading } from "~/providers/loading-provider";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;
@@ -33,6 +34,7 @@ export default function ProjectListItem({
   const { createdAt, locked, title, openComments, id } = track;
 
   const { toast } = useToast();
+  const { start, stop } = useLoading();
   const { show: showDialog, hide: hideDialog } = useDialog();
   const { show: showModal, hide: hideModal } = useModal();
 
@@ -41,14 +43,14 @@ export default function ProjectListItem({
   const { mutateAsync: deleteTrack } = api.track.archive.useMutation({
     onError: () => setDeleted(false),
   });
-  const { mutateAsync: updateTrack } = api.track.update.useMutation({
-    onError: () => setDeleted(false),
-  });
+  const { mutateAsync: updateTrack } = api.track.update.useMutation();
 
   const handleUpdate = async (updates: UpdateState) => {
+    start();
     hideModal();
     await updateTrack({ ...updates, id: track.id });
     await utils.track.invalidate();
+    stop();
   };
 
   const handleEdit = () => {
@@ -88,10 +90,12 @@ export default function ProjectListItem({
           title: "Delete",
           destructive: true,
           onClick: async () => {
+            start();
             setDeleted(true);
             hideDialog();
             await deleteTrack({ id });
-            void utils.track.invalidate();
+            await utils.track.invalidate();
+            stop();
           },
         },
       ],

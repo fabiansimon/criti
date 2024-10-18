@@ -119,7 +119,7 @@ function UserTile({ user, className }: UserTileProps) {
           className,
         )}
       >
-        <Text.Body className="text-sm">{"Profile"}</Text.Body>
+        <Text.Body className="text-sm">{"Account"}</Text.Body>
         <Avatar className="size-7" url={image ?? ""} name={name ?? ""} />
       </div>
     </Dropdown>

@@ -13,7 +13,7 @@ import {
 const createComment = anonPossibleProcedure
   .input(CreateCommentInput)
   .mutation(async ({ input, ctx: { db, session } }) => {
-    const { content, trackId, timestamp } = input;
+    const { content, trackId, timestamp, sessionId } = input;
 
     try {
       const track = await db.track.findUnique({
@@ -30,8 +30,10 @@ const createComment = anonPossibleProcedure
       const comment = await db.comment.create({
         data: {
           content,
-          byAdmin: !!session,
           timestamp: timestamp ?? null,
+          creatorId: session?.user?.id ?? null,
+          byAdmin: !!session,
+          sessionId: sessionId ?? null,
           track: {
             connect: {
               id: trackId,
@@ -52,13 +54,10 @@ const createComment = anonPossibleProcedure
     }
   });
 
-const removeComment = protectedProcedure
+const removeComment = anonPossibleProcedure
   .input(RemoveCommentInput)
   .mutation(async ({ input, ctx: { db, session } }) => {
-    const { id } = input;
-    const {
-      user: { id: userId },
-    } = session;
+    const { id, sessionId } = input;
 
     try {
       const comment = await db.comment.findUnique({
@@ -73,9 +72,14 @@ const removeComment = protectedProcedure
         });
       }
 
-      if (comment.track.creatorId !== userId) {
+      const {
+        track: { creatorId },
+        sessionId: _sessionId,
+      } = comment;
+
+      if (creatorId !== session?.user?.id && _sessionId !== sessionId) {
         throw new TRPCError({
-          message: "Must be admin to delete comment.",
+          message: "You do not have permission for this action.",
           code: "FORBIDDEN",
         });
       }

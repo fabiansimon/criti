@@ -3,7 +3,7 @@
 import { Download04Icon, Share05Icon } from "hugeicons-react";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Text from "~/components/typography/text";
 import IconButton from "~/components/ui/animated-icon-button";
 import AudioControls from "~/components/ui/audio/audio-controls";
@@ -14,7 +14,8 @@ import { CommentsContainer } from "~/components/ui/comment/comments-container";
 import { Switch } from "~/components/ui/switch";
 import useDownload from "~/hooks/use-download";
 import { useToast } from "~/hooks/use-toast";
-import { copyToClipboard, generateShareableLink } from "~/lib/utils";
+import { LocalStorage } from "~/lib/localStorage";
+import { copyToClipboard, generateShareableLink, pluralize } from "~/lib/utils";
 
 import { api } from "~/trpc/react";
 
@@ -36,6 +37,13 @@ export default function ListenPage() {
   );
 
   const isAdmin = data?.user.id === track?.creatorId;
+
+  const subtitle = useMemo(() => {
+    if (isAdmin) {
+      return `${pluralize(track?.comments.length ?? 0, "comment")}`;
+    }
+    return `Shared by ${track?.creator.name}`;
+  }, [isAdmin, track]);
 
   const handleShare = () => {
     const url = generateShareableLink(id);
@@ -75,12 +83,12 @@ export default function ListenPage() {
       <Card
         isLoading={isLoading}
         title={track?.title}
-        subtitle={`Shared by ${track?.creator.name}`}
+        subtitle={subtitle}
         className="relative w-full max-w-screen-lg"
       >
         {/* Toggle for marking comments */}
         {isAdmin && (
-          <div className="absolute right-6 top-12 flex space-x-2">
+          <div className="absolute right-6 top-14 flex space-x-2">
             <Text.Body className="text-xs">Mark comments</Text.Body>
             <Switch checked={markComments} onCheckedChange={setMarkComments} />
           </div>
@@ -94,7 +102,7 @@ export default function ListenPage() {
           time={time}
           trackId={id}
           comments={track?.comments ?? []}
-          className="mt-2"
+          className="mt-4"
         />
 
         {/* Audio Controls */}

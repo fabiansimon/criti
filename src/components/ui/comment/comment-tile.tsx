@@ -7,25 +7,27 @@ import { motion } from "framer-motion";
 import { cn, generateTimestamp, getDateDifference } from "~/lib/utils";
 import { Checkbox } from "../checkbox";
 import { MoreVerticalCircle01Icon } from "hugeicons-react";
+import { LocalStorage } from "~/lib/localStorage";
 
 interface CommenTileProps {
   live: boolean;
   markable: boolean;
-  editable: boolean;
+  isAdmin: boolean;
   comment: Comment;
   onClick: () => void;
 }
 
 export function CommentTile({
+  isAdmin,
   comment,
   live,
   markable,
-  editable,
   onClick,
 }: CommenTileProps) {
   const [deleted, setDeleted] = useState<boolean>(false);
   const [checked, setChecked] = useState<boolean>(!comment.open);
-  const { byAdmin, content, timestamp, createdAt, id } = comment;
+
+  const { content, timestamp, createdAt, id } = comment;
 
   const { mutate: updateComment } = api.comment.update.useMutation({
     onError: () => setChecked((prev) => !prev),
@@ -33,6 +35,10 @@ export function CommentTile({
   const { mutate: removeComment } = api.comment.delete.useMutation({
     onError: () => setDeleted(false),
   });
+
+  const sessionId = LocalStorage.fetchSessionId();
+  const isCreator = comment.sessionId === sessionId;
+  const editable = isAdmin || isCreator;
 
   const menuOptions: MenuOption[] = [
     {
@@ -43,6 +49,7 @@ export function CommentTile({
     {
       title: "Delete",
       onClick: () => handleDeleteComment(),
+      disabled: !isAdmin && !isCreator,
     },
   ];
 
@@ -61,7 +68,7 @@ export function CommentTile({
   );
 
   const handleDeleteComment = () => {
-    removeComment({ id });
+    removeComment({ id, sessionId: !isAdmin ? sessionId : undefined });
     setDeleted(true);
   };
 
@@ -81,8 +88,8 @@ export function CommentTile({
       }}
       className={cn(
         "flex cursor-pointer items-center space-x-2 overflow-hidden px-[15px]",
-        byAdmin && "bg-green-400/10",
-        !deleted && "min-h-[45px]",
+        comment.byAdmin && "bg-green-400/10",
+        !deleted && "min-h-[50px]",
       )}
     >
       <motion.div
@@ -128,8 +135,8 @@ export function CommentTile({
         </div>
       </div>
 
-      <div className="my-3 flex w-full grow flex-col -space-y-1">
-        {byAdmin && (
+      <div className="my-3 flex w-full grow flex-col">
+        {comment.byAdmin && (
           <Text.Subtitle className="text-[11px] text-green-900">
             {"Admin:"}
           </Text.Subtitle>

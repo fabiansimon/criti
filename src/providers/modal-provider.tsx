@@ -2,8 +2,6 @@
 
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { motion } from "framer-motion";
-import Text from "~/components/typography/text";
-import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 interface ModalContextType {

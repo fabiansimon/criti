@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import { useMemo, useState } from "react";
 import { ArrowDown01Icon } from "hugeicons-react";
 import { CommentTile } from "./comment-tile";
+import { LocalStorage } from "~/lib/localStorage";
 
 interface CommentsContainerProps {
   time: number;
@@ -74,8 +75,12 @@ export function CommentsContainer({
   };
 
   const handleAddComment = async ({ content, timestamp }: CommentContent) => {
+    let sessionId: string | undefined;
+    if (!isAdmin) {
+      sessionId = LocalStorage.fetchSessionId();
+    }
     setIsLoading(true);
-    await createComment({ content, timestamp, trackId });
+    await createComment({ content, timestamp, trackId, sessionId });
     await utils.track.invalidate();
     setIsLoading(false);
   };
@@ -135,7 +140,7 @@ export function CommentsContainer({
           <div>
             {sortedComments.map((comment) => (
               <CommentTile
-                editable={isAdmin}
+                isAdmin={isAdmin}
                 markable={markComments}
                 onClick={() =>
                   comment.timestamp && onTimestamp(comment.timestamp)

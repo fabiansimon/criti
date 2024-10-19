@@ -12,6 +12,8 @@ export const env = createEnv({
     SUPABASE_BUCKET: z.string(),
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_SECRET: z.string(),
+    GITHUB_CLIENT_ID: z.string(),
+    GITHUB_SECRET: z.string(),
     SUPABASE_URL: z.string().url(),
     SUPABASE_KEY: z.string(),
     NODE_ENV: z
@@ -52,6 +54,8 @@ export const env = createEnv({
     SUPABASE_BUCKET: process.env.SUPABASE_BUCKET,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_SECRET: process.env.GOOGLE_SECRET,
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+    GITHUB_SECRET: process.env.GITHUB_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     DIRECT_URL: process.env.DIRECT_URL,
     NODE_ENV: process.env.NODE_ENV,

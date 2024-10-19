@@ -13,7 +13,6 @@ import {
 } from "./trackTypes";
 import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
-import { UpdateCommentInput } from "../comment/commentTypes";
 
 const archiveTrack = protectedProcedure
   .input(ArchiveProjectInput)

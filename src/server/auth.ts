@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { Membership } from "@prisma/client";
 import {
   getServerSession,
   type DefaultSession,

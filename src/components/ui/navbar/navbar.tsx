@@ -9,6 +9,9 @@ import { cn } from "~/lib/utils";
 import Avatar from "../avatar";
 import Dropdown, { type MenuOption } from "../dropdown-menu";
 import { type DefaultSession } from "next-auth";
+import { useModal } from "~/providers/modal-provider";
+import PremiumModel from "../membership/premium-modal";
+import { useEffect } from "react";
 
 type SessionUser = {
   id: string;
@@ -46,7 +49,7 @@ export default function NavBar() {
 
   return (
     <div className="fixed left-0 right-0 top-0 flex items-center border-b border-b-neutral-200 bg-white">
-      <div className="mx-auto flex w-full max-w-screen-xl justify-between">
+      <div className="ml-[80%]">
         <div />
         {data?.user && <UserTile className="z-10 my-1" user={data.user} />}
       </div>
@@ -98,6 +101,7 @@ function UserTile({ user, className }: UserTileProps) {
   const { image, name } = user;
 
   const router = useRouter();
+  const { show } = useModal();
 
   const handleLogout = async () => {
     router.push(route(ROUTES.landing));
@@ -108,6 +112,10 @@ function UserTile({ user, className }: UserTileProps) {
     {
       title: "Sign out",
       onClick: () => void handleLogout(),
+    },
+    {
+      title: "Membership",
+      onClick: () => show(<PremiumModel />),
     },
   ];
 

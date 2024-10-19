@@ -40,7 +40,7 @@ export default function Card({
           {children}
         </div>
       )}
-      {onRefresh && (
+      {!isLoading && onRefresh && (
         <div
           onClick={onRefresh}
           className="absolute right-2 top-2 cursor-pointer rounded-md p-1 hover:bg-neutral-100"

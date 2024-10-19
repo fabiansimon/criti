@@ -117,3 +117,7 @@ export function getInitials(name: string) {
 export function pluralize(amount: number, post: string) {
   return `${amount || "No"} ${post}${amount > 1 || amount === 0 ? "s" : ""}`;
 }
+
+export function convertPrice(amount: number, currency: string) {
+  return `${currency}${amount}`;
+}

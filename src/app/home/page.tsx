@@ -17,17 +17,15 @@ export default function Home() {
 
   const { start, stop } = useLoading();
 
-  const {
-    data: tracks,
-    isLoading,
-    refetch,
-    isRefetching,
-  } = api.track.getAll.useQuery();
+  const { data: tracks, isLoading } = api.track.getAll.useQuery();
+  const utils = api.useUtils();
 
   useEffect(() => {
-    if (isRefetching) return start();
+    if (isLoading) return start();
     stop();
-  }, [isRefetching]);
+
+    return () => stop();
+  }, [isLoading, start, stop]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-accent">
@@ -35,7 +33,7 @@ export default function Home() {
         isLoading={isLoading}
         title="Your shared projects"
         subtitle="3 Tracks shared"
-        onRefresh={refetch}
+        onRefresh={() => utils.track.invalidate()}
         className="md:min-w-[60%] md:max-w-[400px]"
       >
         <div className="-mx-3 my-7">

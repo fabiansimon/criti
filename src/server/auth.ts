@@ -1,5 +1,4 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { Membership } from "@prisma/client";
 import {
   getServerSession,
   type DefaultSession,
@@ -7,6 +6,7 @@ import {
 } from "next-auth";
 import { type Adapter } from "next-auth/adapters";
 import GoogleProvider from "next-auth/providers/google";
+import { route, ROUTES } from "~/constants/routes";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
@@ -46,6 +46,9 @@ export const authOptions: NextAuthOptions = {
         id: user.id,
       },
     }),
+    redirect: async ({ baseUrl }) => {
+      return `${baseUrl}${route(ROUTES.home)}`;
+    },
   },
   adapter: PrismaAdapter(db) as Adapter,
   providers: [

@@ -1,10 +1,11 @@
-import { PlusSignIcon } from "hugeicons-react";
+import { Cancel01Icon, Cancel02Icon, PlusSignIcon } from "hugeicons-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { REGEX } from "~/constants/regex";
 import { cn, convertTimestamp, generateTimestamp } from "~/lib/utils";
 import { Button } from "../button";
 import LoadingSpinner from "../loading-spinner";
 import { Popover, type PopoverRef } from "../tooltip";
+import { ExitIcon } from "@radix-ui/react-icons";
 
 interface CommentInputProps {
   onCreate: ({ content, timestamp }: CommentContent) => void;
@@ -29,22 +30,8 @@ export default function CommentInput({
   const [timestamp, setTimestamp] = useState<string>("");
   const [input, setInput] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
 
   const timestampErrorRef = useRef<PopoverRef | null>(null);
-
-  useEffect(() => {
-    if (!error) return timestampErrorRef.current?.hide();
-    timestampErrorRef.current?.show();
-  }, [error]);
-
-  useEffect(() => {
-    if (timestamp.length > 0 && !REGEX.timestamp.test(timestamp))
-      return setError("Invalid timestamp");
-
-    if (convertTimestamp(timestamp) > maxTime)
-      return setError("Not within range");
-  }, [timestamp, maxTime]);
 
   const handleTimestampChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -58,16 +45,11 @@ export default function CommentInput({
   };
 
   const handleBlur = () => {
-    setTimestamp("");
     handleFocus(false);
-    // if (!/^\d{2}:\d{2}$/.test(timestamp)) {
-    // }
   };
 
   const handleFocus = (status: boolean) => {
     setIsFocused(status);
-    if (!status || timestamp.length > 0) return;
-    setTimestamp(generateTimestamp(time));
   };
 
   const handleCreate = () => {
@@ -79,9 +61,24 @@ export default function CommentInput({
 
   const validInput = useMemo(() => {
     const _input = input.trim().length > 1;
-    if (!timestamp) return _input;
-    const _timestamp = REGEX.timestamp.test(timestamp);
-    return _input && _timestamp;
+    if (!timestamp) {
+      timestampErrorRef.current?.hide();
+      return _input;
+    }
+
+    if (!REGEX.timestamp.test(timestamp)) {
+      timestampErrorRef.current?.show("invalid timestamp");
+      return false;
+    }
+
+    if (convertTimestamp(timestamp) > maxTime) {
+      timestampErrorRef.current?.show("not within range");
+      return false;
+    }
+
+    timestampErrorRef.current?.hide();
+
+    return _input;
   }, [input, timestamp]);
 
   return (
@@ -93,20 +90,26 @@ export default function CommentInput({
           "bg-neutral-50",
         )}
       >
-        <Popover
-          className="mb-1 mr-3"
-          text={error}
-          destructive
-          ref={timestampErrorRef}
-        >
-          <span className="flex w-14">
+        <Popover className="mb-1 mr-3" destructive ref={timestampErrorRef}>
+          <span className="flex items-center space-x-2">
+            {timestamp && (
+              <div
+                onClick={() => setTimestamp("")}
+                className="flex aspect-square h-4 w-4 items-center justify-center rounded-full bg-neutral-200"
+              >
+                <Cancel01Icon size={10} />
+              </div>
+            )}
             <input
               type="text"
               onChange={handleTimestampChange}
               value={timestamp}
               placeholder="00:00"
               className="mx-1 w-14 bg-transparent focus:outline-none"
-              onFocus={() => handleFocus(true)}
+              onFocus={() => {
+                handleFocus(true);
+                setTimestamp(generateTimestamp(time));
+              }}
               onBlur={handleBlur}
             />
           </span>
@@ -118,11 +121,13 @@ export default function CommentInput({
           onChange={(e) => setInput(e.currentTarget.value)}
           placeholder="Add comment"
           className="flex w-full grow bg-transparent px-3 py-2 focus:outline-none"
-          onFocus={() => {
-            setIsFocused(true);
-            setTimestamp(generateTimestamp(time));
-          }}
+          onFocus={() => handleFocus(true)}
           onBlur={handleBlur}
+          onKeyDown={(e) => {
+            if (validInput && e.key === "Enter") {
+              handleCreate();
+            }
+          }}
         />
       </div>
       <div className="rounded-md bg-white">

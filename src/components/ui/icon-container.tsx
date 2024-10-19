@@ -8,7 +8,7 @@ export default function IconContainer({ icon, className }: IconContainerProps) {
   return (
     <div
       className={cn(
-        "bg-accent flex aspect-square size-12 items-center justify-center rounded-md border border-white",
+        "flex aspect-square size-12 items-center justify-center rounded-md border border-white bg-accent",
         className,
       )}
     >

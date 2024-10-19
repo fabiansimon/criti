@@ -43,8 +43,8 @@ export function CommentsContainer({
   const sortedComments = useMemo(() => {
     const sorted = comments.sort((a, b) => {
       if (sortBy === "timestamp")
-        return b.createdAt.getTime() - a.createdAt.getTime();
-      return (b.timestamp ?? 0) - (a.timestamp ?? 0);
+        return (b.timestamp ?? 0) - (a.timestamp ?? 0);
+      return b.createdAt.getTime() - a.createdAt.getTime();
     });
 
     return ascending ? sorted : sorted.reverse();
@@ -57,6 +57,7 @@ export function CommentsContainer({
 
     for (const { id, timestamp } of sortedComments) {
       if (!timestamp) continue;
+
       const diff = Math.abs(timestamp - time);
       if (diff > 4) continue;
 

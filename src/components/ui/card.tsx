@@ -40,14 +40,6 @@ export default function Card({
           {children}
         </div>
       )}
-      {!isLoading && onRefresh && (
-        <div
-          onClick={onRefresh}
-          className="absolute right-2 top-2 cursor-pointer rounded-md p-1 hover:bg-neutral-100"
-        >
-          <RefreshIcon className="text-neutral-500" size={16} />
-        </div>
-      )}
     </div>
   );
 }

@@ -42,7 +42,7 @@ function Root({ children }: { children: React.ReactNode }) {
   }
 
   if (status === "unauthenticated") {
-    router.push(route(ROUTES.landing));
+    router.push(route(ROUTES.auth));
   }
 
   return (

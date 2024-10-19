@@ -8,32 +8,32 @@ import Text from "../typography/text";
 
 interface TooltipProps {
   children: React.ReactNode;
-  text: string;
+  text?: string;
   className?: string;
   destructive?: boolean;
 }
 
 export interface PopoverRef {
-  show: () => void;
+  show: (message: string) => void;
   hide: () => void;
 }
 
 export const Popover = React.forwardRef<PopoverRef, TooltipProps>(
   ({ children, text, destructive, className }, ref) => {
-    const [visible, setVisible] = React.useState<boolean>(false);
+    const [content, setContent] = React.useState<string | undefined>();
 
     React.useImperativeHandle(ref, () => ({
-      show() {
-        setVisible(true);
+      show(message: string) {
+        setContent(message);
       },
       hide() {
-        setVisible(false);
+        setContent(undefined);
       },
     }));
 
     return (
       <TooltipProvider>
-        <Tooltip open={visible} onOpenChange={setVisible}>
+        <Tooltip open={!!content}>
           <TooltipTrigger>{children}</TooltipTrigger>
           <TooltipContent
             className={cn(destructive && "bg-red-600", className)}
@@ -41,7 +41,7 @@ export const Popover = React.forwardRef<PopoverRef, TooltipProps>(
             <Text.Body
               className={cn("text-[11px]", destructive && "text-white")}
             >
-              {text}
+              {content ?? text}
             </Text.Body>
           </TooltipContent>
         </Tooltip>

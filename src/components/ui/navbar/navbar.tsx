@@ -10,7 +10,6 @@ import Avatar from "../avatar";
 import Dropdown, { type MenuOption } from "../dropdown-menu";
 import { type DefaultSession } from "next-auth";
 import { useModal } from "~/providers/modal-provider";
-import PremiumModel from "../membership/premium-modal";
 import { useEffect } from "react";
 
 type SessionUser = {
@@ -48,10 +47,9 @@ export default function NavBar() {
   ];
 
   return (
-    <div className="fixed left-0 right-0 top-0 flex items-center border-b border-b-neutral-200 bg-white">
+    <div className="fixed left-0 right-0 top-0 flex min-h-14 items-center border-b border-b-neutral-200 bg-white">
       <div className="ml-[80%]">
         <div />
-        {data?.user && <UserTile className="z-10 my-1" user={data.user} />}
       </div>
       <div className="absolute flex w-full items-center">
         <div className="mx-auto flex space-x-2">
@@ -62,6 +60,8 @@ export default function NavBar() {
               option={option}
             />
           ))}
+          <div className="my-2 w-[1px] bg-neutral-100" />
+          {data?.user && <UserTile className="" user={data.user} />}
         </div>
       </div>
     </div>
@@ -80,11 +80,15 @@ function NavItem({ option, active }: NavItemProps) {
     <div
       onClick={onClick}
       className={cn(
-        "flex cursor-pointer flex-col items-center rounded-md px-3 py-1 opacity-50 hover:bg-neutral-100",
-        active && "opacity-100",
+        "flex cursor-pointer flex-col items-center justify-center rounded-md px-3 py-1 hover:bg-neutral-100",
       )}
     >
-      <div className="flex items-center space-x-2">
+      <div
+        className={cn(
+          "flex items-center space-x-2 opacity-50",
+          active && "opacity-100",
+        )}
+      >
         {active ? activeIcon : icon}
         <Text.Body>{title}</Text.Body>
       </div>
@@ -115,7 +119,7 @@ function UserTile({ user, className }: UserTileProps) {
     },
     {
       title: "Membership",
-      onClick: () => show(<PremiumModel />),
+      onClick: () => console.log("membershpi"),
     },
   ];
 
@@ -127,8 +131,8 @@ function UserTile({ user, className }: UserTileProps) {
           className,
         )}
       >
-        <Text.Body className="text-sm">{"Account"}</Text.Body>
         <Avatar className="size-7" url={image ?? ""} name={name ?? ""} />
+        <Text.Body className="text-sm">{"Account"}</Text.Body>
       </div>
     </Dropdown>
   );

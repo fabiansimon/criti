@@ -9,7 +9,7 @@ interface IconButtonProps {
   text?: string;
   className?: string;
   isLoading?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }
 export default function IconButton({
   icon,
@@ -22,9 +22,9 @@ export default function IconButton({
 
   return (
     <div
-      onClick={() => !isLoading && onClick()}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onClick={() => !isLoading && onClick && onClick()}
+      onMouseEnter={() => text && setHovered(true)}
+      onMouseLeave={() => text && setHovered(false)}
       className={cn(
         "flex h-10 cursor-pointer items-center overflow-hidden rounded-md bg-accent hover:bg-accent/80",
         className,

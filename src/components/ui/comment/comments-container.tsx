@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { ArrowDown01Icon } from "hugeicons-react";
 import { CommentTile } from "./comment-tile";
 import { LocalStorage } from "~/lib/localStorage";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 
 interface CommentsContainerProps {
   time: number;
@@ -34,7 +35,9 @@ export function CommentsContainer({
   const [sortBy, setSortBy] = useState<SortFilter>("timestamp");
   const [ascending, setAscending] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const utils = api.useUtils();
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   const { mutateAsync: createComment } = api.comment.create.useMutation();
 
@@ -89,11 +92,12 @@ export function CommentsContainer({
   };
 
   return (
-    <div className="relative">
+    <div className={cn("relative", isSmall && "-mx-[20px]")}>
       <div
         className={cn(
           "relative max-h-[400px] min-h-[400px] grow overflow-y-auto rounded-md border-[.5px] border-neutral-200 bg-white pb-20 shadow-md shadow-neutral-100 no-scrollbar",
           className,
+          isSmall && "max-h-none border-none pb-[180px] shadow-none",
         )}
       >
         {empty && (
@@ -123,36 +127,42 @@ export function CommentsContainer({
                 )}
               />
             </div>
-            <div
-              onClick={() => triggerSort("posted")}
-              className="flex cursor-pointer items-center space-x-1 rounded-md px-2 py-1 hover:bg-neutral-100"
-            >
-              <Text.Subtitle subtle>{"Posted"}</Text.Subtitle>
-              <ArrowDown01Icon
-                size={18}
-                className={cn(
-                  "text-black/50",
-                  !ascending && sortBy === "posted" && "rotate-180",
-                )}
-              />
-            </div>
+            {!isSmall && (
+              <div
+                onClick={() => triggerSort("posted")}
+                className="flex cursor-pointer items-center space-x-1 rounded-md px-2 py-1 hover:bg-neutral-100"
+              >
+                <Text.Subtitle subtle>{"Posted"}</Text.Subtitle>
+                <ArrowDown01Icon
+                  size={18}
+                  className={cn(
+                    "text-black/50",
+                    !ascending && sortBy === "posted" && "rotate-180",
+                  )}
+                />
+              </div>
+            )}
           </div>
         )}
 
         {!empty && (
           <div>
-            {sortedComments.map((comment) => (
-              <CommentTile
-                isAdmin={isAdmin}
-                markable={markComments}
-                onClick={() =>
-                  comment.timestamp && onTimestamp(comment.timestamp)
-                }
-                key={comment.id}
-                comment={comment}
-                live={comment.id === liveCommentId}
-              />
-            ))}
+            {sortedComments.map((comment, index) => {
+              const last = index === sortedComments.length - 1;
+              return (
+                <CommentTile
+                  isAdmin={isAdmin}
+                  markable={markComments}
+                  onClick={() =>
+                    comment.timestamp && onTimestamp(comment.timestamp)
+                  }
+                  className={!last ? "border-b border-b-neutral-100" : ""}
+                  key={comment.id}
+                  comment={comment}
+                  live={comment.id === liveCommentId}
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -160,7 +170,10 @@ export function CommentsContainer({
       <CommentInput
         maxTime={maxTime}
         time={time}
-        className="absolute bottom-3 left-3 right-3"
+        className={cn(
+          "absolute bottom-3 left-3 right-3",
+          isSmall && "fixed bottom-[135px]",
+        )}
         onCreate={handleAddComment}
         isLoading={isLoading}
       />

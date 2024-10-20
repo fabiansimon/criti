@@ -1,6 +1,6 @@
 "use client";
 
-import { Add01Icon, Add02Icon, Home11Icon } from "hugeicons-react";
+import { Add01Icon, Add02Icon, Home11Icon, Menu01Icon } from "hugeicons-react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import Text from "~/components/typography/text";
@@ -10,8 +10,10 @@ import Avatar from "../avatar";
 import Dropdown, { type MenuOption } from "../dropdown-menu";
 import { type DefaultSession } from "next-auth";
 import { useModal } from "~/providers/modal-provider";
-import { useEffect } from "react";
 import MembershipModal from "../modals/membership-modal";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
+import { useState } from "react";
+import { motion } from "framer-motion";
 
 type SessionUser = {
   id: string;
@@ -26,9 +28,12 @@ interface NavOption {
 }
 
 export default function NavBar() {
+  const [expanded, setExpanded] = useState<boolean>(true);
   const { data } = useSession();
   const router = useRouter();
   const path = usePathname();
+
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   const options: NavOption[] = [
     {
@@ -48,24 +53,83 @@ export default function NavBar() {
   ];
 
   return (
-    <div className="fixed left-0 right-0 top-0 flex min-h-14 items-center border-b border-b-neutral-200 bg-white">
-      <div className="ml-[80%]">
-        <div />
-      </div>
-      <div className="absolute flex w-full items-center">
-        <div className="mx-auto flex space-x-2">
-          {options.map((option, index) => (
-            <NavItem
-              active={path.includes(option.route)}
-              key={index}
-              option={option}
-            />
-          ))}
-          <div className="my-2 w-[1px] bg-neutral-100" />
-          {data?.user && <UserTile className="" user={data.user} />}
+    <div className="fixed left-0 right-0 top-0 z-30 flex min-h-14 items-center border-b border-b-neutral-200 bg-white">
+      {isSmall && (
+        <div
+          onClick={() => setExpanded(true)}
+          className="ml-2 flex h-10 w-10 cursor-pointer items-center justify-center"
+        >
+          <Menu01Icon />
         </div>
-      </div>
+      )}
+      {!isSmall && (
+        <div className="absolute flex w-full items-center">
+          <div className="mx-auto flex space-x-2">
+            {options.map((option, index) => (
+              <NavItem
+                active={path.includes(option.route)}
+                key={index}
+                option={option}
+              />
+            ))}
+            <div className="my-2 w-[1px] bg-neutral-100" />
+            {data?.user && <UserTile className="" user={data.user} />}
+          </div>
+        </div>
+      )}
+      {isSmall && (
+        <Drawer
+          onRequestClose={() => setExpanded(false)}
+          options={options}
+          expanded={expanded}
+        />
+      )}
     </div>
+  );
+}
+
+interface DrawerProps {
+  options: NavOption[];
+  expanded: boolean;
+  onRequestClose: () => void;
+}
+
+function Drawer({ options, expanded, onRequestClose }: DrawerProps) {
+  const path = usePathname();
+
+  return (
+    <motion.div
+      onClick={onRequestClose}
+      initial="visible"
+      animate={expanded ? "visible" : "hidden"}
+      variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
+      className={cn(
+        "fixed bottom-0 left-0 right-0 top-0 z-50 bg-black/40",
+        !expanded && "pointer-events-none",
+      )}
+    >
+      <motion.div
+        initial="visible"
+        transition={{ bounce: 0.1 }}
+        animate={expanded ? "visible" : "hidden"}
+        variants={{ visible: { translateX: 0 }, hidden: { translateX: -1000 } }}
+        className="flex h-full w-[80%] flex-col items-start space-y-4 bg-white px-4 py-10"
+      >
+        {options.map((option, index) => (
+          <NavItem
+            active={path.includes(option.route)}
+            key={index}
+            option={{
+              ...option,
+              onClick: () => {
+                onRequestClose();
+                option.onClick();
+              },
+            }}
+          />
+        ))}
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -79,7 +143,10 @@ function NavItem({ option, active }: NavItemProps) {
 
   return (
     <div
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       className={cn(
         "flex cursor-pointer flex-col items-center justify-center rounded-md px-3 py-1 hover:bg-neutral-100",
       )}

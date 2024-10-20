@@ -1,6 +1,11 @@
 "use client";
 
-import { Download04Icon, Share05Icon } from "hugeicons-react";
+import {
+  Download04Icon,
+  More01Icon,
+  MoreVerticalCircle01Icon,
+  Share05Icon,
+} from "hugeicons-react";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
@@ -11,10 +16,17 @@ import TimeSlider from "~/components/ui/audio/time-slider";
 import VolumeControl from "~/components/ui/audio/volume-control";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
+import Dropdown, { MenuOption } from "~/components/ui/dropdown-menu";
 import { Switch } from "~/components/ui/switch";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import useDownload from "~/hooks/use-download";
 import { useToast } from "~/hooks/use-toast";
-import { copyToClipboard, generateShareableLink, pluralize } from "~/lib/utils";
+import {
+  cn,
+  copyToClipboard,
+  generateShareableLink,
+  pluralize,
+} from "~/lib/utils";
 
 import { api } from "~/trpc/react";
 
@@ -22,6 +34,8 @@ export default function ListenPage() {
   const [markComments, setMarkComments] = useState<boolean>(false);
   const [time, setTime] = useState<number>(0);
   const [play, setPlay] = useState<boolean>(false);
+
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   const { id } = useParams<{ id: string }>();
   const { isLoading: downloadLoading, download } = useDownload();
@@ -37,6 +51,17 @@ export default function ListenPage() {
 
   const isAdmin = data?.user.id === track?.creatorId;
 
+  const menuOptions: MenuOption[] = [
+    {
+      title: "Download",
+      onClick: () => void handleDownload(),
+    },
+    {
+      title: "Share",
+      onClick: () => void handleShare(),
+    },
+  ];
+
   const subtitle = useMemo(() => {
     if (isAdmin) {
       return `${pluralize(track?.comments.length ?? 0, "comment")}`;
@@ -44,9 +69,15 @@ export default function ListenPage() {
     return `Shared by ${track?.creator.name}`;
   }, [isAdmin, track]);
 
+  const handleDownload = () => {
+    download({
+      url: track?.file.url ?? "",
+      name: track?.title ?? "",
+    });
+  };
+
   const handleShare = () => {
     const url = generateShareableLink(id);
-    console.log(url);
     copyToClipboard(url);
     toast({
       title: "Link copied",
@@ -83,11 +114,16 @@ export default function ListenPage() {
         isLoading={isLoading}
         title={track?.title}
         subtitle={subtitle}
-        className="relative w-full max-w-screen-lg"
+        className={cn("relative w-full max-w-screen-lg")}
       >
         {/* Toggle for marking comments */}
         {isAdmin && (
-          <div className="absolute right-6 top-14 flex space-x-2">
+          <div
+            className={cn(
+              "absolute right-6 top-14 flex space-x-2",
+              isSmall && "top-4",
+            )}
+          >
             <Text.Body className="text-xs">Mark comments</Text.Body>
             <Switch checked={markComments} onCheckedChange={setMarkComments} />
           </div>
@@ -102,46 +138,69 @@ export default function ListenPage() {
           time={time}
           trackId={id}
           comments={track?.comments ?? []}
-          className="mt-4"
+          className="mt-6"
         />
 
         {/* Audio Controls */}
-        <div className="relative my-6 flex w-full grow items-center justify-between">
-          <div className="flex space-x-2">
-            <IconButton
-              className="z-10"
-              icon={<Download04Icon size={18} />}
-              text="Download"
-              isLoading={downloadLoading}
-              onClick={() =>
-                download({
-                  url: track?.file.url ?? "",
-                  name: track?.title ?? "",
-                })
+        <div
+          className={
+            isSmall
+              ? "shadow-upward fixed bottom-0 left-0 right-0 flex min-h-[120px] flex-col rounded-tl-lg rounded-tr-lg border-t border-t-neutral-200 bg-white px-4 pb-6"
+              : ""
+          }
+        >
+          <div
+            className={cn(
+              "relative my-6 flex w-full grow items-center justify-between",
+            )}
+          >
+            {isSmall && (
+              <Dropdown options={menuOptions}>
+                <div className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-md bg-accent hover:bg-accent/80">
+                  <MoreVerticalCircle01Icon size={18} fill="black" />
+                </div>
+              </Dropdown>
+            )}
+
+            {!isSmall && (
+              <div className="flex space-x-2">
+                <IconButton
+                  className="z-10"
+                  icon={<Download04Icon size={18} />}
+                  text="Download"
+                  isLoading={downloadLoading}
+                  onClick={handleDownload}
+                />
+                <IconButton
+                  className="z-10"
+                  icon={<Share05Icon size={16} />}
+                  text="Share"
+                  onClick={handleShare}
+                />
+              </div>
+            )}
+
+            <div
+              className={
+                "absolute left-0 right-0 mx-[30%] flex items-center justify-center"
               }
-            />
-            <IconButton
-              className="z-10"
-              icon={<Share05Icon size={16} />}
-              text="Share"
-              onClick={handleShare}
-            />
+            >
+              <AudioControls
+                isPlaying={play}
+                onPlay={() => triggerPlay()}
+                onBackward={() =>
+                  handleTimeUpdate(Math.min(duration, time - 15))
+                }
+                onForward={() => handleTimeUpdate(Math.max(0, time + 15))}
+              />
+            </div>
+
+            {!isSmall && <VolumeControl onChange={handleVolume} />}
           </div>
 
-          <div className="absolute left-0 right-0 mx-[30%] flex items-center justify-center">
-            <AudioControls
-              isPlaying={play}
-              onPlay={() => triggerPlay()}
-              onBackward={() => handleTimeUpdate(Math.min(duration, time - 15))}
-              onForward={() => handleTimeUpdate(Math.max(0, time + 15))}
-            />
-          </div>
-
-          <VolumeControl onChange={handleVolume} />
+          {/* Time Slider */}
+          <TimeSlider curr={time} max={duration} onChange={handleTimeUpdate} />
         </div>
-
-        {/* Time Slider */}
-        <TimeSlider curr={time} max={duration} onChange={handleTimeUpdate} />
 
         {/* Hidden Audio Element */}
         <audio

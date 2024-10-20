@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "~/lib/utils";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 
 interface ModalContextType {
   show: (render: React.ReactNode) => void;
@@ -19,6 +20,8 @@ export default function ModalProvider({
 }) {
   const [visible, setVisible] = useState<boolean>(false);
   const [render, setRender] = useState<React.ReactNode | undefined>();
+
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   const show = useCallback((render: React.ReactNode) => {
     setRender(render);
@@ -48,6 +51,7 @@ export default function ModalProvider({
         className={cn(
           "fixed bottom-0 left-0 right-0 top-0 z-20 flex items-center justify-center bg-black/40",
           !visible && "pointer-events-none",
+          isSmall && "items-end",
         )}
       >
         <motion.div
@@ -59,6 +63,7 @@ export default function ModalProvider({
           transition={{ duration: (DURATION_MS + 100) / 1_000, type: "spring" }}
           animate={visible ? "visible" : "hidden"}
           onClick={(e) => e.stopPropagation()}
+          className={isSmall ? "w-full" : ""}
         >
           {render}
         </motion.div>

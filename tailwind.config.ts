@@ -8,6 +8,7 @@ export default {
     extend: {
       boxShadow: {
         simple: "0px 0px 0px 5px 10px rgba(0,0,0,0.10)",
+        upward: "0 -4px 10px -1px rgba(0, 0, 0, 0.03)", // custom upward shadow
       },
       colors: {
         accent: "#F4F5FD",

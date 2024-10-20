@@ -5,7 +5,13 @@ import IconContainer from "~/components/ui/icon-container";
 
 import Text from "~/components/typography/text";
 import { Button } from "~/components/ui/button";
-import { type DragEvent, useCallback, useRef, useState } from "react";
+import {
+  type DragEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { fileToBase64 } from "~/lib/utils";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
@@ -18,12 +24,14 @@ import { MusicNote02Icon } from "hugeicons-react";
 import { useSession } from "next-auth/react";
 import { useModal } from "~/providers/modal-provider";
 import MembershipModal from "~/components/ui/modals/membership-modal";
+import useIsMobile from "~/hooks/use-is-mobile";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | undefined>();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const { show } = useModal();
   const router = useRouter();
@@ -36,8 +44,12 @@ export default function UploadPage() {
     enabled: !!file,
   });
 
+  useEffect(() => {
+    console.log("==", allowUpload);
+  }, [allowUpload]);
   const handleUpload = async (data: CreateState) => {
     if (!session?.user.membership || !file) return;
+    console.log("CALLED===", allowUpload?.allowed);
     if (!allowUpload?.allowed) {
       show(<MembershipModal />);
       return;
@@ -121,9 +133,11 @@ export default function UploadPage() {
             />
             <div className="mt-5 space-y-2 text-center">
               <Button title="Select File" onClick={triggerInput} />
-              <Text.Body className="text-xs" subtle>
-                Or drag it in here
-              </Text.Body>
+              {!isMobile && (
+                <Text.Body className="text-xs" subtle>
+                  Or drag it in here
+                </Text.Body>
+              )}
             </div>
           </div>
         )}

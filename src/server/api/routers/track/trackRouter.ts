@@ -264,7 +264,7 @@ const checkTrackLimit = protectedProcedure.query(
 
       const user = await db.user.findUnique({
         where: { id },
-        include: { tracks: true },
+        include: { tracks: { where: { isArchived: false } } },
       });
 
       if (!user) {

@@ -32,7 +32,7 @@ export default function Dropdown({
 }: DropdownProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="cursor-pointer" asChild>
+      <DropdownMenuTrigger className={cn("cursor-pointer", className)} asChild>
         {children}
       </DropdownMenuTrigger>
       <DropdownMenuContent>

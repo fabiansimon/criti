@@ -16,16 +16,7 @@ import { pluralize } from "~/lib/utils";
 export default function Home() {
   const router = useRouter();
 
-  const { start, stop } = useLoading();
-
   const { data: tracks, isLoading } = api.track.getAll.useQuery();
-
-  // useEffect(() => {
-  //   if (isLoading) return start();
-  //   stop();
-
-  //   return () => stop();
-  // }, [isLoading, start, stop]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-accent">

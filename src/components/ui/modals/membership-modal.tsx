@@ -2,6 +2,7 @@ import Text from "~/components/typography/text";
 import Card from "../card";
 import { cn, convertPrice, hexToRGB } from "~/lib/utils";
 import { Cancel01Icon, Tick02Icon } from "hugeicons-react";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 
 interface Benefit {
   render: React.ReactNode;
@@ -84,10 +85,12 @@ const MEMBERSHIP_TYPES: MembershipType[] = [
 ];
 
 export default function MembershipModal() {
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
+
   return (
-    <Card omitPadding className="overflow-hidden bg-accent">
+    <Card omitPadding className="mx-auto max-w-[80%] overflow-hidden bg-accent">
       <div className="flex justify-center bg-white py-4">
-        <div className="w-2/3 text-center">
+        <div className={cn("text-center", isSmall ? "mx-4" : "w-2/3")}>
           <Text.Headline type="h3">
             {"Level up - and do more with Premium"}
           </Text.Headline>
@@ -101,7 +104,7 @@ export default function MembershipModal() {
           </Text.Body>
         </div>
       </div>
-      <div className="flex space-x-3 p-6">
+      <div className="flex w-full space-x-3 overflow-x-auto p-6 no-scrollbar">
         {MEMBERSHIP_TYPES.map((membership, index) => (
           <MembershipCard key={index} membership={membership} />
         ))}
@@ -126,7 +129,7 @@ function MembershipCard({ membership, className }: MembershipCardProps) {
         boxShadow: `0 4px 6px -1px rgba(${hexToRGB(color)}, 0.2)`,
       }}
       className={cn(
-        "cursor-pointer overflow-hidden rounded-xl border shadow-md transition-transform hover:scale-[101%]",
+        "min-w-[300px] cursor-pointer overflow-hidden rounded-xl border shadow-md transition-transform hover:scale-[101%]",
         className,
       )}
     >

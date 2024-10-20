@@ -6,8 +6,10 @@ import Text from "~/components/typography/text";
 import { motion } from "framer-motion";
 import { cn, generateTimestamp, getDateDifference } from "~/lib/utils";
 import { Checkbox } from "../checkbox";
-import { MoreVerticalCircle01Icon } from "hugeicons-react";
+import { ArrowDown01Icon, MoreVerticalCircle01Icon } from "hugeicons-react";
 import { LocalStorage } from "~/lib/localStorage";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 
 interface CommenTileProps {
   live: boolean;
@@ -15,6 +17,7 @@ interface CommenTileProps {
   isAdmin: boolean;
   comment: Comment;
   onClick: () => void;
+  className?: string;
 }
 
 export function CommentTile({
@@ -23,11 +26,14 @@ export function CommentTile({
   live,
   markable,
   onClick,
+  className,
 }: CommenTileProps) {
   const [deleted, setDeleted] = useState<boolean>(false);
   const [checked, setChecked] = useState<boolean>(!comment.open);
 
   const { content, timestamp, createdAt, id } = comment;
+
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   const { mutate: updateComment } = api.comment.update.useMutation({
     onError: () => setChecked((prev) => !prev),
@@ -87,14 +93,16 @@ export function CommentTile({
         visible: { height: "auto" },
       }}
       className={cn(
-        "flex cursor-pointer items-center space-x-2 overflow-hidden px-[15px]",
+        "relative flex cursor-pointer items-center space-x-2 overflow-hidden px-[15px] py-4",
         comment.byAdmin && "bg-green-400/10",
-        !deleted && "min-h-[50px]",
+        !deleted && "min-h-[60px]",
+        className,
       )}
     >
+      {/* Checkbox */}
       <motion.div
         variants={{
-          visible: { width: "auto", opacity: 1 },
+          visible: { width: 30, opacity: 1 },
           hidden: { width: 0, opacity: 0 },
         }}
         transition={{ duration: 0.05 }}
@@ -102,54 +110,75 @@ export function CommentTile({
         animate={markable ? "visible" : "hidden"}
       >
         <Checkbox
-          className="mb-2"
+          className="mb-2 ml-2"
           checked={checked}
           onCheckedChange={handleUpdateCheck}
         />
       </motion.div>
 
-      <div className="min-w-[65px]">
-        <div
-          className={cn(
-            "relative my-auto flex h-6 items-center justify-center space-x-1 overflow-hidden rounded-full",
-            bg,
-            live && "bg-blue-700",
+      <div
+        className={cn(
+          "flex w-full grow items-center gap-2",
+          isSmall && "flex-col items-start",
+        )}
+      >
+        {/* Timestamp Container */}
+        <div className="w-full max-w-[70px]">
+          <div
+            className={cn(
+              "relative my-auto flex h-6 items-center justify-center space-x-1 overflow-hidden rounded-full",
+              bg,
+              live && "bg-blue-700",
+            )}
+          >
+            <motion.div
+              initial="normal"
+              animate={live ? "live" : "normal"}
+              variants={{
+                live: { translateY: 0 },
+                normal: { translateY: -100 },
+              }}
+              className="absolute left-auto right-auto"
+            >
+              <Text.Subtitle className="text-white">{"Live"}</Text.Subtitle>
+            </motion.div>
+            <motion.div
+              initial="normal"
+              animate={live ? "live" : "normal"}
+              variants={{
+                live: { translateY: +100 },
+                normal: { translateY: 0 },
+              }}
+              className="absolute left-auto right-auto"
+            >
+              {label}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex w-full grow flex-col">
+          {comment.byAdmin && (
+            <Text.Subtitle className="text-[11px] text-green-900">
+              {"Admin:"}
+            </Text.Subtitle>
           )}
-        >
-          <motion.div
-            initial="normal"
-            animate={live ? "live" : "normal"}
-            variants={{ live: { translateY: 0 }, normal: { translateY: -100 } }}
-            className="absolute left-auto right-auto"
-          >
-            <Text.Subtitle className="text-white">{"Live"}</Text.Subtitle>
-          </motion.div>
-          <motion.div
-            initial="normal"
-            animate={live ? "live" : "normal"}
-            variants={{ live: { translateY: +100 }, normal: { translateY: 0 } }}
-            className="absolute left-auto right-auto"
-          >
-            {label}
-          </motion.div>
+          <Text.Body className="font-light">{content}</Text.Body>
         </div>
       </div>
 
-      <div className="my-3 flex w-full grow flex-col">
-        {comment.byAdmin && (
-          <Text.Subtitle className="text-[11px] text-green-900">
-            {"Admin:"}
-          </Text.Subtitle>
-        )}
-        <Text.Body className="font-light">{content}</Text.Body>
-      </div>
-      <Text.Subtitle className="min-w-24 text-right" subtle>
-        {getDateDifference(createdAt.toString()).text}
-      </Text.Subtitle>
+      {!isSmall && (
+        <Text.Subtitle className="min-w-24 text-right" subtle>
+          {getDateDifference(createdAt.toString()).text}
+        </Text.Subtitle>
+      )}
 
       {editable && (
-        <Dropdown className="mr-4" options={menuOptions}>
-          <MoreVerticalCircle01Icon fill="black" size={18} />
+        <Dropdown
+          className={cn("", isSmall ? "absolute right-3 top-3" : "mr-4")}
+          options={menuOptions}
+        >
+          <MoreVerticalCircle01Icon fill="black" size={20} />
         </Dropdown>
       )}
     </motion.div>

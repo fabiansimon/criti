@@ -17,6 +17,7 @@ import { Button } from "./button";
 import { cn } from "~/lib/utils";
 import { Switch } from "./switch";
 import { REGEX } from "~/constants/regex";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 
 interface InputType {
   title: string;
@@ -61,6 +62,8 @@ export default function TrackInputContainer({
     password: "",
     title: updateState?.title ?? file?.name ?? "",
   });
+
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   const update = !!updateState;
 
@@ -145,7 +148,9 @@ export default function TrackInputContainer({
           Title
         </Text.Body>
         <div className="flex h-12 space-x-2">
-          <IconContainer icon={<MusicNote02Icon fill="black" size={16} />} />
+          {!isSmall && (
+            <IconContainer icon={<MusicNote02Icon fill="black" size={16} />} />
+          )}
           <Input
             placeholder="Baby Riddim"
             value={input.title}
@@ -183,7 +188,7 @@ export default function TrackInputContainer({
             !locked && "opacity-50",
           )}
         >
-          <IconContainer icon={<LockPasswordIcon size={16} />} />
+          {!isSmall && <IconContainer icon={<LockPasswordIcon size={16} />} />}
           <Input
             type={!showPassword ? "password" : "text"}
             disabled={!locked}
@@ -216,7 +221,7 @@ export default function TrackInputContainer({
             </Text.Body>
           </div>
           <div className={"flex h-12 space-x-2"}>
-            <IconContainer icon={<Mail01Icon size={16} />} />
+            {!isSmall && <IconContainer icon={<Mail01Icon size={16} />} />}
             <Input
               placeholder="youremail@gmail.com"
               value={input.email}

@@ -11,6 +11,7 @@ import { api } from "~/trpc/react";
 import ProjectListItem from "~/components/ui/project-list-item";
 import { useEffect } from "react";
 import { useLoading } from "~/providers/loading-provider";
+import { pluralize } from "~/lib/utils";
 
 export default function Home() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function Home() {
       <Card
         isLoading={isLoading}
         title="Your shared projects"
-        subtitle="3 Tracks shared"
+        subtitle={`${pluralize(tracks?.length ?? 0, "track")} shared`}
         className="md:min-w-[60%] md:max-w-[400px]"
       >
         <div className="-mx-3 my-7">

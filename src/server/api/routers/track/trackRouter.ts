@@ -6,6 +6,7 @@ import {
 } from "~/server/api/trpc";
 import {
   ArchiveProjectInput,
+  CheckTrackLimitOutput,
   GetTrackByIdInput,
   GetTracksByUserOutput,
   UpdateTrackInput,
@@ -13,6 +14,8 @@ import {
 } from "./trackTypes";
 import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
+import { env } from "~/env";
+import { Membership } from "@prisma/client";
 
 const archiveTrack = protectedProcedure
   .input(ArchiveProjectInput)
@@ -248,10 +251,68 @@ const getAllTracksByUser = protectedProcedure
     }
   });
 
+const checkTrackLimit = protectedProcedure.query(
+  async ({ ctx: { db, session } }) => {
+    const {
+      user: { id },
+    } = session;
+    try {
+      const [freeLimit, premiumLimit] = [
+        env.FREE_TRACK_LIMIT,
+        env.PREMIUM_V1_TRACK_LIMIT,
+      ];
+
+      const user = await db.user.findUnique({
+        where: { id },
+        include: { tracks: true },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          message: "No user found.",
+          code: "NOT_FOUND",
+        });
+      }
+
+      const { membership, tracks } = user;
+
+      /*
+      / Maybe store the membership details in a seperate DB table
+      */
+
+      let limit = 0;
+      if (membership === Membership.FREE) {
+        limit = freeLimit;
+      } else {
+        limit = premiumLimit;
+      }
+
+      if (tracks.length >= limit) {
+        return {
+          allowed: false,
+        };
+      }
+
+      return {
+        allowed: true,
+      };
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }
+  },
+);
+
 export const trackRouter = createTRPCRouter({
   upload: uploadTrack,
   update: updateTrack,
   archive: archiveTrack,
   getAll: getAllTracksByUser,
   getById: getTrackById,
+  checkLimit: checkTrackLimit,
 });

@@ -1,7 +1,6 @@
 import { cn } from "~/lib/utils";
 import Text from "../typography/text";
 import LoadingSpinner from "./loading-spinner";
-import { RefreshIcon } from "hugeicons-react";
 
 interface CardProps {
   isLoading?: boolean;
@@ -10,7 +9,7 @@ interface CardProps {
   subtitle?: string;
   description?: string;
   className?: string;
-  onRefresh?: () => void;
+  omitPadding?: boolean;
 }
 
 export default function Card({
@@ -19,12 +18,13 @@ export default function Card({
   children,
   className,
   isLoading,
-  onRefresh,
+  omitPadding,
 }: CardProps) {
   return (
     <div
       className={cn(
-        "relative rounded-md border-[.5px] border-neutral-200 bg-white px-[20px] py-[15px]",
+        "relative rounded-md border-[.5px] border-neutral-200 bg-white",
+        !omitPadding && "px-[20px] py-[15px]",
         className,
       )}
     >

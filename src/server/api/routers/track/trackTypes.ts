@@ -38,9 +38,14 @@ export const UpdateTrackInput = UploadTrackInput.omit({
     id: z.string(),
   });
 
+export const CheckTrackLimitOutput = z.object({
+  allowed: z.boolean(),
+});
+
 export type UploadTrackInput = z.infer<typeof UploadTrackInput>;
 export type GetTrackByIdInput = z.infer<typeof GetTrackByIdInput>;
 export type GetTracksByUserOutput = z.infer<typeof GetTracksByUserOutput>;
 export type ArchiveProjectInput = z.infer<typeof ArchiveProjectInput>;
 export type UpdateTrackInput = z.infer<typeof UpdateTrackInput>;
+export type CheckTrackLimitOutput = z.infer<typeof CheckTrackLimitOutput>;
 export type SimplfiedTrack = z.infer<typeof GetTracksByUserOutput>[number];

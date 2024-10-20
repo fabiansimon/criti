@@ -11,6 +11,7 @@ import { route, ROUTES } from "~/constants/routes";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
+import { type Membership } from "@prisma/client";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -22,6 +23,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      membership: Membership;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -40,13 +42,23 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+    session: async ({ session, user }) => {
+      const _user = await db.user.findUnique({
+        where: { id: user.id },
+      });
+
+      if (!_user) throw new Error("No user found.");
+      const { membership } = _user;
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+          membership,
+        },
+      };
+    },
     redirect: async ({ baseUrl }) => {
       return `${baseUrl}${route(ROUTES.home)}`;
     },

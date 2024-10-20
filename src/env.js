@@ -7,6 +7,10 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
+    FREE_TRACK_LIMIT: z.number(),
+    FREE_EXPIRE_IN_DAYS: z.number(),
+    PREMIUM_V1_TRACK_LIMIT: z.number(),
+    PREMIUM_V1_EXPIRE_IN_DAYS: z.number(),
     DATABASE_URL: z.string().url(),
     DIRECT_URL: z.string().url(),
     SUPABASE_BUCKET: z.string(),
@@ -49,6 +53,16 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
+    FREE_TRACK_LIMIT: parseInt(process.env.FREE_TRACK_LIMIT ?? "0", 10),
+    FREE_EXPIRE_IN_DAYS: parseInt(process.env.FREE_EXPIRE_IN_DAYS ?? "0", 10),
+    PREMIUM_V1_TRACK_LIMIT: parseInt(
+      process.env.PREMIUM_V1_TRACK_LIMIT ?? "0",
+      10,
+    ),
+    PREMIUM_V1_EXPIRE_IN_DAYS: parseInt(
+      process.env.PREMIUM_V1_EXPIRE_IN_DAYS ?? "0",
+      10,
+    ),
     SUPABASE_KEY: process.env.SUPABASE_KEY,
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_BUCKET: process.env.SUPABASE_BUCKET,

@@ -11,6 +11,7 @@ import Dropdown, { type MenuOption } from "../dropdown-menu";
 import { type DefaultSession } from "next-auth";
 import { useModal } from "~/providers/modal-provider";
 import { useEffect } from "react";
+import MembershipModal from "../modals/membership-modal";
 
 type SessionUser = {
   id: string;
@@ -112,14 +113,18 @@ function UserTile({ user, className }: UserTileProps) {
     await signOut();
   };
 
+  const showMemberships = () => {
+    show(<MembershipModal />);
+  };
+
   const options: MenuOption[] = [
+    {
+      title: "Membership",
+      onClick: showMemberships,
+    },
     {
       title: "Sign out",
       onClick: () => void handleLogout(),
-    },
-    {
-      title: "Membership",
-      onClick: () => console.log("membershpi"),
     },
   ];
 

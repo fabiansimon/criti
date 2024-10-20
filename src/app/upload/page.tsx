@@ -15,20 +15,33 @@ import TrackInputContainer, {
   type CreateState,
 } from "~/components/ui/track-input-container";
 import { MusicNote02Icon } from "hugeicons-react";
+import { useSession } from "next-auth/react";
+import { useModal } from "~/providers/modal-provider";
+import MembershipModal from "~/components/ui/modals/membership-modal";
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | undefined>();
+
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { toast } = useToast();
+  const { show } = useModal();
   const router = useRouter();
+  const { data: session } = useSession();
 
   const utils = api.useUtils();
   const { mutateAsync: uploadTrack, isPending: isLoading } =
     api.track.upload.useMutation();
+  const { data: allowUpload } = api.track.checkLimit.useQuery(undefined, {
+    enabled: !!file,
+  });
 
   const handleUpload = async (data: CreateState) => {
-    if (!file) return;
+    if (!session?.user.membership || !file) return;
+    if (!allowUpload?.allowed) {
+      show(<MembershipModal />);
+      return;
+    }
 
     const { title, password, locked, emails } = data;
     const { type: contentType } = file;
@@ -85,7 +98,6 @@ export default function UploadPage() {
       <Card
         title="Upload new track"
         subtitle="Sharing is caring"
-        onRefresh={void utils.track.invalidate()}
         className="w-full max-w-screen-sm"
       >
         <input

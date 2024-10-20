@@ -48,7 +48,7 @@ export default function AuthModal() {
   const emailOption: AuthOption = {
     title: "Email",
     icon: <Mail01Icon size={18} />,
-    onClick: () => void signIn("email"),
+    onClick: () => console.log("email"),
   };
 
   return (

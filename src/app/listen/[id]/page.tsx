@@ -2,7 +2,6 @@
 
 import {
   Download04Icon,
-  More01Icon,
   MoreVerticalCircle01Icon,
   Share05Icon,
 } from "hugeicons-react";
@@ -16,7 +15,7 @@ import TimeSlider from "~/components/ui/audio/time-slider";
 import VolumeControl from "~/components/ui/audio/volume-control";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
-import Dropdown, { MenuOption } from "~/components/ui/dropdown-menu";
+import Dropdown, { type MenuOption } from "~/components/ui/dropdown-menu";
 import { Switch } from "~/components/ui/switch";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import useDownload from "~/hooks/use-download";
@@ -70,7 +69,7 @@ export default function ListenPage() {
   }, [isAdmin, track]);
 
   const handleDownload = () => {
-    download({
+    void download({
       url: track?.file.url ?? "",
       name: track?.title ?? "",
     });

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 export const BREAKPOINTS = {
@@ -10,10 +12,11 @@ export const BREAKPOINTS = {
 
 function useBreakpoint(breakpoint: number): boolean {
   const [triggered, setTriggered] = useState<boolean>(
-    breakpoint >= window.innerWidth,
+    typeof window !== "undefined" ? breakpoint >= window.innerWidth : false,
   );
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const handleResize = () => {
       setTriggered(breakpoint >= window.innerWidth);
     };

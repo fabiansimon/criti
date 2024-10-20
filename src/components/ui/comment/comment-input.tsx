@@ -1,11 +1,10 @@
-import { Cancel01Icon, Cancel02Icon, PlusSignIcon } from "hugeicons-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Cancel01Icon, PlusSignIcon } from "hugeicons-react";
+import { useMemo, useRef, useState } from "react";
 import { REGEX } from "~/constants/regex";
 import { cn, convertTimestamp, generateTimestamp } from "~/lib/utils";
 import { Button } from "../button";
 import LoadingSpinner from "../loading-spinner";
 import { Popover, type PopoverRef } from "../tooltip";
-import { ExitIcon } from "@radix-ui/react-icons";
 
 interface CommentInputProps {
   onCreate: ({ content, timestamp }: CommentContent) => void;

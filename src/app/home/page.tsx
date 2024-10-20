@@ -9,8 +9,6 @@ import { useRouter } from "next/navigation";
 import { route, ROUTES } from "~/constants/routes";
 import { api } from "~/trpc/react";
 import ProjectListItem from "~/components/ui/project-list-item";
-import { useEffect } from "react";
-import { useLoading } from "~/providers/loading-provider";
 import { pluralize } from "~/lib/utils";
 
 export default function Home() {

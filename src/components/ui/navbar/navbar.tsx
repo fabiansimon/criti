@@ -28,7 +28,7 @@ interface NavOption {
 }
 
 export default function NavBar() {
-  const [expanded, setExpanded] = useState<boolean>(true);
+  const [expanded, setExpanded] = useState<boolean>(false);
   const { data } = useSession();
   const router = useRouter();
   const path = usePathname();
@@ -100,7 +100,7 @@ function Drawer({ options, expanded, onRequestClose }: DrawerProps) {
   return (
     <motion.div
       onClick={onRequestClose}
-      initial="visible"
+      initial="hidden"
       animate={expanded ? "visible" : "hidden"}
       variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
       className={cn(
@@ -109,7 +109,7 @@ function Drawer({ options, expanded, onRequestClose }: DrawerProps) {
       )}
     >
       <motion.div
-        initial="visible"
+        initial="hidden"
         transition={{ bounce: 0.1 }}
         animate={expanded ? "visible" : "hidden"}
         variants={{ visible: { translateX: 0 }, hidden: { translateX: -1000 } }}

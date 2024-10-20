@@ -5,7 +5,6 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "~/components/ui/toaster";
 import InitRoot from "~/components/ui/init-root";
-import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Criti",

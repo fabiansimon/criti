@@ -74,7 +74,7 @@ export default function TrackInputContainer({
 
   const validInput = useMemo(() => {
     const validTitle = input.title.trim().length > 1;
-    const validPw = !locked || input.password.trim().length > 1;
+    const validPw = !locked || REGEX.password.test(input.password.trim());
 
     if (!update) return validTitle && validPw && file;
 

@@ -44,12 +44,8 @@ export default function UploadPage() {
     enabled: !!file,
   });
 
-  useEffect(() => {
-    console.log("==", allowUpload);
-  }, [allowUpload]);
   const handleUpload = async (data: CreateState) => {
     if (!session?.user.membership || !file) return;
-    console.log("CALLED===", allowUpload?.allowed);
     if (!allowUpload?.allowed) {
       show(<MembershipModal />);
       return;
@@ -64,7 +60,7 @@ export default function UploadPage() {
       fileContent,
       title,
       locked,
-      password: locked ? password : undefined,
+      password: locked ? password.trim() : undefined,
       emails,
     });
 

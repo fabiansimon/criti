@@ -53,7 +53,7 @@ export default function NavBar() {
   ];
 
   return (
-    <div className="fixed left-0 right-0 top-0 z-30 flex min-h-14 items-center border-b border-b-neutral-200 bg-white">
+    <div className="fixed left-0 right-0 top-0 z-20 flex min-h-14 items-center border-b border-b-neutral-200 bg-white">
       {isSmall && (
         <div
           onClick={() => setExpanded(true)}

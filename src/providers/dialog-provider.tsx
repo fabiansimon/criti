@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import Text from "~/components/typography/text";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
+import Modal from "~/components/ui/modals/modal";
+import Card from "~/components/ui/card";
 
 interface DialogAction {
   title: string;
@@ -61,7 +63,7 @@ export default function DialogProvider({
 
   return (
     <DialogContext.Provider value={value}>
-      <motion.div
+      {/* <motion.div
         initial="hidden"
         variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
         transition={{ duration: DURATION_MS / 1000 }}
@@ -82,7 +84,9 @@ export default function DialogProvider({
           animate={visible ? "visible" : "hidden"}
           onClick={(e) => e.stopPropagation()}
           className="max-w-[400px] justify-end rounded-md border border-neutral-200 bg-white px-4 py-3"
-        >
+        > */}
+      <Modal isVisible={visible} onRequestClose={hide}>
+        <Card>
           <Text.Headline type="h4">{title}</Text.Headline>
           <Text.Body subtle>{subtitle}</Text.Body>
           <div className="mt-6 flex justify-end space-x-2">
@@ -100,8 +104,10 @@ export default function DialogProvider({
               )}
           </div>
           {content.render}
-        </motion.div>
-      </motion.div>
+        </Card>
+      </Modal>
+      {/* </motion.div>
+      </motion.div> */}
       {children}
     </DialogContext.Provider>
   );

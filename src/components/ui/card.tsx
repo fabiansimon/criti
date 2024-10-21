@@ -2,6 +2,7 @@ import { cn } from "~/lib/utils";
 import Text from "../typography/text";
 import LoadingSpinner from "./loading-spinner";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
+import { useSession } from "next-auth/react";
 
 interface CardProps {
   isLoading?: boolean;
@@ -21,6 +22,7 @@ export default function Card({
   isLoading,
   omitPadding,
 }: CardProps) {
+  const { status } = useSession();
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   return (
@@ -29,7 +31,8 @@ export default function Card({
         "relative rounded-md border-[.5px] border-neutral-200 bg-white",
         !omitPadding && "px-[20px] py-[15px]",
         className,
-        isSmall && "mt-14 h-full min-w-full grow",
+        isSmall && "h-full min-w-full grow",
+        isSmall && status === "authenticated" && "mt-14",
       )}
     >
       {isLoading && (

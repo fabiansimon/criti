@@ -1,14 +1,15 @@
 import * as bcrypt from "bcrypt";
 import {
+  anonPossibleProcedure,
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
 import {
   ArchiveProjectInput,
-  CheckTrackLimitOutput,
   GetTrackByIdInput,
   GetTracksByUserOutput,
+  IsTrackLockedInput,
   UpdateTrackInput,
   UploadTrackInput,
 } from "./trackTypes";
@@ -187,15 +188,23 @@ const uploadTrack = protectedProcedure
     }
   });
 
-const getTrackById = publicProcedure
+const isTrackLocked = anonPossibleProcedure
   .input(GetTrackByIdInput)
-  .query(async ({ input, ctx: { db } }) => {
-    const { id } = input;
+  .query(async ({ input, ctx: { db, session } }) => {
+    const { id, sessionId, password: plainPassword } = input;
 
     try {
+      const now = new Date();
       const track = await db.track.findUnique({
-        where: { id, isArchived: false },
-        include: { file: true, comments: true, creator: true },
+        where: { id },
+        include: {
+          trustedSessions: {
+            where: {
+              sessionId,
+              expiresAt: { gte: now },
+            },
+          },
+        },
       });
 
       if (!track) {
@@ -204,6 +213,81 @@ const getTrackById = publicProcedure
           code: "NOT_FOUND",
         });
       }
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (!track.password || track?.trustedSessions?.length > 0) return false;
+
+      const { password, creatorId, id: trackId } = track;
+
+      let unlocked = false;
+
+      if (!unlocked) {
+        unlocked = session?.user.id === creatorId;
+      }
+
+      if (!unlocked && plainPassword) {
+        unlocked = await bcrypt.compare(plainPassword, password);
+      }
+
+      if (unlocked) {
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 60 * 60 * 1000); // Add 60 minutes
+        await db.trustedSession.create({
+          data: {
+            sessionId,
+            trackId,
+            expiresAt,
+          },
+        });
+      }
+
+      return !unlocked;
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }
+  });
+
+const getTrackById = publicProcedure
+  .input(GetTrackByIdInput)
+  .query(async ({ input, ctx: { db } }) => {
+    const { id, sessionId } = input;
+
+    try {
+      const track = await db.track.findUnique({
+        where: { id, isArchived: false },
+        include: {
+          file: true,
+          comments: true,
+          creator: true,
+          trustedSessions: { where: { sessionId } },
+        },
+      });
+
+      if (!track) {
+        throw new TRPCError({
+          message: "Track not found.",
+          code: "NOT_FOUND",
+        });
+      }
+
+      const { password } = track;
+      if (password) {
+        if (track.trustedSessions.length === 0) {
+          throw new TRPCError({
+            message: "Please try again.",
+            code: "UNAUTHORIZED",
+          });
+        }
+      }
+
+      track.password = null;
+      track.trustedSessions = [];
       return track;
     } catch (error) {
       console.error(error);
@@ -312,6 +396,7 @@ export const trackRouter = createTRPCRouter({
   upload: uploadTrack,
   update: updateTrack,
   archive: archiveTrack,
+  isLocked: isTrackLocked,
   getAll: getAllTracksByUser,
   getById: getTrackById,
   checkLimit: checkTrackLimit,

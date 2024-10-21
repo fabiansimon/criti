@@ -78,7 +78,7 @@ export default function CommentInput({
     timestampErrorRef.current?.hide();
 
     return _input;
-  }, [input, timestamp]);
+  }, [input, timestamp, maxTime]);
 
   return (
     <div className={cn("flex h-11 space-x-2", className)}>

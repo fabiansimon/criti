@@ -16,10 +16,12 @@ import VolumeControl from "~/components/ui/audio/volume-control";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
 import Dropdown, { type MenuOption } from "~/components/ui/dropdown-menu";
+import PasswordModal from "~/components/ui/modals/password-modal";
 import { Switch } from "~/components/ui/switch";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import useDownload from "~/hooks/use-download";
 import { useToast } from "~/hooks/use-toast";
+import { LocalStorage } from "~/lib/localStorage";
 import {
   cn,
   copyToClipboard,
@@ -33,6 +35,7 @@ export default function ListenPage() {
   const [markComments, setMarkComments] = useState<boolean>(false);
   const [time, setTime] = useState<number>(0);
   const [play, setPlay] = useState<boolean>(false);
+  const [password, setPassword] = useState<string>("");
 
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
@@ -43,9 +46,18 @@ export default function ListenPage() {
   const { data } = useSession();
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const sessionId = LocalStorage.fetchSessionId() ?? "";
+
+  const { data: isLocked, isLoading: lockedLoading } =
+    api.track.isLocked.useQuery({
+      id,
+      sessionId,
+      password,
+    });
+
   const { data: track, isLoading } = api.track.getById.useQuery(
-    { id },
-    { enabled: !!id },
+    { id, sessionId },
+    { enabled: isLocked === false },
   );
 
   const isAdmin = data?.user.id === track?.creatorId;
@@ -107,10 +119,19 @@ export default function ListenPage() {
 
   const duration = audioRef.current?.duration ?? 0;
 
+  if (!lockedLoading && isLocked)
+    return (
+      <PasswordModal
+        isVisible
+        onInput={setPassword}
+        isLoading={!!password && lockedLoading}
+      />
+    );
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-accent">
       <Card
-        isLoading={isLoading}
+        isLoading={isLoading || lockedLoading}
         title={track?.title}
         subtitle={subtitle}
         className={cn("relative w-full max-w-screen-lg")}
@@ -144,7 +165,7 @@ export default function ListenPage() {
         <div
           className={
             isSmall
-              ? "shadow-upward fixed bottom-0 left-0 right-0 flex min-h-[120px] flex-col rounded-tl-lg rounded-tr-lg border-t border-t-neutral-200 bg-white px-4 pb-6"
+              ? "fixed bottom-0 left-0 right-0 flex min-h-[120px] flex-col rounded-tl-lg rounded-tr-lg border-t border-t-neutral-200 bg-white px-4 pb-6 shadow-upward"
               : ""
           }
         >

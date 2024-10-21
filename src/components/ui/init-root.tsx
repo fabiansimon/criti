@@ -13,6 +13,7 @@ import LoadingProvider from "~/providers/loading-provider";
 
 export default function InitRoot({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    if (LocalStorage.fetchSessionId()) return;
     const sessionId = uuid();
     LocalStorage.storeSessionId(sessionId);
   }, []);

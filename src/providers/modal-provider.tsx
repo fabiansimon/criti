@@ -1,9 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useState } from "react";
-import { motion } from "framer-motion";
-import { cn } from "~/lib/utils";
-import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
+import Modal from "~/components/ui/modals/modal";
 
 interface ModalContextType {
   show: (render: React.ReactNode) => void;
@@ -20,8 +18,6 @@ export default function ModalProvider({
 }) {
   const [visible, setVisible] = useState<boolean>(false);
   const [render, setRender] = useState<React.ReactNode | undefined>();
-
-  const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   const show = useCallback((render: React.ReactNode) => {
     setRender(render);
@@ -42,32 +38,9 @@ export default function ModalProvider({
 
   return (
     <ModalContext.Provider value={value}>
-      <motion.div
-        initial="hidden"
-        variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
-        transition={{ duration: DURATION_MS / 1000 }}
-        animate={visible ? "visible" : "hidden"}
-        onClick={hide}
-        className={cn(
-          "fixed bottom-0 left-0 right-0 top-0 z-20 flex items-center justify-center bg-black/40",
-          !visible && "pointer-events-none",
-          isSmall && "items-end",
-        )}
-      >
-        <motion.div
-          initial="hidden"
-          variants={{
-            visible: { translateY: 0 },
-            hidden: { translateY: 1_000 },
-          }}
-          transition={{ duration: (DURATION_MS + 100) / 1_000, type: "spring" }}
-          animate={visible ? "visible" : "hidden"}
-          onClick={(e) => e.stopPropagation()}
-          className={isSmall ? "w-full" : ""}
-        >
-          {render}
-        </motion.div>
-      </motion.div>
+      <Modal isVisible={visible} onRequestClose={hide} duration={DURATION_MS}>
+        {render}
+      </Modal>
       {children}
     </ModalContext.Provider>
   );

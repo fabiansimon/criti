@@ -16,8 +16,14 @@ export const ArchiveProjectInput = z.object({
   id: z.string().uuid(),
 });
 
+export const IsTrackLockedInput = z.object({
+  id: z.string().uuid(),
+});
+
 export const GetTrackByIdInput = z.object({
   id: z.string().uuid(),
+  password: z.string().optional(),
+  sessionId: z.string().uuid(),
 });
 
 export const UploadTrackInput = z.object({
@@ -48,4 +54,5 @@ export type GetTracksByUserOutput = z.infer<typeof GetTracksByUserOutput>;
 export type ArchiveProjectInput = z.infer<typeof ArchiveProjectInput>;
 export type UpdateTrackInput = z.infer<typeof UpdateTrackInput>;
 export type CheckTrackLimitOutput = z.infer<typeof CheckTrackLimitOutput>;
+export type IsTrackLockedInput = z.infer<typeof IsTrackLockedInput>;
 export type SimplfiedTrack = z.infer<typeof GetTracksByUserOutput>[number];

@@ -26,9 +26,23 @@ model Track {
   locked   Boolean @default(false)
   password String?
 
-  file       File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  comments   Comment[]
-  isArchived Boolean   @default(false)
+  file     File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  comments Comment[]
+
+  trustedSessions TrustedSession[]
+  isArchived      Boolean          @default(false)
+}
+
+model TrustedSession {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime @default(now())
+
+  sessionId String
+
+  trackId String
+  Track   Track  @relation(fields: [trackId], references: [id])
 }
 
 model Comment {

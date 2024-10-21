@@ -9,7 +9,6 @@ import {
   ArchiveProjectInput,
   GetTrackByIdInput,
   GetTracksByUserOutput,
-  IsTrackLockedInput,
   UpdateTrackInput,
   UploadTrackInput,
 } from "./trackTypes";
@@ -103,12 +102,21 @@ const updateTrack = protectedProcedure
         });
       }
 
+      if (updates.password) {
+        const salt = await bcrypt.genSalt(10);
+        updates.password = await bcrypt.hash(updates.password, salt);
+        updates.locked = true;
+
+        await db.trustedSession.deleteMany({
+          where: { trackId: id },
+        });
+      }
+
       await db.track.update({
         where: { id },
         data: updates,
       });
 
-      console.log("==== UPDATES: ", updates);
       return track;
     } catch (error) {
       if (error instanceof Error) {
@@ -196,7 +204,7 @@ const isTrackLocked = anonPossibleProcedure
     try {
       const now = new Date();
       const track = await db.track.findUnique({
-        where: { id },
+        where: { id, isArchived: false },
         include: {
           trustedSessions: {
             where: {

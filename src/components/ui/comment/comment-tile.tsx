@@ -89,14 +89,14 @@ export function CommentTile({
       initial="visible"
       animate={deleted ? "hidden" : "visible"}
       variants={{
-        hidden: { height: 0 },
-        visible: { height: "auto" },
+        hidden: { height: 0, opacity: 0 },
+        visible: { height: "auto", opacity: 1 },
       }}
       className={cn(
-        "relative flex cursor-pointer items-center space-x-2 overflow-hidden px-[15px] py-4",
+        "relative flex cursor-pointer items-center space-x-2 overflow-hidden px-[15px]",
         comment.byAdmin && "bg-green-400/10",
-        !deleted && "min-h-[60px]",
         className,
+        !deleted && "min-h-[60px] py-4",
       )}
     >
       {/* Checkbox */}

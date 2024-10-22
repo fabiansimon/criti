@@ -27,7 +27,7 @@ export default function PasswordModal({
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
   const validInput = useMemo(() => {
-    return REGEX.password.test(password.trim());
+    return REGEX.roomPassword.test(password.trim());
   }, [password]);
 
   const handleCancel = () => {

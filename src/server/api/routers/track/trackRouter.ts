@@ -16,6 +16,9 @@ import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
 import { env } from "~/env";
 import { Membership } from "@prisma/client";
+import { Resend } from "resend";
+import InviteEmail from "../../email-templates/invite";
+import { generateShareableLink } from "~/lib/utils";
 
 const archiveTrack = protectedProcedure
   .input(ArchiveProjectInput)
@@ -134,7 +137,7 @@ const uploadTrack = protectedProcedure
   .mutation(async ({ input, ctx: { db, session } }) => {
     const { contentType, fileContent, title, locked, emails, password } = input;
     const {
-      user: { id: creatorId },
+      user: { id: creatorId, email: creatorEmail },
     } = session;
 
     let hashedPassword = "";
@@ -183,6 +186,20 @@ const uploadTrack = protectedProcedure
         },
         include: { file: true },
       });
+
+      if (emails.length > 0) {
+        const resend = new Resend(env.RESEND_API_KEY);
+        const { data, error } = await resend.emails.send({
+          from: "Acme <onboarding@resend.dev>",
+          to: [...emails],
+          subject: "Hello world",
+          react: InviteEmail({
+            title: track.title,
+            by: creatorEmail ?? "Someone",
+            link: generateShareableLink(track.id),
+          }),
+        });
+      }
 
       return track;
     } catch (error) {

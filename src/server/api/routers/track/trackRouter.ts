@@ -188,7 +188,7 @@ const uploadTrack = protectedProcedure
       });
 
       if (emails.length > 0) {
-        const resend = new Resend(env.RESEND_API_KEY);
+        const resend = new Resend(env.EMAIL_SERVER_PASSWORD);
         const { data, error } = await resend.emails.send({
           from: "Acme <onboarding@resend.dev>",
           to: [...emails],
@@ -199,6 +199,8 @@ const uploadTrack = protectedProcedure
             link: generateShareableLink(track.id),
           }),
         });
+
+        if (error) console.log("==== ERROR:", error);
       }
 
       return track;

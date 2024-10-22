@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Text from "~/components/typography/text";
 import { Input } from "../input";
 import { ViewIcon, ViewOffSlashIcon } from "hugeicons-react";
+import { signIn } from "next-auth/react";
 import { Button } from "../button";
 import { REGEX } from "~/constants/regex";
 
@@ -32,6 +33,10 @@ export default function EmailLogin({
     const height = ref.current.getBoundingClientRect().height;
     onLayout(height);
   }, []);
+
+  const handleLogin = async () => {
+    await signIn("email", { email });
+  };
 
   return (
     <motion.div
@@ -80,7 +85,7 @@ export default function EmailLogin({
       <Button
         className="min-h-12"
         title="Continue"
-        onClick={onBack}
+        onClick={handleLogin}
         disabled={!validInput}
       />
       <Button

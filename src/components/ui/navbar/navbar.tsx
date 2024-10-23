@@ -1,6 +1,13 @@
 "use client";
 
-import { Add01Icon, Add02Icon, Home11Icon, Menu01Icon } from "hugeicons-react";
+import {
+  Add01Icon,
+  Add02Icon,
+  Door02Icon,
+  Home11Icon,
+  Menu01Icon,
+  Playlist02Icon,
+} from "hugeicons-react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import Text from "~/components/typography/text";
@@ -22,9 +29,9 @@ type SessionUser = {
 interface NavOption {
   title: string;
   icon: React.ReactNode;
-  activeIcon: React.ReactNode;
-  route: string;
   onClick: () => void;
+  route?: string;
+  activeIcon?: React.ReactNode;
 }
 
 export default function NavBar() {
@@ -67,7 +74,7 @@ export default function NavBar() {
           <div className="mx-auto flex space-x-2">
             {options.map((option, index) => (
               <NavItem
-                active={path.includes(option.route)}
+                active={option.route ? path.includes(option.route) : false}
                 key={index}
                 option={option}
               />
@@ -80,6 +87,7 @@ export default function NavBar() {
       {isSmall && (
         <Drawer
           onRequestClose={() => setExpanded(false)}
+          user={data?.user}
           options={options}
           expanded={expanded}
         />
@@ -91,11 +99,26 @@ export default function NavBar() {
 interface DrawerProps {
   options: NavOption[];
   expanded: boolean;
+  user?: SessionUser;
   onRequestClose: () => void;
 }
 
-function Drawer({ options, expanded, onRequestClose }: DrawerProps) {
+function Drawer({ options, expanded, user, onRequestClose }: DrawerProps) {
   const path = usePathname();
+  const router = useRouter();
+  const { show } = useModal();
+
+  const mobileOptions: NavOption[] = [
+    {
+      title: "Membership",
+      onClick: () => show(<MembershipModal />),
+      icon: <Playlist02Icon size={16} />,
+    },
+  ];
+  const handleLogout = async () => {
+    router.push(route(ROUTES.landing));
+    await signOut();
+  };
 
   return (
     <motion.div
@@ -115,9 +138,10 @@ function Drawer({ options, expanded, onRequestClose }: DrawerProps) {
         variants={{ visible: { translateX: 0 }, hidden: { translateX: -1000 } }}
         className="flex h-full w-[80%] flex-col items-start space-y-4 bg-white px-4 py-10"
       >
-        {options.map((option, index) => (
+        {user && <UserTile disabled user={user} />}
+        {[...options, ...mobileOptions].map((option, index) => (
           <NavItem
-            active={path.includes(option.route)}
+            active={option.route ? path.includes(option.route) : false}
             key={index}
             option={{
               ...option,
@@ -128,6 +152,15 @@ function Drawer({ options, expanded, onRequestClose }: DrawerProps) {
             }}
           />
         ))}
+        <NavItem
+          active
+          className="absolute bottom-6 left-4 text-red-700"
+          option={{
+            icon: <Door02Icon size={16} className="text-red-700" />,
+            onClick: () => void handleLogout(),
+            title: "Log out",
+          }}
+        />
       </motion.div>
     </motion.div>
   );
@@ -136,9 +169,10 @@ function Drawer({ options, expanded, onRequestClose }: DrawerProps) {
 interface NavItemProps {
   option: NavOption;
   active: boolean;
+  className?: string;
 }
 
-function NavItem({ option, active }: NavItemProps) {
+function NavItem({ option, className, active }: NavItemProps) {
   const { title, onClick, icon, activeIcon } = option;
 
   return (
@@ -149,6 +183,7 @@ function NavItem({ option, active }: NavItemProps) {
       }}
       className={cn(
         "flex cursor-pointer flex-col items-center justify-center rounded-md px-3 py-1 hover:bg-neutral-100",
+        className,
       )}
     >
       <div
@@ -157,7 +192,7 @@ function NavItem({ option, active }: NavItemProps) {
           active && "opacity-100",
         )}
       >
-        {active ? activeIcon : icon}
+        {active && activeIcon ? activeIcon : icon}
         <Text.Body>{title}</Text.Body>
       </div>
     </div>
@@ -166,10 +201,11 @@ function NavItem({ option, active }: NavItemProps) {
 
 interface UserTileProps {
   user: SessionUser;
+  disabled?: boolean;
   className?: string;
 }
 
-function UserTile({ user, className }: UserTileProps) {
+function UserTile({ user, disabled, className }: UserTileProps) {
   const { image, name } = user;
 
   const router = useRouter();
@@ -196,7 +232,7 @@ function UserTile({ user, className }: UserTileProps) {
   ];
 
   return (
-    <Dropdown options={options}>
+    <Dropdown disabled={disabled} options={options}>
       <div
         className={cn(
           "flex cursor-pointer items-center space-x-3 rounded-lg p-2 hover:bg-neutral-100",
@@ -204,7 +240,7 @@ function UserTile({ user, className }: UserTileProps) {
         )}
       >
         <Avatar className="size-7" url={image ?? ""} name={name ?? ""} />
-        <Text.Body className="text-sm">{"Account"}</Text.Body>
+        <Text.Body className="text-sm">{name ?? ""}</Text.Body>
       </div>
     </Dropdown>
   );

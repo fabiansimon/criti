@@ -18,9 +18,10 @@ export interface MenuOption {
 }
 
 interface DropdownProps {
-  title?: string;
   children: React.ReactNode;
   options: MenuOption[];
+  title?: string;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -28,8 +29,11 @@ export default function Dropdown({
   title,
   children,
   options,
+  disabled,
   className,
 }: DropdownProps) {
+  if (disabled) return children;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className={cn("cursor-pointer", className)} asChild>

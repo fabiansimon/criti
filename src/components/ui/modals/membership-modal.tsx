@@ -3,6 +3,10 @@ import Card from "../card";
 import { cn, convertPrice, hexToRGB } from "~/lib/utils";
 import { Cancel01Icon, Tick02Icon } from "hugeicons-react";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
+import { MEMBERSHIPS } from "~/constants/membership";
+import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
+import { useToast } from "~/hooks/use-toast";
 
 interface Benefit {
   render: React.ReactNode;
@@ -11,6 +15,7 @@ interface Benefit {
 
 interface MembershipType {
   title: string;
+  priceId: string;
   description: string;
   monthlyPrice: number;
   benefits: Benefit[];
@@ -42,7 +47,8 @@ const BENEFITS = {
 
 const MEMBERSHIP_TYPES: MembershipType[] = [
   {
-    title: "Monthly",
+    title: MEMBERSHIPS.V1_ANNUALLY.name,
+    priceId: MEMBERSHIPS.V1_ANNUALLY.priceId,
     description: "⏰ Cancel at any time",
     monthlyPrice: 9.99,
     color: "#FFF28E",
@@ -62,7 +68,8 @@ const MEMBERSHIP_TYPES: MembershipType[] = [
     ],
   },
   {
-    title: "Yearly",
+    title: MEMBERSHIPS.V1_MONTHLY.name,
+    priceId: MEMBERSHIPS.V1_MONTHLY.priceId,
     description: "🎤 Pay once and save 30%",
     monthlyPrice: 5.99,
     color: "#8ED6FF",
@@ -86,6 +93,25 @@ const MEMBERSHIP_TYPES: MembershipType[] = [
 
 export default function MembershipModal() {
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const { mutateAsync: createCheckout } = api.stripe.checkout.useMutation();
+
+  const handleCheckout = async (priceId: string) => {
+    const checkout = await createCheckout({ priceId });
+    if (!checkout?.url) {
+      toast({
+        title: "Something went wrong.",
+        description:
+          "Sorry you can't upgrade at the moment. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    router.push(checkout.url);
+  };
 
   return (
     <Card omitPadding className="mx-auto max-w-[80%] overflow-hidden bg-accent">
@@ -106,7 +132,11 @@ export default function MembershipModal() {
       </div>
       <div className="flex w-full space-x-3 overflow-x-auto p-6 no-scrollbar">
         {MEMBERSHIP_TYPES.map((membership, index) => (
-          <MembershipCard key={index} membership={membership} />
+          <MembershipCard
+            onClick={() => handleCheckout(membership.priceId)}
+            key={index}
+            membership={membership}
+          />
         ))}
         {/* <MembershipCard membership={membership} /> */}
       </div>
@@ -115,15 +145,21 @@ export default function MembershipModal() {
 }
 
 interface MembershipCardProps {
+  onClick: () => void;
   membership: MembershipType;
   className?: string;
 }
 
-function MembershipCard({ membership, className }: MembershipCardProps) {
+function MembershipCard({
+  membership,
+  onClick,
+  className,
+}: MembershipCardProps) {
   const { color, title, description, benefits, monthlyPrice, prioritized } =
     membership;
   return (
     <div
+      onClick={onClick}
       style={{
         borderColor: color,
         boxShadow: `0 4px 6px -1px rgba(${hexToRGB(color)}, 0.2)`,

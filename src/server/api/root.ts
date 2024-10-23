@@ -1,6 +1,7 @@
 import { trackRouter } from "./routers/track/trackRouter";
 import { commentRouter } from "./routers/comment/commentRouter";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { stripeRouter } from "./routers/stripe/stripeRouter";
 
 /**
  * This is the primary router for your server.
@@ -10,6 +11,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 export const appRouter = createTRPCRouter({
   track: trackRouter,
   comment: commentRouter,
+  stripe: stripeRouter,
 });
 
 // export type definition of API

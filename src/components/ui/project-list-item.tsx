@@ -127,7 +127,7 @@ export default function ProjectListItem({
     >
       <div className="flex space-x-3">
         <IconContainer icon={<MusicNote02Icon fill="black" size={16} />} />
-        <div>
+        <div className="flex flex-col justify-center space-y-1">
           <div className="flex items-center space-x-2">
             {locked && (
               <Key02Icon size={18} className="-mr-1 text-white" fill="" />

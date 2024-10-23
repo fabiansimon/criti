@@ -111,7 +111,36 @@ model User {
   accounts   Account[]
   sessions   Session[]
   tracks     Track[]
+
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+  stripSubscriptionStatus StripeSubscriptionStatus?
 }
+
+enum StripeSubscriptionStatus {
+    incomplete
+    incomplete_expired
+    trialing
+    active
+    past_due
+    canceled
+    unpaid
+    paused
+}
+
+model StripeEvent {
+    id               String   @id @unique
+    api_version      String?
+    data             Json
+    request          Json?
+    type             String
+    object           String
+    account          String?
+    created          DateTime
+    livemode         Boolean
+    pending_webhooks Int
+}
+
 
 model VerificationToken {
   identifier String

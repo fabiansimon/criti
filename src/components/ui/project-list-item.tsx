@@ -16,10 +16,9 @@ import Text from "../typography/text";
 import { api } from "~/trpc/react";
 import { useState } from "react";
 import { useDialog } from "~/providers/dialog-provider";
-import { useModal } from "~/providers/modal-provider";
-import TrackInputContainer, { type UpdateState } from "./track-input-container";
-import Card from "./card";
 import { useLoading } from "~/providers/loading-provider";
+import EditTrackModal from "./modals/edit-track-modal";
+import { useModal } from "~/providers/modal-provider";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;
@@ -34,38 +33,17 @@ export default function ProjectListItem({
   const { createdAt, locked, title, openComments, id } = track;
 
   const { toast } = useToast();
-  const { start, stop } = useLoading();
+  const { loading } = useLoading();
   const { show: showDialog, hide: hideDialog } = useDialog();
   const { show: showModal, hide: hideModal } = useModal();
 
   const utils = api.useUtils();
-
   const { mutateAsync: deleteTrack } = api.track.archive.useMutation({
     onError: () => setDeleted(false),
   });
-  const { mutateAsync: updateTrack } = api.track.update.useMutation();
-
-  const handleUpdate = async (updates: UpdateState) => {
-    start();
-    hideModal();
-    await updateTrack({ ...updates, id: track.id });
-    await utils.track.invalidate();
-    stop();
-  };
 
   const handleEdit = () => {
-    showModal(
-      <Card
-        title="Update Track"
-        subtitle="Sharing is caring"
-        className="w-full max-w-screen-sm"
-      >
-        <TrackInputContainer
-          updateState={{ ...track, password: "" }}
-          onClick={(data) => handleUpdate(data as UpdateState)}
-        />
-      </Card>,
-    );
+    showModal(<EditTrackModal onFinish={hideModal} track={track} />);
   };
 
   const handleShare = () => {
@@ -90,12 +68,13 @@ export default function ProjectListItem({
           title: "Delete",
           destructive: true,
           onClick: async () => {
-            start();
-            setDeleted(true);
-            hideDialog();
-            await deleteTrack({ id });
-            await utils.track.invalidate();
-            stop();
+            loading(async () => {
+              setDeleted(true);
+              hideDialog();
+              await deleteTrack({ id });
+              await utils.track.invalidate();
+              stop();
+            });
           },
         },
       ],

@@ -141,3 +141,9 @@ export function hexToRGB(hex: string) {
   }
   return `${r}, ${g}, ${b}`;
 }
+
+export function readableDate(date: Date | string) {
+  if (!date) return;
+  const d = new Date(date);
+  return d.toLocaleDateString();
+}

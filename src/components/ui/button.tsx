@@ -68,7 +68,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {isLoading && <LoadingSpinner />}
+        {isLoading && (
+          <div className="flex w-full items-center justify-center">
+            <LoadingSpinner />
+          </div>
+        )}
         {!isLoading && (
           <>
             {icon && icon}

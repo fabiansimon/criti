@@ -3,6 +3,7 @@
 import {
   Download04Icon,
   MoreVerticalCircle01Icon,
+  PencilEdit01Icon,
   Share05Icon,
 } from "hugeicons-react";
 import { useSession } from "next-auth/react";
@@ -16,6 +17,7 @@ import VolumeControl from "~/components/ui/audio/volume-control";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
 import Dropdown, { type MenuOption } from "~/components/ui/dropdown-menu";
+import EditTrackModal from "~/components/ui/modals/edit-track-modal";
 import PasswordModal from "~/components/ui/modals/password-modal";
 import { Switch } from "~/components/ui/switch";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
@@ -28,6 +30,7 @@ import {
   generateShareableLink,
   pluralize,
 } from "~/lib/utils";
+import { useModal } from "~/providers/modal-provider";
 
 import { api } from "~/trpc/react";
 
@@ -42,6 +45,7 @@ export default function ListenPage() {
   const { id } = useParams<{ id: string }>();
   const { isLoading: downloadLoading, download } = useDownload();
   const { toast } = useToast();
+  const { show: showModal, hide: hideModal } = useModal();
 
   const { data } = useSession();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -63,6 +67,11 @@ export default function ListenPage() {
   const isAdmin = data?.user.id === track?.creatorId;
 
   const menuOptions: MenuOption[] = [
+    {
+      title: "Edit",
+      onClick: () => void handleEdit(),
+      disabled: !isAdmin,
+    },
     {
       title: "Download",
       onClick: () => void handleDownload(),
@@ -94,6 +103,11 @@ export default function ListenPage() {
       title: "Link copied",
       description: "Share the link with your friends.",
     });
+  };
+
+  const handleEdit = () => {
+    if (!track) return;
+    showModal(<EditTrackModal track={track} onFinish={hideModal} />);
   };
 
   const handleVolume = (volume: number) => {
@@ -183,16 +197,21 @@ export default function ListenPage() {
             )}
 
             {!isSmall && (
-              <div className="flex space-x-2">
+              <div className="z-10 flex space-x-2">
+                {isAdmin && (
+                  <IconButton
+                    icon={<PencilEdit01Icon size={17} />}
+                    text="Edit"
+                    onClick={handleEdit}
+                  />
+                )}
                 <IconButton
-                  className="z-10"
                   icon={<Download04Icon size={18} />}
                   text="Download"
                   isLoading={downloadLoading}
                   onClick={handleDownload}
                 />
                 <IconButton
-                  className="z-10"
                   icon={<Share05Icon size={16} />}
                   text="Share"
                   onClick={handleShare}

@@ -13,7 +13,7 @@ export async function getCustomerId({ userId }: { userId: string }) {
 
   const { stripeCustomerId, email, name } = user;
 
-  if (stripeCustomerId) return stripeCustomerId as string;
+  if (stripeCustomerId) return stripeCustomerId;
 
   const { id: customerId } = await stripe.customers.create({
     email: email ?? undefined,

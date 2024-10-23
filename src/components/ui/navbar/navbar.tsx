@@ -7,6 +7,7 @@ import {
   Home11Icon,
   Menu01Icon,
   Playlist02Icon,
+  UserIcon,
 } from "hugeicons-react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
@@ -138,7 +139,9 @@ function Drawer({ options, expanded, user, onRequestClose }: DrawerProps) {
         variants={{ visible: { translateX: 0 }, hidden: { translateX: -1000 } }}
         className="flex h-full w-[80%] flex-col items-start space-y-4 bg-white px-4 py-10"
       >
-        {user && <UserTile disabled user={user} />}
+        {user && (
+          <UserTile onClick={() => router.push(ROUTES.account)} user={user} />
+        )}
         {[...options, ...mobileOptions].map((option, index) => (
           <NavItem
             active={option.route ? path.includes(option.route) : false}
@@ -201,11 +204,11 @@ function NavItem({ option, className, active }: NavItemProps) {
 
 interface UserTileProps {
   user: SessionUser;
-  disabled?: boolean;
+  onClick?: () => void;
   className?: string;
 }
 
-function UserTile({ user, disabled, className }: UserTileProps) {
+function UserTile({ user, onClick, className }: UserTileProps) {
   const { image, name } = user;
 
   const router = useRouter();
@@ -222,6 +225,10 @@ function UserTile({ user, disabled, className }: UserTileProps) {
 
   const options: MenuOption[] = [
     {
+      title: "Account",
+      onClick: () => router.push(ROUTES.account),
+    },
+    {
       title: "Membership",
       onClick: showMemberships,
     },
@@ -232,16 +239,18 @@ function UserTile({ user, disabled, className }: UserTileProps) {
   ];
 
   return (
-    <Dropdown disabled={disabled} options={options}>
-      <div
-        className={cn(
-          "flex cursor-pointer items-center space-x-3 rounded-lg p-2 hover:bg-neutral-100",
-          className,
-        )}
-      >
-        <Avatar className="size-7" url={image ?? ""} name={name ?? ""} />
-        <Text.Body className="text-sm">{name ?? ""}</Text.Body>
-      </div>
-    </Dropdown>
+    <div onClick={onClick}>
+      <Dropdown disabled={!!onClick} options={options}>
+        <div
+          className={cn(
+            "flex cursor-pointer items-center space-x-3 rounded-lg p-2 hover:bg-neutral-100",
+            className,
+          )}
+        >
+          <Avatar className="size-7" url={image ?? ""} name={name ?? ""} />
+          <Text.Body className="text-sm">{name ?? ""}</Text.Body>
+        </div>
+      </Dropdown>
+    </div>
   );
 }

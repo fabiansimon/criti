@@ -3,6 +3,7 @@ export const ROUTES = {
   listen: "listen",
   auth: "auth",
   upload: "upload",
+  account: "account",
   landing: "",
 };
 

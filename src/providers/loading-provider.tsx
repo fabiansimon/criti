@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { cn } from "~/lib/utils";
 
 interface LoadingContextType {
+  loading: (func?: () => Promise<void>) => void;
   start: () => void;
   stop: () => void;
 }
@@ -19,16 +20,30 @@ export default function LoadingProvider({
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const start = useCallback(() => {
-    setIsLoading(true);
+    setIsLoading(false);
   }, []);
 
   const stop = useCallback(() => {
     setIsLoading(false);
   }, []);
 
+  const loading = useCallback(
+    async (func?: () => Promise<void>) => {
+      setIsLoading(true);
+      if (!func) return;
+      try {
+        await func();
+      } finally {
+        stop();
+      }
+    },
+    [stop],
+  );
+
   const value = {
     start,
     stop,
+    loading,
   };
 
   return (

@@ -47,8 +47,8 @@ const BENEFITS = {
 
 const MEMBERSHIP_TYPES: MembershipType[] = [
   {
-    title: MEMBERSHIPS.V1_ANNUALLY.name,
-    priceId: MEMBERSHIPS.V1_ANNUALLY.priceId,
+    title: MEMBERSHIPS.V1_MONTHLY.name,
+    priceId: MEMBERSHIPS.V1_MONTHLY.priceId,
     description: "⏰ Cancel at any time",
     monthlyPrice: 9.99,
     color: "#FFF28E",
@@ -68,8 +68,8 @@ const MEMBERSHIP_TYPES: MembershipType[] = [
     ],
   },
   {
-    title: MEMBERSHIPS.V1_MONTHLY.name,
-    priceId: MEMBERSHIPS.V1_MONTHLY.priceId,
+    title: MEMBERSHIPS.V1_ANNUALLY.name,
+    priceId: MEMBERSHIPS.V1_ANNUALLY.priceId,
     description: "🎤 Pay once and save 30%",
     monthlyPrice: 5.99,
     color: "#8ED6FF",

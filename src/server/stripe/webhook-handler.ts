@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { db } from "../db";
 import { stripe } from "./client";
+import type Stripe from "stripe";
 
 export async function getCustomerId({ userId }: { userId: string }) {
   const user = await db.user.findUnique({
@@ -31,4 +32,50 @@ export async function getCustomerId({ userId }: { userId: string }) {
   });
 
   return customerId;
+}
+
+export async function invoicePayment({ event }: { event: Stripe.Event }) {
+  const invoice = event.data.object as Stripe.Invoice;
+  const subscriptionId = invoice.subscription as string;
+  const { id, status, metadata } =
+    await stripe.subscriptions.retrieve(subscriptionId);
+
+  const userId = metadata.userId;
+
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      stripeSubscriptionId: id,
+      stripSubscriptionStatus: status,
+      membership: "PREMIUM_V1",
+    },
+  });
+}
+
+export async function createSubscription({ event }: { event: Stripe.Event }) {
+  const { id, status, metadata } = event.data.object as Stripe.Subscription;
+  const { userId } = metadata;
+
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      stripeSubscriptionId: id,
+      stripSubscriptionStatus: status,
+      membership: "PREMIUM_V1",
+    },
+  });
+}
+
+export async function cancelSubscription({ event }: { event: Stripe.Event }) {
+  const { metadata } = event.data.object as Stripe.Subscription;
+  const { userId } = metadata;
+
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      stripeSubscriptionId: null,
+      stripSubscriptionStatus: null,
+      membership: "FREE",
+    },
+  });
 }

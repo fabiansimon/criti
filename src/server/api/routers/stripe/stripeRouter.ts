@@ -24,8 +24,8 @@ const createCheckoutSession = protectedProcedure
         client_reference_id: user.id,
         payment_method_types: ["card"],
         mode: "subscription",
-        success_url: `${baseUrl}/profile?checkoutSuccess=true`,
-        cancel_url: `${baseUrl}/profile?checkoutCanceled=true`,
+        success_url: `${baseUrl}/home`,
+        cancel_url: `${baseUrl}/home`,
         line_items: [
           {
             price: priceId,

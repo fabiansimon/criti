@@ -17,8 +17,9 @@ import { storeFile } from "~/server/supabase";
 import { env } from "~/env";
 import { Membership } from "@prisma/client";
 import { Resend } from "resend";
-import InviteEmail from "../../email-templates/invite";
+import InviteEmail from "../../email/email-templates/invite";
 import { generateShareableLink } from "~/lib/utils";
+import { sendEmail } from "../../email/resend";
 
 const archiveTrack = protectedProcedure
   .input(ArchiveProjectInput)
@@ -188,19 +189,17 @@ const uploadTrack = protectedProcedure
       });
 
       if (emails.length > 0) {
-        const resend = new Resend(env.EMAIL_SERVER_PASSWORD);
-        const { data, error } = await resend.emails.send({
-          from: "Acme <onboarding@resend.dev>",
+        const { data, error } = await sendEmail({
+          from: "Vocast <onboarding@resend.dev>",
           to: [...emails],
           subject: "Hello world",
-          react: InviteEmail({
+          body: InviteEmail({
             title: track.title,
             by: creatorEmail ?? "Someone",
             link: generateShareableLink(track.id),
           }),
         });
-
-        if (error) console.log("==== ERROR:", error);
+        console.error("Error sending out emails:", error);
       }
 
       return track;

@@ -10,6 +10,13 @@ import {
   invoicePayment,
 } from "~/server/stripe/webhook-handler";
 
+// Stripe requires the raw body to construct the event.
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = headers().get("Stripe-Signature");
@@ -54,6 +61,9 @@ export async function POST(req: Request) {
         break;
 
       default:
+        // If event type isn't handled
+        console.log(`Unhandled event type: ${event.type}`);
+        break;
         break;
     }
 
@@ -77,6 +87,8 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    return new NextResponse("Webhook processed", { status: 200 });
   } catch (error) {
     console.error("Error processing webhook event", error);
     return new NextResponse("Error processing webhook event", { status: 400 });

@@ -3,4 +3,5 @@ export class REGEX {
   static timestamp = /^([0-5][0-9]):([0-5][0-9])$/;
   static roomPassword = /^.{4,}$/;
   static userPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  static username = /^[A-Z][a-zA-Z'-]+ [A-Z][a-zA-Z'-]+$/;
 }

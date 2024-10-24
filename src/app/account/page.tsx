@@ -14,6 +14,12 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
 import { useLoading } from "~/providers/loading-provider";
+import { REGEX } from "~/constants/regex";
+import { MEMBERSHIPS } from "~/constants/membership";
+import { useModal } from "~/providers/modal-provider";
+import MembershipModal from "~/components/ui/modals/membership-modal";
+
+const MAX_NAME_LENGTH = 20;
 
 export default function AccountPage() {
   const [name, setName] = useState<string>("");
@@ -28,12 +34,19 @@ export default function AccountPage() {
   const { toast } = useToast();
 
   const router = useRouter();
-  const { data } = useSession();
+  const { data, update } = useSession();
   const { loading } = useLoading();
+  const { show } = useModal();
 
   const activeChanges = useMemo(() => {
-    return name.trim() !== user?.name && name.length > 2;
+    return name.trim() !== user?.name;
   }, [user?.name, name]);
+
+  const validInput = useMemo(() => {
+    if (!activeChanges) return false;
+    if (name.length < 2 || name.length > MAX_NAME_LENGTH) return false;
+    return REGEX.username.test(name);
+  }, [name, activeChanges]);
 
   useEffect(() => {
     if (!user) return;
@@ -41,6 +54,10 @@ export default function AccountPage() {
   }, [user]);
 
   const handleBilling = async () => {
+    if (user?.membership === "FREE") {
+      return show(<MembershipModal />);
+    }
+
     loading(async () => {
       const billing = await createBillingSession();
       if (!billing?.url) {
@@ -60,11 +77,12 @@ export default function AccountPage() {
     loading(async () => {
       await updateUser({ id: data.user.id, name: name.trim() });
       await utils.user.invalidate();
+      await update();
     });
   };
 
   return (
-    <div className="flex min-h-screen w-full grow flex-col items-center justify-center bg-accent">
+    <div className="fixed flex min-h-screen w-full grow flex-col items-center justify-center bg-accent">
       <Card
         isLoading={isLoading}
         title="Your account"
@@ -75,6 +93,7 @@ export default function AccountPage() {
             <div className="flex w-full overflow-x-hidden">
               <IconContainer icon={<UserIcon size={16} />} />
               <Input
+                maxLength={20}
                 className="my-[1px] ml-2 mr-1 flex h-12 overflow-visible"
                 placeholder="Your Name"
                 value={name}
@@ -95,6 +114,7 @@ export default function AccountPage() {
                 className="flex w-full grow"
               >
                 <Button
+                  disabled={!validInput}
                   isLoading={updateLoading}
                   onClick={handleUpdate}
                   className="ml-2 inline-block h-full w-[160px] flex-none"
@@ -113,7 +133,11 @@ export default function AccountPage() {
             onClick={handleBilling}
             className="mt-2 cursor-pointer space-y-1 rounded-lg border border-neutral-100 p-2 hover:bg-neutral-50"
           >
-            <Text.Subtitle className="text-sm">Premium Annually</Text.Subtitle>
+            <Text.Subtitle className="text-sm">
+              {user?.membership === "FREE"
+                ? "Free Membership"
+                : "Premium Membership"}
+            </Text.Subtitle>
             <Text.Subtitle className="text-[11px] font-normal" subtle>
               Manage subscription and billing
             </Text.Subtitle>

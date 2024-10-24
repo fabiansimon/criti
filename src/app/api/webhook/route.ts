@@ -11,11 +11,11 @@ import {
 } from "~/server/stripe/webhook-handler";
 
 // Stripe requires the raw body to construct the event.
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
 
 export async function POST(req: Request) {
   const body = await req.text();

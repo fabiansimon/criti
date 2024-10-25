@@ -71,8 +71,8 @@ export default function NavBar() {
         </div>
       )}
       {!isSmall && (
-        <div className="absolute flex w-full items-center">
-          <div className="mx-auto flex space-x-2">
+        <div className="mx-auto flex w-full justify-between space-x-2 px-10 md:max-w-screen-lg">
+          <div className="flex space-x-2">
             {options.map((option, index) => (
               <NavItem
                 active={option.route ? path.includes(option.route) : false}
@@ -80,9 +80,9 @@ export default function NavBar() {
                 option={option}
               />
             ))}
-            <div className="my-2 w-[1px] bg-neutral-100" />
-            {data?.user && <UserTile className="" user={data.user} />}
           </div>
+          <div className="my-2 w-[1px] bg-neutral-100" />
+          {data?.user && <UserTile className="" user={data.user} />}
         </div>
       )}
       {isSmall && (

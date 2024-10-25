@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Cancel01Icon,
   LockPasswordIcon,
   Mail01Icon,
   MusicNote02Icon,
@@ -18,6 +17,7 @@ import { cn } from "~/lib/utils";
 import { Switch } from "./switch";
 import { REGEX } from "~/constants/regex";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
+import EmailChip from "./email-chip";
 
 interface InputType {
   title: string;
@@ -257,25 +257,6 @@ export default function TrackInputContainer({
         className="mt-8 h-12 w-full"
         title={update ? "Update" : "Create"}
       />
-    </div>
-  );
-}
-
-interface EmailChipProps {
-  email: string;
-  onDelete: () => void;
-}
-
-function EmailChip({ email, onDelete }: EmailChipProps) {
-  return (
-    <div
-      onClick={onDelete}
-      className="flex h-7 cursor-pointer items-center justify-center space-x-2 rounded-full bg-neutral-900 pl-3 pr-2"
-    >
-      <Text.Subtitle className="font-light text-white">{email}</Text.Subtitle>
-      <div className="rounded-full bg-white p-[1.5px]">
-        <Cancel01Icon className="text-neutral-900" size={12} />
-      </div>
     </div>
   );
 }

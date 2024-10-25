@@ -3,14 +3,12 @@ import { useMemo, useRef, useState } from "react";
 import { REGEX } from "~/constants/regex";
 import { cn, convertTimestamp, generateTimestamp } from "~/lib/utils";
 import { Button } from "../button";
-import LoadingSpinner from "../loading-spinner";
 import { Popover, type PopoverRef } from "../tooltip";
 
 interface CommentInputProps {
   onCreate: ({ content, timestamp }: CommentContent) => void;
   time: number;
   maxTime: number;
-  isLoading?: boolean;
   className?: string;
 }
 
@@ -22,7 +20,6 @@ export interface CommentContent {
 export default function CommentInput({
   onCreate,
   className,
-  isLoading,
   time,
   maxTime,
 }: CommentInputProps) {
@@ -131,16 +128,10 @@ export default function CommentInput({
       </div>
       <div className="rounded-md bg-white">
         <Button
-          disabled={!validInput || isLoading}
+          disabled={!validInput}
           onClick={handleCreate}
           className="min-h-full w-14"
-          icon={
-            isLoading ? (
-              <LoadingSpinner className="size-4" />
-            ) : (
-              <PlusSignIcon size={18} />
-            )
-          }
+          icon={<PlusSignIcon size={18} />}
         />
       </div>
     </div>

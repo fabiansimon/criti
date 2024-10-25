@@ -1,12 +1,11 @@
-import { useModal } from "~/providers/modal-provider";
 import Card from "../card";
 import TrackInputContainer, {
   type UpdateState,
 } from "../track-input-container";
 import { api } from "~/trpc/react";
 import { useLoading } from "~/providers/loading-provider";
-import { Track } from "@prisma/client";
-import { SimplfiedTrack } from "~/server/api/routers/track/trackTypes";
+import { type Track } from "@prisma/client";
+import { type SimplfiedTrack } from "~/server/api/routers/track/trackTypes";
 
 interface EditTrackModalProps {
   track: Track | SimplfiedTrack;

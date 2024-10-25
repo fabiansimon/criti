@@ -19,6 +19,7 @@ import { useDialog } from "~/providers/dialog-provider";
 import { useLoading } from "~/providers/loading-provider";
 import EditTrackModal from "./modals/edit-track-modal";
 import { useModal } from "~/providers/modal-provider";
+import ShareModal from "./modals/share-modal";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;
@@ -32,7 +33,6 @@ export default function ProjectListItem({
   const [deleted, setDeleted] = useState<boolean>(false);
   const { createdAt, locked, title, openComments, id } = track;
 
-  const { toast } = useToast();
   const { loading } = useLoading();
   const { show: showDialog, hide: hideDialog } = useDialog();
   const { show: showModal, hide: hideModal } = useModal();
@@ -47,12 +47,7 @@ export default function ProjectListItem({
   };
 
   const handleShare = () => {
-    const url = generateShareableLink(id);
-    copyToClipboard(url);
-    toast({
-      title: "Link copied",
-      description: "Share the link with your friends.",
-    });
+    showModal(<ShareModal trackId={track.id} />);
   };
 
   const handleDelete = async () => {
@@ -126,7 +121,9 @@ export default function ProjectListItem({
         </div>
       </div>
       <Dropdown className="mr-4" options={menuOptions}>
-        <MoreVerticalCircle01Icon fill="black" size={18} />
+        <div className="rounded-md p-2 hover:bg-neutral-100">
+          <MoreVerticalCircle01Icon fill="black" size={18} />
+        </div>
       </Dropdown>
     </div>
   );

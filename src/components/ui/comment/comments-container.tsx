@@ -1,18 +1,19 @@
 import Text from "~/components/typography/text";
 import { cn } from "~/lib/utils";
 import CommentInput, { type CommentContent } from "./comment-input";
+import { v4 as uuid } from "uuid";
 import { type Comment } from "@prisma/client";
 import { api } from "~/trpc/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowDown01Icon } from "hugeicons-react";
 import { CommentTile } from "./comment-tile";
 import { LocalStorage } from "~/lib/localStorage";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
+import { useSession } from "next-auth/react";
 
 interface CommentsContainerProps {
   time: number;
   trackId: string;
-  comments: Comment[];
   markComments: boolean;
   maxTime: number;
   isAdmin: boolean;
@@ -29,17 +30,30 @@ export function CommentsContainer({
   className,
   markComments,
   isAdmin,
-  comments,
   onTimestamp,
 }: CommentsContainerProps) {
   const [sortBy, setSortBy] = useState<SortFilter>("timestamp");
   const [ascending, setAscending] = useState<boolean>(true);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [comments, setComments] = useState<Comment[]>([]);
 
+  const { data } = useSession();
   const utils = api.useUtils();
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
-  const { mutateAsync: createComment } = api.comment.create.useMutation();
+  const { data: initComments, isLoading } = api.comment.getAll.useQuery({
+    trackId,
+  });
+
+  useEffect(() => {
+    if (!initComments) return;
+    setComments(initComments);
+  }, [initComments]);
+
+  const { mutateAsync: createComment } = api.comment.create.useMutation({
+    onSuccess: async () => await utils.comment.invalidate(),
+    onError: (_, { id: localId }) =>
+      setComments((prev) => prev.filter(({ id }) => id !== localId)),
+  });
 
   const empty = comments.length === 0;
 
@@ -85,10 +99,23 @@ export function CommentsContainer({
     if (!isAdmin) {
       sessionId = LocalStorage.fetchSessionId();
     }
-    setIsLoading(true);
-    await createComment({ content, timestamp, trackId, sessionId });
-    await utils.track.invalidate();
-    setIsLoading(false);
+
+    const localId = uuid();
+    const newComment: Comment = {
+      byAdmin: isAdmin,
+      content,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      creatorId: data?.user.id ?? "",
+      id: localId,
+      open: true,
+      sessionId: sessionId ?? null,
+      timestamp: timestamp ?? null,
+      trackId,
+    };
+
+    setComments((prev) => [...prev, newComment]);
+    await createComment({ ...newComment, id: localId });
   };
 
   return (
@@ -175,7 +202,6 @@ export function CommentsContainer({
           isSmall && "fixed bottom-[135px]",
         )}
         onCreate={handleAddComment}
-        isLoading={isLoading}
       />
     </div>
   );

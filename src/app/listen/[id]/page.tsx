@@ -24,12 +24,7 @@ import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import useDownload from "~/hooks/use-download";
 import { useToast } from "~/hooks/use-toast";
 import { LocalStorage } from "~/lib/localStorage";
-import {
-  cn,
-  copyToClipboard,
-  generateShareableLink,
-  pluralize,
-} from "~/lib/utils";
+import { cn, copyToClipboard, generateShareableLink } from "~/lib/utils";
 import { useModal } from "~/providers/modal-provider";
 
 import { api } from "~/trpc/react";
@@ -83,9 +78,6 @@ export default function ListenPage() {
   ];
 
   const subtitle = useMemo(() => {
-    if (isAdmin) {
-      return `${pluralize(track?.comments.length ?? 0, "comment")}`;
-    }
     return `Shared by ${track?.creator.name}`;
   }, [isAdmin, track]);
 
@@ -171,7 +163,6 @@ export default function ListenPage() {
           onTimestamp={handleTimeUpdate}
           time={time}
           trackId={id}
-          comments={track?.comments ?? []}
           className="mt-6"
         />
 

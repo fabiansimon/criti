@@ -6,18 +6,21 @@ import {
 import { TRPCError } from "@trpc/server";
 import {
   CreateCommentInput,
+  GetTrackComments,
   RemoveCommentInput,
   UpdateCommentInput,
 } from "./commentTypes";
+import { sendCommentNotificationEmail } from "../../email/resend";
 
-const createComment = anonPossibleProcedure
-  .input(CreateCommentInput)
-  .mutation(async ({ input, ctx: { db, session } }) => {
-    const { content, trackId, timestamp, sessionId } = input;
+const getTrackComments = anonPossibleProcedure
+  .input(GetTrackComments)
+  .query(async ({ input, ctx: { db } }) => {
+    const { trackId } = input;
 
     try {
       const track = await db.track.findUnique({
         where: { id: trackId },
+        include: { comments: true },
       });
 
       if (!track) {
@@ -27,12 +30,46 @@ const createComment = anonPossibleProcedure
         });
       }
 
+      return track.comments;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error);
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+        });
+      }
+    }
+  });
+
+const createComment = anonPossibleProcedure
+  .input(CreateCommentInput)
+  .mutation(async ({ input, ctx: { db, session } }) => {
+    const { content, trackId, timestamp, sessionId } = input;
+
+    try {
+      const track = await db.track.findUnique({
+        where: { id: trackId },
+        include: { creator: true },
+      });
+
+      if (!track) {
+        throw new TRPCError({
+          message: "Track with that ID not found.",
+          code: "NOT_FOUND",
+        });
+      }
+
+      const { creator } = track;
+
+      const byAdmin = !!session && session.user.id === creator.id;
+
       const comment = await db.comment.create({
         data: {
           content,
           timestamp: timestamp ?? null,
           creatorId: session?.user?.id ?? null,
-          byAdmin: !!session,
+          byAdmin,
           sessionId: sessionId ?? null,
           track: {
             connect: {
@@ -41,6 +78,16 @@ const createComment = anonPossibleProcedure
           },
         },
       });
+
+      if (!byAdmin && session?.user.email) {
+        const { id, title } = track;
+        void sendCommentNotificationEmail({
+          comment,
+          email: session.user.email,
+          id: id,
+          title: title,
+        });
+      }
 
       return comment;
     } catch (error) {
@@ -146,5 +193,6 @@ const updateComment = protectedProcedure
 export const commentRouter = createTRPCRouter({
   create: createComment,
   delete: removeComment,
+  getAll: getTrackComments,
   update: updateComment,
 });

@@ -16,10 +16,9 @@ import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
 import { env } from "~/env";
 import { Membership } from "@prisma/client";
-import { Resend } from "resend";
 import InviteEmail from "../../email/email-templates/invite";
 import { generateShareableLink } from "~/lib/utils";
-import { sendEmail } from "../../email/resend";
+import { sendInvitationEmail } from "../../email/resend";
 
 const archiveTrack = protectedProcedure
   .input(ArchiveProjectInput)
@@ -69,6 +68,7 @@ const archiveTrack = protectedProcedure
         throw new TRPCError({
           message: error.message,
           code: "INTERNAL_SERVER_ERROR",
+          cause: error,
         });
       }
     }
@@ -128,6 +128,7 @@ const updateTrack = protectedProcedure
         throw new TRPCError({
           message: error.message,
           code: "INTERNAL_SERVER_ERROR",
+          cause: error,
         });
       }
     }
@@ -189,17 +190,7 @@ const uploadTrack = protectedProcedure
       });
 
       if (emails.length > 0) {
-        const { data, error } = await sendEmail({
-          from: "Vocast <onboarding@resend.dev>",
-          to: [...emails],
-          subject: "Hello world",
-          body: InviteEmail({
-            title: track.title,
-            by: creatorEmail ?? "Someone",
-            link: generateShareableLink(track.id),
-          }),
-        });
-        console.error("Error sending out emails:", error);
+        await sendInvitationEmail({ emails, trackId: track.id });
       }
 
       return track;
@@ -209,6 +200,7 @@ const uploadTrack = protectedProcedure
         throw new TRPCError({
           message: error.message,
           code: "INTERNAL_SERVER_ERROR",
+          cause: error,
         });
       }
     }
@@ -274,6 +266,7 @@ const isTrackLocked = anonPossibleProcedure
         throw new TRPCError({
           message: error.message,
           code: "INTERNAL_SERVER_ERROR",
+          cause: error,
         });
       }
     }
@@ -289,7 +282,6 @@ const getTrackById = publicProcedure
         where: { id, isArchived: false },
         include: {
           file: true,
-          comments: true,
           creator: true,
           trustedSessions: { where: { sessionId } },
         },
@@ -321,6 +313,7 @@ const getTrackById = publicProcedure
         throw new TRPCError({
           message: error.message,
           code: "INTERNAL_SERVER_ERROR",
+          cause: error,
         });
       }
     }
@@ -356,6 +349,7 @@ const getAllTracksByUser = protectedProcedure
         throw new TRPCError({
           message: error.message,
           code: "INTERNAL_SERVER_ERROR",
+          cause: error,
         });
       }
     }
@@ -412,6 +406,7 @@ const checkTrackLimit = protectedProcedure.query(
         throw new TRPCError({
           message: error.message,
           code: "INTERNAL_SERVER_ERROR",
+          cause: error,
         });
       }
     }

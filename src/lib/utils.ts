@@ -1,9 +1,6 @@
-import { type Membership } from "@prisma/client";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { route, ROUTES } from "~/constants/routes";
-import { env } from "~/env";
-import { useToast } from "~/hooks/use-toast";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

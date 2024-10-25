@@ -60,6 +60,8 @@ export default function NavBar() {
     },
   ];
 
+  if (path === "/") return;
+
   return (
     <div className="fixed left-0 right-0 top-0 z-20 flex min-h-14 items-center border-b border-b-neutral-200 bg-white">
       {isSmall && (
@@ -140,7 +142,10 @@ function Drawer({ options, expanded, user, onRequestClose }: DrawerProps) {
         className="flex h-full w-[80%] flex-col items-start space-y-4 bg-white px-4 py-10"
       >
         {user && (
-          <UserTile onClick={() => router.push(ROUTES.account)} user={user} />
+          <UserTile
+            onClick={() => router.push(route(ROUTES.account))}
+            user={user}
+          />
         )}
         {[...options, ...mobileOptions].map((option, index) => (
           <NavItem
@@ -226,7 +231,7 @@ function UserTile({ user, onClick, className }: UserTileProps) {
   const options: MenuOption[] = [
     {
       title: "Account",
-      onClick: () => router.push(ROUTES.account),
+      onClick: () => router.push(route(ROUTES.account)),
     },
     {
       title: "Membership",

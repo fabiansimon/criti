@@ -332,14 +332,39 @@ const getAllTracksByUser = protectedProcedure
         include: { comments: { where: { open: true } } },
       });
 
+      const user = await db.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new TRPCError({ message: "User not found.", code: "NOT_FOUND" });
+      }
+
+      let expiryLimit = 0;
+      if (user.membership === "FREE") {
+        expiryLimit = env.FREE_EXPIRE_IN_DAYS;
+      } else {
+        expiryLimit = env.PREMIUM_V1_EXPIRE_IN_DAYS;
+      }
+
+      const expireBy = new Date();
+      expireBy.setDate(expireBy.getDate() - expiryLimit);
+
       const formatted = tracks.map(
-        ({ id, title, createdAt, comments, locked }) => ({
-          id: id,
-          title: title,
-          createdAt: createdAt,
-          locked,
-          openComments: comments.length > 0,
-        }),
+        ({ id, title, createdAt, comments, locked }) => {
+          const timeDiff = expireBy.getTime() - createdAt.getTime();
+          const hoursSinceCreation = Math.floor(timeDiff / (1000 * 60 * 60));
+          const totalExpiryHours = expiryLimit * 24;
+          const expiresIn = Math.max(totalExpiryHours - hoursSinceCreation, 0);
+          return {
+            id,
+            title,
+            createdAt,
+            locked,
+            openComments: comments.filter((c) => !c.byAdmin).length > 0,
+            expiresIn,
+          };
+        },
       );
 
       return formatted;

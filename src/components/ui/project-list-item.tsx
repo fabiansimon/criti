@@ -1,9 +1,4 @@
-import { useToast } from "~/hooks/use-toast";
-import {
-  copyToClipboard,
-  generateShareableLink,
-  getDateDifference,
-} from "~/lib/utils";
+import { cn, getDateDifference } from "~/lib/utils";
 import { type SimplfiedTrack } from "~/server/api/routers/track/trackTypes";
 import Dropdown, { type MenuOption } from "./dropdown-menu";
 import IconContainer from "./icon-container";
@@ -14,12 +9,13 @@ import {
 } from "hugeicons-react";
 import Text from "../typography/text";
 import { api } from "~/trpc/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDialog } from "~/providers/dialog-provider";
 import { useLoading } from "~/providers/loading-provider";
 import EditTrackModal from "./modals/edit-track-modal";
 import { useModal } from "~/providers/modal-provider";
 import ShareModal from "./modals/share-modal";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;
@@ -107,16 +103,19 @@ export default function ProjectListItem({
               <Key02Icon size={18} className="-mr-1 text-white" fill="" />
             )}
             <Text.Body>{title}</Text.Body>
-            {openComments && (
-              <div className="mt-1 flex h-6 items-center rounded-full bg-green-300/30 px-2">
-                <Text.Subtitle className="text-[10px] font-normal text-green-700">
-                  open comments
-                </Text.Subtitle>
-              </div>
-            )}
+            <div className="-mt-2 ml-1 flex space-x-1">
+              <ExpirationChip hours={track.expiresIn} />
+              {openComments && (
+                <div className="mt-1 flex h-6 items-center rounded-full bg-blue-300/30 px-2">
+                  <Text.Subtitle className="text-[10px] font-normal text-blue-700">
+                    open comments
+                  </Text.Subtitle>
+                </div>
+              )}
+            </div>
           </div>
           <Text.Subtitle className="font-normal" subtle>
-            {getDateDifference(createdAt.toString()).text}
+            {getDateDifference({ date: createdAt }).text}
           </Text.Subtitle>
         </div>
       </div>
@@ -125,6 +124,49 @@ export default function ProjectListItem({
           <MoreVerticalCircle01Icon fill="black" size={18} />
         </div>
       </Dropdown>
+    </div>
+  );
+}
+
+interface ExpirationChipProps {
+  hours: number;
+}
+function ExpirationChip({ hours }: ExpirationChipProps) {
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
+
+  const { textColor, backgroundColor } = useMemo(() => {
+    // Within 24 hours
+    if (hours < 24)
+      return {
+        textColor: "text-red-700",
+        backgroundColor: "bg-red-300/30",
+      };
+
+    // Within a week
+    if (hours < 24 * 7)
+      return {
+        textColor: "text-orange-700",
+        backgroundColor: "bg-orange-300/30",
+      };
+
+    return {
+      textColor: "text-green-700",
+      backgroundColor: "bg-green-300/30",
+    };
+  }, [hours]);
+
+  return (
+    <div
+      className={cn(
+        "mt-1 flex h-6 items-center rounded-full px-2",
+        backgroundColor,
+      )}
+    >
+      <Text.Subtitle
+        className={cn("text-[10px] font-normal text-green-700", textColor)}
+      >
+        {`${isSmall ? "" : "expires "}${getDateDifference({ hours, currentString: "today", past: false }).text}`}
+      </Text.Subtitle>
     </div>
   );
 }

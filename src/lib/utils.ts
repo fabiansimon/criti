@@ -35,9 +35,27 @@ export function generateTimestamp(time: number) {
   return `${paddedMinutes}:${paddedSeconds}`;
 }
 
-export function getDateDifference(date: string) {
+export function getDateDifference({
+  date,
+  hours,
+  past = true,
+  currentString = "just now",
+}: {
+  date?: Date;
+  hours?: number;
+  past?: boolean;
+  currentString?: string;
+}) {
   const now = new Date();
-  const difference = now.getTime() - new Date(date).getTime();
+  let difference = 0;
+
+  if (hours !== undefined) {
+    difference = hours * 60 * 60 * 1000;
+  } else if (date) {
+    difference = now.getTime() - new Date(date).getTime();
+  } else {
+    throw new Error("Either 'date' or 'hours' must be provided.");
+  }
 
   const units = [
     { name: "year", value: 365 * 24 * 60 * 60 * 1000 },
@@ -53,14 +71,14 @@ export function getDateDifference(date: string) {
     const amount = Math.floor(difference / unit.value);
     if (amount >= 1) {
       return {
-        text: `${amount} ${unit.name}${amount > 1 ? "s" : ""} ago`,
+        text: `${!past ? "in " : ""}${amount} ${unit.name}${amount > 1 ? "s" : ""}${past ? " ago" : ""}`,
         unit: unit.name,
       };
     }
   }
 
   return {
-    text: "just now",
+    text: currentString,
     unit: "seconds",
   };
 }

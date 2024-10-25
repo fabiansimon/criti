@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { v4 as uuidv4 } from "uuid";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { env } from "~/env";
@@ -39,4 +36,20 @@ export async function storeFile({
   } = supabase.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
 
   return { fileUrl };
+}
+
+export async function deleteFiles(paths: string[]) {
+  if (paths.length === 0) {
+    return;
+  }
+
+  const { data, error } = await supabase.storage
+    .from(SUPABASE_BUCKET)
+    .remove(paths);
+
+  if (error) {
+    throw new Error(`Error deleting files: ${error.message}`);
+  }
+
+  return data;
 }

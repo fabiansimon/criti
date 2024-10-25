@@ -11,7 +11,7 @@ import { copyToClipboard, generateShareableLink } from "~/lib/utils";
 import { useToast } from "~/hooks/use-toast";
 import { useModal } from "~/providers/modal-provider";
 import { api } from "~/trpc/react";
-import { Switch } from "../switch";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 
 interface ShareModalProps {
   trackId: string;
@@ -20,6 +20,7 @@ export default function ShareModal({ trackId }: ShareModalProps) {
   const [emails, setEmails] = useState<Set<string>>(new Set());
   const [email, setEmail] = useState<string>("");
 
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
   const { toast } = useToast();
   const { hide: hideModal } = useModal();
 
@@ -69,7 +70,7 @@ export default function ShareModal({ trackId }: ShareModalProps) {
     <Card
       title="Share Track"
       subtitle="Send out emails or just send them your link"
-      className="w-[450px]"
+      className="mt-0 md:min-w-[500px]"
     >
       {/* Email Input */}
       <div className={"mt-4 space-y-1"}>
@@ -79,7 +80,7 @@ export default function ShareModal({ trackId }: ShareModalProps) {
           </Text.Body>
         </div>
         <div className={"flex h-12 space-x-2"}>
-          <IconContainer icon={<Mail01Icon size={16} />} />
+          {!isSmall && <IconContainer icon={<Mail01Icon size={16} />} />}
           <Input
             placeholder="theiremail@gmail.com"
             value={email}

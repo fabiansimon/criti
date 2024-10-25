@@ -6,6 +6,8 @@ import InviteEmail from "./email-templates/invite";
 import { generateShareableLink } from "~/lib/utils";
 import CommentNotificationEmail from "./email-templates/comment-notification";
 import { type Comment } from "@prisma/client";
+import ProjectExpiredNotificationEmail from "./email-templates/project-expired-notification";
+import ProjectExpiredWarningEmail from "./email-templates/project-expired-warning";
 
 const resend = new Resend(env.RESEND_API_KEY);
 
@@ -28,6 +30,42 @@ export async function sendVerificationRequest(
   } catch (error) {
     console.error("Unable to send verification email", error);
   }
+}
+
+export async function sendExpirationWarningEmail({
+  email,
+  title,
+  name,
+  url,
+}: {
+  email: string;
+  title: string;
+  name: string;
+  url: string;
+}) {
+  return await sendEmail({
+    from: "Vocast <onboarding@resend.dev>",
+    to: [...email],
+    subject: "Warning! Your Project will expire soon",
+    body: ProjectExpiredWarningEmail({ title, name, url }),
+  });
+}
+
+export async function sendExpirationNotificationEmail({
+  email,
+  title,
+  name,
+}: {
+  email: string;
+  title: string;
+  name: string;
+}) {
+  return await sendEmail({
+    from: "Vocast <onboarding@resend.dev>",
+    to: [...email],
+    subject: "Expirated Project",
+    body: ProjectExpiredNotificationEmail({ title, name }),
+  });
 }
 
 export async function sendInvitationEmail({

@@ -8,6 +8,7 @@ export const GetTracksByUserOutput = z
       locked: z.boolean(),
       createdAt: z.date(),
       openComments: z.boolean(),
+      expiresIn: z.number(),
     }),
   )
   .default([]);

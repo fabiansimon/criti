@@ -169,7 +169,7 @@ export function CommentTile({
 
       {!isSmall && (
         <Text.Subtitle className="min-w-24 text-right" subtle>
-          {getDateDifference(createdAt.toString()).text}
+          {getDateDifference({ date: createdAt }).text}
         </Text.Subtitle>
       )}
 

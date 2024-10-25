@@ -5,15 +5,13 @@ import {
   MusicNote01Icon,
   Notification03Icon,
   Rocket01Icon,
-  Rocket02Icon,
   SentIcon,
 } from "hugeicons-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Text from "~/components/typography/text";
 import { Button } from "~/components/ui/button";
-import Card from "~/components/ui/card";
-import { route, ROUTES } from "~/constants/routes";
+import { ROUTES } from "~/constants/routes";
 import { cn } from "~/lib/utils";
 
 const LANDING_DATA = {
@@ -65,12 +63,15 @@ export default function Home() {
         style={{ width: `${scrollProgress}%` }}
       />
       <section className="flex h-[100vh] w-full grow flex-col items-center justify-center bg-accent text-center">
-        <Text.Headline type="h1" className="animate-fade-in-up max-w-[50%]">
+        <Text.Headline
+          type="h1"
+          className="animate-fade-in-up max-w-[90%] md:max-w-[50%]"
+        >
           {LANDING_DATA.title}
         </Text.Headline>
         <Text.Body
           subtle
-          className="text-md animate-fade-in-up mt-2 max-w-[50%]"
+          className="text-md animate-fade-in-up mt-2 max-w-[90%] md:max-w-[50%]"
         >
           {LANDING_DATA.subtitle}
         </Text.Body>

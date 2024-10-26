@@ -10,7 +10,7 @@ import { Input } from "~/components/ui/input";
 import { readableDate } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { motion } from "framer-motion";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
 import { useLoading } from "~/providers/loading-provider";
@@ -18,12 +18,15 @@ import { REGEX } from "~/constants/regex";
 import { MEMBERSHIPS } from "~/constants/membership";
 import { useModal } from "~/providers/modal-provider";
 import MembershipModal from "~/components/ui/modals/membership-modal";
+import { useDialog } from "~/providers/dialog-provider";
+import { route, ROUTES } from "~/constants/routes";
 
 const MAX_NAME_LENGTH = 20;
 
 export default function AccountPage() {
   const [name, setName] = useState<string>("");
 
+  const { mutateAsync: deleteUser } = api.user.archive.useMutation();
   const { mutateAsync: updateUser, isPending: updateLoading } =
     api.user.update.useMutation();
   const { mutateAsync: createBillingSession } =
@@ -31,12 +34,13 @@ export default function AccountPage() {
 
   const { data: user, isLoading } = api.user.get.useQuery();
   const utils = api.useUtils();
-  const { toast } = useToast();
-
   const router = useRouter();
+
   const { data, update } = useSession();
+  const { toast } = useToast();
   const { loading } = useLoading();
-  const { show } = useModal();
+  const { show: showModal } = useModal();
+  const { show: showDialog, hide: hideDialog } = useDialog();
 
   const activeChanges = useMemo(() => {
     return name.trim() !== user?.name;
@@ -53,9 +57,33 @@ export default function AccountPage() {
     setName(user.name ?? "");
   }, [user]);
 
+  const handleDelete = () => {
+    showDialog({
+      title: "Are you sure?",
+      subtitle: "This action cannot be undone, are you sure to continue?",
+      actions: [
+        {
+          title: "Cancel",
+          onClick: hideDialog,
+        },
+        {
+          destructive: true,
+          title: "Delete forever",
+          onClick: async () => {
+            loading(async () => {
+              await deleteUser();
+              await signOut();
+              router.push(route(ROUTES.landing));
+            });
+          },
+        },
+      ],
+    });
+  };
+
   const handleBilling = async () => {
     if (user?.membership === "FREE") {
-      return show(<MembershipModal />);
+      return showModal(<MembershipModal />);
     }
 
     loading(async () => {
@@ -141,6 +169,12 @@ export default function AccountPage() {
             <Text.Subtitle className="text-[11px] font-normal" subtle>
               Manage subscription and billing
             </Text.Subtitle>
+          </div>
+          <div className="my-4 h-[1px] w-full bg-neutral-100" />
+          <div className="cursor-pointer" onClick={handleDelete}>
+            <Text.Body className="text-center text-xs text-red-600 underline">
+              Delete Account
+            </Text.Body>
           </div>
         </div>
       </Card>

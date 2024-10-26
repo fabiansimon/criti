@@ -25,7 +25,8 @@ export default function EmailLogin({
   const ref = useRef<HTMLDivElement | null>(null);
 
   const validInput = useMemo(() => {
-    return REGEX.email.test(email) && REGEX.userPassword.test(password);
+    return REGEX.email.test(email);
+    // return REGEX.email.test(email) && REGEX.userPassword.test(password);
   }, [password, email]);
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function EmailLogin({
           onChange={(e) => setEmail(e.target.value)}
           value={email}
         />
-        <div className="relative h-12">
+        {/* <div className="relative h-12">
           <Input
             className="h-full"
             placeholder="*******"
@@ -79,7 +80,7 @@ export default function EmailLogin({
               )}
             </div>
           )}
-        </div>
+        </div> */}
       </div>
       <div className="my-4 h-[1px] w-full bg-neutral-100" />
       <Button

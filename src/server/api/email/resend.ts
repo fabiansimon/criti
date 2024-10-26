@@ -22,8 +22,8 @@ export async function sendVerificationRequest(
 
   try {
     await sendEmail({
-      from,
-      to: [...email],
+      from: "Acme <onboarding@resend.dev>",
+      to: [email],
       subject: "Login Link to your Account",
       body: MagicLinkEmail({ url }),
     });
@@ -121,10 +121,14 @@ async function sendEmail({
   subject: string;
   body: React.ReactNode;
 }) {
-  return await resend.emails.send({
-    from,
-    to,
-    subject,
-    react: body,
-  });
+  try {
+    return await resend.emails.send({
+      from: "Acme <onboarding@resend.dev>",
+      to,
+      subject,
+      react: body,
+    });
+  } catch (error) {
+    console.error("Error sending email", error);
+  }
 }

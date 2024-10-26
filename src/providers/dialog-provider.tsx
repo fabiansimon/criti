@@ -63,28 +63,6 @@ export default function DialogProvider({
 
   return (
     <DialogContext.Provider value={value}>
-      {/* <motion.div
-        initial="hidden"
-        variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
-        transition={{ duration: DURATION_MS / 1000 }}
-        animate={visible ? "visible" : "hidden"}
-        onClick={hide}
-        className={cn(
-          "fixed bottom-0 left-0 right-0 top-0 z-20 flex items-center justify-center bg-black/40",
-          !visible && "pointer-events-none",
-        )}
-      >
-        <motion.div
-          initial="hidden"
-          variants={{
-            visible: { translateY: 0 },
-            hidden: { translateY: 1_000 },
-          }}
-          transition={{ duration: (DURATION_MS + 100) / 1_000, type: "spring" }}
-          animate={visible ? "visible" : "hidden"}
-          onClick={(e) => e.stopPropagation()}
-          className="max-w-[400px] justify-end rounded-md border border-neutral-200 bg-white px-4 py-3"
-        > */}
       <Modal isVisible={visible} onRequestClose={hide}>
         <Card>
           <Text.Headline type="h4">{title}</Text.Headline>

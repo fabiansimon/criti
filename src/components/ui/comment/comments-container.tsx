@@ -40,7 +40,7 @@ export function CommentsContainer({
   const utils = api.useUtils();
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
-  const { data: initComments, isLoading } = api.comment.getAll.useQuery({
+  const { data: initComments } = api.comment.getAll.useQuery({
     trackId,
   });
 

@@ -84,8 +84,6 @@ export default function DialogProvider({
           {content.render}
         </Card>
       </Modal>
-      {/* </motion.div>
-      </motion.div> */}
       {children}
     </DialogContext.Provider>
   );

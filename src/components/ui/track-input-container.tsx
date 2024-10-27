@@ -19,6 +19,9 @@ import { REGEX } from "~/constants/regex";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import EmailChip from "./email-chip";
 import { useDialog } from "~/providers/dialog-provider";
+import Modal from "./modals/modal";
+import Card from "./card";
+import { api } from "~/trpc/react";
 
 interface InputType {
   title: string;
@@ -55,13 +58,13 @@ export default function TrackInputContainer({
   file,
   onFile,
 }: TrackInputContainerProps) {
+  const [pwVisible, setPwVisible] = useState<boolean>(false);
   const [emails, setEmails] = useState<Set<string>>(new Set());
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [updatePassword, setUpdatePassword] = useState<boolean>(false);
   const [locked, setLocked] = useState<boolean>(updateState?.locked ?? false);
   const [input, setInput] = useState<InputType>({
     email: "",
-    password: "",
+    password: updateState?.locked ? "*******" : "",
     title: updateState?.title ?? file?.name ?? "",
   });
 
@@ -74,22 +77,12 @@ export default function TrackInputContainer({
     [input.email],
   );
 
-  const validUpdate = useMemo(() => {
-    const { title } = input;
-    const validTitle = title.trim().length > 1 && title !== updateState?.title;
-    const validPw =
-      !updatePassword || REGEX.roomPassword.test(input.password.trim());
-
-    return validTitle && validPw;
-  }, [update, input.title, input.password, updatePassword]);
-
   const validInput = useMemo(() => {
-    if (update) return validUpdate;
     const validTitle = input.title.trim().length > 1;
     const validPw = !locked || REGEX.roomPassword.test(input.password.trim());
 
     return validTitle && validPw && !!file;
-  }, [update, validUpdate, input.title, file, locked, input.password]);
+  }, [file, locked, input]);
 
   useEffect(() => {
     if (!file) return;
@@ -226,20 +219,21 @@ export default function TrackInputContainer({
         </div>
       )}
 
-      {/* Update Password */}
+      {/* Update Password Input */}
       {update && (
         <div className={"space-y-1"}>
           <div className="mb-2 flex justify-between">
             <Text.Body className="ml-1 text-xs" subtle>
-              Update Password
+              Use Password (optional)
             </Text.Body>
             <Switch
               className="opacity-100"
-              checked={updatePassword}
-              onCheckedChange={setUpdatePassword}
+              checked={locked}
+              onCheckedChange={setLocked}
             />
           </div>
-          {updatePassword && (
+
+          {locked && (
             <div
               className={cn(
                 "relative flex h-12 space-x-2",
@@ -249,27 +243,15 @@ export default function TrackInputContainer({
               {!isSmall && (
                 <IconContainer icon={<LockPasswordIcon size={16} />} />
               )}
-              <Input
-                type={!showPassword ? "password" : "text"}
-                disabled={!locked}
-                placeholder="New password"
-                value={input.password}
-                onChange={({ currentTarget: { value } }) =>
-                  handleInputChange("password", value)
-                }
-              />
-              {locked && input.password.length > 0 && (
-                <div
-                  className="absolute right-4 top-[14px] cursor-pointer text-black"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                >
-                  {showPassword ? (
-                    <ViewIcon size={18} />
-                  ) : (
-                    <ViewOffSlashIcon size={18} />
-                  )}
-                </div>
-              )}
+
+              <div
+                onClick={() => setPwVisible(true)}
+                className={cn(
+                  "flex min-h-9 w-full grow cursor-pointer items-center rounded-md border border-zinc-200 bg-transparent px-3 py-1 shadow-sm",
+                )}
+              >
+                <Text.Body>Change password</Text.Body>
+              </div>
             </div>
           )}
         </div>
@@ -320,6 +302,84 @@ export default function TrackInputContainer({
         className="mt-8 h-12 w-full"
         title={update ? "Update" : "Create"}
       />
+
+      {update && (
+        <PasswordUpdateModal
+          trackId={updateState.id}
+          isVisible={pwVisible}
+          onRequestClose={() => setPwVisible(false)}
+        />
+      )}
     </div>
+  );
+}
+
+interface PasswordUpdateModalProps {
+  isVisible: boolean;
+  trackId: string;
+  onRequestClose: () => void;
+}
+
+function PasswordUpdateModal({
+  isVisible,
+  trackId,
+  onRequestClose,
+}: PasswordUpdateModalProps) {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [password, setPassword] = useState<string>("");
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
+
+  const { mutateAsync: updatePassword } = api.track.update.useMutation();
+  const utils = api.useUtils();
+
+  const handleUpdate = async () => {
+    if (!REGEX.roomPassword.test(password)) return;
+
+    setIsLoading(true);
+    try {
+      await updatePassword({ id: trackId, password, locked: true });
+      await utils.track.invalidate();
+      onRequestClose();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Modal isVisible={isVisible} onRequestClose={onRequestClose}>
+      <Card
+        title="Set new password"
+        subtitle="Must be at least 5 characters long"
+      >
+        <div className={cn("relative mt-4 flex h-12 space-x-2")}>
+          {!isSmall && <IconContainer icon={<LockPasswordIcon size={16} />} />}
+          <Input
+            type={!showPassword ? "password" : "text"}
+            value={password}
+            onChange={({ currentTarget: { value } }) => setPassword(value)}
+          />
+          {password.length > 0 && (
+            <div
+              className="absolute right-4 top-[14px] cursor-pointer text-black"
+              onClick={() => setShowPassword((prev) => !prev)}
+            >
+              {showPassword ? (
+                <ViewIcon size={18} />
+              ) : (
+                <ViewOffSlashIcon size={18} />
+              )}
+            </div>
+          )}
+        </div>
+        <Button
+          onClick={handleUpdate}
+          isLoading={isLoading}
+          disabled={!REGEX.roomPassword.test(password)}
+          className="mt-6 h-12 w-full"
+          title={"Update"}
+        />
+      </Card>
+    </Modal>
   );
 }

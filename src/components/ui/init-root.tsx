@@ -21,11 +21,11 @@ export default function InitRoot({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <LoadingProvider>
-        <ModalProvider>
-          <DialogProvider>
+        <DialogProvider>
+          <ModalProvider>
             <Root>{children}</Root>
-          </DialogProvider>
-        </ModalProvider>
+          </ModalProvider>
+        </DialogProvider>
       </LoadingProvider>
     </SessionProvider>
   );

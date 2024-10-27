@@ -106,7 +106,7 @@ const updateTrack = protectedProcedure
         });
       }
 
-      if (updates.password) {
+      if (updates.password && updates.locked) {
         const salt = await bcrypt.genSalt(10);
         updates.password = await bcrypt.hash(updates.password, salt);
         updates.locked = true;

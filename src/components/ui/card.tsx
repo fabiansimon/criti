@@ -12,6 +12,7 @@ interface CardProps {
   description?: string;
   className?: string;
   omitPadding?: boolean;
+  trailing?: React.ReactNode;
 }
 
 export default function Card({
@@ -20,6 +21,8 @@ export default function Card({
   children,
   className,
   isLoading,
+
+  trailing,
   omitPadding,
 }: CardProps) {
   const { status } = useSession();
@@ -42,8 +45,13 @@ export default function Card({
       )}
       {!isLoading && (
         <div>
-          <Text.Headline type="h2">{title}</Text.Headline>
-          <Text.Body subtle>{subtitle}</Text.Body>
+          <div className="flex w-full justify-between">
+            <div>
+              <Text.Headline type="h2">{title}</Text.Headline>
+              <Text.Body subtle>{subtitle}</Text.Body>
+            </div>
+            {trailing}
+          </div>
           {children}
         </div>
       )}

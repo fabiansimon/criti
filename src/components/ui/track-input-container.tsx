@@ -18,7 +18,6 @@ import { Switch } from "./switch";
 import { REGEX } from "~/constants/regex";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import EmailChip from "./email-chip";
-import { useDialog } from "~/providers/dialog-provider";
 import Modal from "./modals/modal";
 import Card from "./card";
 import { api } from "~/trpc/react";
@@ -330,7 +329,8 @@ function PasswordUpdateModal({
   const [password, setPassword] = useState<string>("");
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
-  const { mutateAsync: updatePassword } = api.track.update.useMutation();
+  const { mutateAsync: updatePassword } =
+    api.track.updatePassword.useMutation();
   const utils = api.useUtils();
 
   const handleUpdate = async () => {
@@ -338,7 +338,7 @@ function PasswordUpdateModal({
 
     setIsLoading(true);
     try {
-      await updatePassword({ id: trackId, password, locked: true });
+      await updatePassword({ id: trackId, password });
       await utils.track.invalidate();
       onRequestClose();
     } finally {
@@ -351,6 +351,7 @@ function PasswordUpdateModal({
       <Card
         title="Set new password"
         subtitle="Must be at least 5 characters long"
+        className="md:min-w-[500px]"
       >
         <div className={cn("relative mt-4 flex h-12 space-x-2")}>
           {!isSmall && <IconContainer icon={<LockPasswordIcon size={16} />} />}

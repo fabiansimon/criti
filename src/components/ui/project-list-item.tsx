@@ -3,6 +3,7 @@ import { type SimplfiedTrack } from "~/server/api/routers/track/trackTypes";
 import Dropdown, { type MenuOption } from "./dropdown-menu";
 import IconContainer from "./icon-container";
 import {
+  Comment01Icon,
   Key02Icon,
   MoreVerticalCircle01Icon,
   MusicNote02Icon,
@@ -16,6 +17,7 @@ import EditTrackModal from "./modals/edit-track-modal";
 import { useModal } from "~/providers/modal-provider";
 import ShareModal from "./modals/share-modal";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
+import { ExpirationChip, InfoChip } from "./info-chips";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;
@@ -106,11 +108,12 @@ export default function ProjectListItem({
             <div className="-mt-2 ml-1 flex space-x-1">
               <ExpirationChip hours={track.expiresIn} />
               {openComments && (
-                <div className="mt-1 flex h-6 items-center rounded-full bg-blue-300/30 px-2">
-                  <Text.Subtitle className="text-[10px] font-normal text-blue-700">
-                    open comments
-                  </Text.Subtitle>
-                </div>
+                <InfoChip
+                  backgroundColor="bg-blue-300/30"
+                  textColor="text-blue-700"
+                  icon={<Comment01Icon size={13} />}
+                  text="open comments"
+                />
               )}
             </div>
           </div>
@@ -124,49 +127,6 @@ export default function ProjectListItem({
           <MoreVerticalCircle01Icon fill="black" size={18} />
         </div>
       </Dropdown>
-    </div>
-  );
-}
-
-interface ExpirationChipProps {
-  hours: number;
-}
-function ExpirationChip({ hours }: ExpirationChipProps) {
-  const isSmall = useBreakpoint(BREAKPOINTS.sm);
-
-  const { textColor, backgroundColor } = useMemo(() => {
-    // Within 24 hours
-    if (hours < 24)
-      return {
-        textColor: "text-red-700",
-        backgroundColor: "bg-red-300/30",
-      };
-
-    // Within a week
-    if (hours < 24 * 7)
-      return {
-        textColor: "text-orange-700",
-        backgroundColor: "bg-orange-300/30",
-      };
-
-    return {
-      textColor: "text-green-700",
-      backgroundColor: "bg-green-300/30",
-    };
-  }, [hours]);
-
-  return (
-    <div
-      className={cn(
-        "mt-1 flex h-6 items-center rounded-full px-2",
-        backgroundColor,
-      )}
-    >
-      <Text.Subtitle
-        className={cn("text-[10px] font-normal text-green-700", textColor)}
-      >
-        {`${isSmall ? "" : "expires "}${getDateDifference({ hours, currentString: "today", past: false }).text}`}
-      </Text.Subtitle>
     </div>
   );
 }

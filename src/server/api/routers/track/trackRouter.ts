@@ -9,6 +9,7 @@ import {
   ArchiveProjectInput,
   GetTrackByIdInput,
   GetTracksByUserOutput,
+  UpdateProjectPasswordInput,
   UpdateTrackInput,
   UploadTrackInput,
 } from "./trackTypes";
@@ -16,9 +17,8 @@ import { TRPCError } from "@trpc/server";
 import { storeFile } from "~/server/supabase";
 import { env } from "~/env";
 import { Membership } from "@prisma/client";
-import InviteEmail from "../../email/email-templates/invite";
-import { generateShareableLink } from "~/lib/utils";
 import { sendInvitationEmail } from "../../email/resend";
+import { expiresIn } from "~/lib/utils";
 
 const archiveTrack = protectedProcedure
   .input(ArchiveProjectInput)
@@ -106,10 +106,9 @@ const updateTrack = protectedProcedure
         });
       }
 
-      if (updates.password && updates.locked) {
+      if (updates.password) {
         const salt = await bcrypt.genSalt(10);
         updates.password = await bcrypt.hash(updates.password, salt);
-        updates.locked = true;
 
         await db.trustedSession.deleteMany({
           where: { trackId: id },
@@ -137,19 +136,13 @@ const updateTrack = protectedProcedure
 const uploadTrack = protectedProcedure
   .input(UploadTrackInput)
   .mutation(async ({ input, ctx: { db, session } }) => {
-    const { contentType, fileContent, title, locked, emails, password } = input;
+    const { contentType, fileContent, title, emails, password } = input;
     const {
-      user: { id: creatorId, email: creatorEmail },
+      user: { id: creatorId },
     } = session;
 
-    let hashedPassword = "";
-    if (locked) {
-      if (!password)
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing password.",
-        });
-
+    let hashedPassword = null;
+    if (password) {
       const salt = await bcrypt.genSalt(10);
       hashedPassword = await bcrypt.hash(password, salt);
     }
@@ -181,9 +174,8 @@ const uploadTrack = protectedProcedure
       const track = await db.track.create({
         data: {
           title,
-          locked,
           creatorId,
-          password: locked ? hashedPassword : null,
+          password: hashedPassword,
           fileId: file.id,
         },
         include: { file: true },
@@ -232,7 +224,6 @@ const isTrackLocked = anonPossibleProcedure
         });
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!track.password || track?.trustedSessions?.length > 0) return false;
 
       const { password, creatorId, id: trackId } = track;
@@ -272,6 +263,42 @@ const isTrackLocked = anonPossibleProcedure
     }
   });
 
+const updateTrackPassword = protectedProcedure
+  .input(UpdateProjectPasswordInput)
+  .mutation(async ({ input, ctx: { db, session } }) => {
+    const { password, id } = input;
+    const { user } = session;
+
+    try {
+      const track = await db.track.findUnique({
+        where: { id, creatorId: user.id },
+      });
+
+      if (!track) {
+        throw new TRPCError({ message: "Track not found", code: "NOT_FOUND" });
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      await db.track.update({
+        where: { id },
+        data: { password: hashedPassword },
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+          cause: error,
+        });
+      }
+    }
+  });
+
 const getTrackById = publicProcedure
   .input(GetTrackByIdInput)
   .query(async ({ input, ctx: { db } }) => {
@@ -294,7 +321,7 @@ const getTrackById = publicProcedure
         });
       }
 
-      const { password } = track;
+      const { password, createdAt, creator } = track;
       if (password) {
         if (track.trustedSessions.length === 0) {
           throw new TRPCError({
@@ -306,7 +333,18 @@ const getTrackById = publicProcedure
 
       track.password = null;
       track.trustedSessions = [];
-      return track;
+
+      let expiryLimit = 0;
+      if (creator.membership === "FREE") {
+        expiryLimit = env.FREE_EXPIRE_IN_DAYS;
+      } else {
+        expiryLimit = env.PREMIUM_V1_EXPIRE_IN_DAYS;
+      }
+
+      return {
+        ...track,
+        expiresIn: expiresIn({ daysLimit: expiryLimit, createdAt }),
+      };
     } catch (error) {
       console.error(error);
       if (error instanceof Error) {
@@ -347,22 +385,17 @@ const getAllTracksByUser = protectedProcedure
         expiryLimit = env.PREMIUM_V1_EXPIRE_IN_DAYS;
       }
 
-      const expireBy = new Date();
-      expireBy.setDate(expireBy.getDate() - expiryLimit);
-
       const formatted = tracks.map(
-        ({ id, title, createdAt, comments, locked }) => {
-          const timeDiff = expireBy.getTime() - createdAt.getTime();
-          const hoursSinceCreation = Math.floor(timeDiff / (1000 * 60 * 60));
-          const totalExpiryHours = expiryLimit * 24;
-          const expiresIn = Math.max(totalExpiryHours - hoursSinceCreation, 0);
+        ({ id, title, createdAt, comments, password }) => {
           return {
             id,
             title,
             createdAt,
-            locked,
-            openComments: comments.filter((c) => !c.byAdmin).length > 0,
-            expiresIn,
+            locked: !!password,
+            openComments:
+              comments.filter(({ byAdmin, open }) => !byAdmin && open).length >
+              0,
+            expiresIn: expiresIn({ daysLimit: expiryLimit, createdAt }),
           };
         },
       );
@@ -446,4 +479,5 @@ export const trackRouter = createTRPCRouter({
   getAll: getAllTracksByUser,
   getById: getTrackById,
   checkLimit: checkTrackLimit,
+  updatePassword: updateTrackPassword,
 });

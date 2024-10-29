@@ -17,6 +17,11 @@ export const ArchiveProjectInput = z.object({
   id: z.string().uuid(),
 });
 
+export const UpdateProjectPasswordInput = z.object({
+  id: z.string().uuid(),
+  password: z.string(),
+});
+
 export const IsTrackLockedInput = z.object({
   id: z.string().uuid(),
 });
@@ -31,7 +36,6 @@ export const UploadTrackInput = z.object({
   title: z.string(),
   fileContent: z.string(),
   contentType: z.string(),
-  locked: z.boolean().default(false),
   password: z.string().optional(),
   emails: z.array(z.string().email()),
 });
@@ -55,5 +59,8 @@ export type GetTracksByUserOutput = z.infer<typeof GetTracksByUserOutput>;
 export type ArchiveProjectInput = z.infer<typeof ArchiveProjectInput>;
 export type UpdateTrackInput = z.infer<typeof UpdateTrackInput>;
 export type CheckTrackLimitOutput = z.infer<typeof CheckTrackLimitOutput>;
+export type UpdateProjectPasswordInput = z.infer<
+  typeof UpdateProjectPasswordInput
+>;
 export type IsTrackLockedInput = z.infer<typeof IsTrackLockedInput>;
 export type SimplfiedTrack = z.infer<typeof GetTracksByUserOutput>[number];

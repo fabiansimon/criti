@@ -162,3 +162,18 @@ export function readableDate(date: Date | string) {
   const d = new Date(date);
   return d.toLocaleDateString();
 }
+
+export function expiresIn({
+  daysLimit,
+  createdAt,
+}: {
+  daysLimit: number;
+  createdAt: Date;
+}) {
+  const expireBy = new Date();
+  expireBy.setDate(expireBy.getDate() - daysLimit);
+  const timeDiff = expireBy.getTime() - createdAt.getTime();
+  const hoursSinceCreation = Math.floor(timeDiff / (1000 * 60 * 60));
+  const totalExpiryHours = daysLimit * 24;
+  return Math.max(totalExpiryHours - hoursSinceCreation, 0);
+}

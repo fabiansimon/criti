@@ -23,7 +23,6 @@ model Track {
 
   title    String
   fileId   String  @unique
-  locked   Boolean @default(false)
   password String?
 
   file     File      @relation(fields: [fileId], references: [id], onDelete: Cascade)

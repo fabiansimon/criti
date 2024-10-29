@@ -5,13 +5,7 @@ import IconContainer from "~/components/ui/icon-container";
 
 import Text from "~/components/typography/text";
 import { Button } from "~/components/ui/button";
-import {
-  type DragEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type DragEvent, useCallback, useRef, useState } from "react";
 import { fileToBase64 } from "~/lib/utils";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
@@ -59,7 +53,6 @@ export default function UploadPage() {
       contentType,
       fileContent,
       title,
-      locked,
       password: locked ? password.trim() : undefined,
       emails,
     });
@@ -75,7 +68,6 @@ export default function UploadPage() {
 
   const handleDragging = useCallback(
     (e: DragEvent<HTMLDivElement>, status: boolean) => {
-      console.log("STATUS===", status);
       e.preventDefault();
       e.stopPropagation();
     },

@@ -17,8 +17,10 @@ import VolumeControl from "~/components/ui/audio/volume-control";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
 import Dropdown, { type MenuOption } from "~/components/ui/dropdown-menu";
+import { ExpirationChip, OpenCommentsChip } from "~/components/ui/info-chips";
 import EditTrackModal from "~/components/ui/modals/edit-track-modal";
 import PasswordModal from "~/components/ui/modals/password-modal";
+import ShareModal from "~/components/ui/modals/share-modal";
 import { Switch } from "~/components/ui/switch";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import useDownload from "~/hooks/use-download";
@@ -79,7 +81,7 @@ export default function ListenPage() {
 
   const subtitle = useMemo(() => {
     return `Shared by ${track?.creator.name}`;
-  }, [isAdmin, track]);
+  }, [track]);
 
   const handleDownload = () => {
     void download({
@@ -89,12 +91,8 @@ export default function ListenPage() {
   };
 
   const handleShare = () => {
-    const url = generateShareableLink(id);
-    copyToClipboard(url);
-    toast({
-      title: "Link copied",
-      description: "Share the link with your friends.",
-    });
+    if (!track) return;
+    showModal(<ShareModal trackId={track.id} />);
   };
 
   const handleEdit = () => {
@@ -141,20 +139,21 @@ export default function ListenPage() {
         title={track?.title}
         subtitle={subtitle}
         className={cn("relative w-full max-w-screen-lg")}
-      >
-        {/* Toggle for marking comments */}
-        {isAdmin && (
-          <div
-            className={cn(
-              "absolute right-6 top-14 flex space-x-2",
-              isSmall && "top-4",
-            )}
-          >
-            <Text.Body className="text-xs">Mark comments</Text.Body>
-            <Switch checked={markComments} onCheckedChange={setMarkComments} />
+        trailing={
+          <div className="flex flex-col items-end justify-between">
+            <div className="flex">
+              {track?.expiresIn && <ExpirationChip hours={track.expiresIn} />}
+            </div>
+            <div className={cn("flex space-x-2")}>
+              <Text.Body className="text-xs">Mark comments</Text.Body>
+              <Switch
+                checked={markComments}
+                onCheckedChange={setMarkComments}
+              />
+            </div>
           </div>
-        )}
-
+        }
+      >
         {/* Comments Container */}
         <CommentsContainer
           maxTime={duration ?? Infinity}

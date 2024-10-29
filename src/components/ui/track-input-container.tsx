@@ -31,7 +31,6 @@ interface InputType {
 export interface UpdateState {
   id: string;
   title: string;
-  locked: boolean;
   password: string;
 }
 
@@ -60,10 +59,10 @@ export default function TrackInputContainer({
   const [pwVisible, setPwVisible] = useState<boolean>(false);
   const [emails, setEmails] = useState<Set<string>>(new Set());
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [locked, setLocked] = useState<boolean>(updateState?.locked ?? false);
+  const [locked, setLocked] = useState<boolean>(!!updateState?.password);
   const [input, setInput] = useState<InputType>({
     email: "",
-    password: updateState?.locked ? "*******" : "",
+    password: !!updateState?.password ? "*******" : "",
     title: updateState?.title ?? file?.name ?? "",
   });
 

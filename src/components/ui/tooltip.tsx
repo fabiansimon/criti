@@ -31,6 +31,25 @@ export const Popover = React.forwardRef<PopoverRef, TooltipProps>(
       },
     }));
 
+    if (!ref) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>{children}</TooltipTrigger>
+            <TooltipContent
+              className={cn(destructive && "bg-red-600", className)}
+            >
+              <Text.Body
+                className={cn("text-[11px]", destructive && "text-white")}
+              >
+                {content ?? text}
+              </Text.Body>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
     return (
       <TooltipProvider>
         <Tooltip open={!!content}>

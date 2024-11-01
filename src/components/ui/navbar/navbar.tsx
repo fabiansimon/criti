@@ -271,7 +271,7 @@ function LogoContainer() {
   const router = useRouter();
   return (
     <div
-      onClick={() => router.push(route(ROUTES.landing))}
+      onClick={() => router.push(route(ROUTES.home))}
       className="pointer-events-auto flex h-12 cursor-pointer items-center space-x-2 rounded-md px-2 hover:bg-neutral-100"
     >
       <Image

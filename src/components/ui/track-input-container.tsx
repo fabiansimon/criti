@@ -363,7 +363,7 @@ function PasswordUpdateModal({
   return (
     <Modal isVisible={isVisible} onRequestClose={onRequestClose}>
       <Card
-        title="Set new password"
+        title="Enter password"
         subtitle="Must be at least 8 characters long"
         className="md:min-w-[500px]"
       >

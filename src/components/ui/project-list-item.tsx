@@ -16,7 +16,6 @@ import { useLoading } from "~/providers/loading-provider";
 import EditTrackModal from "./modals/edit-track-modal";
 import { useModal } from "~/providers/modal-provider";
 import ShareModal from "./modals/share-modal";
-import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import { ExpirationChip, InfoChip } from "./info-chips";
 
 interface ProjectListItemProps {

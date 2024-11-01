@@ -21,6 +21,7 @@ import MembershipModal from "~/components/ui/modals/membership-modal";
 import useIsMobile from "~/hooks/use-is-mobile";
 
 export default function UploadPage() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [file, setFile] = useState<File | undefined>();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -32,7 +33,7 @@ export default function UploadPage() {
   const { data: session } = useSession();
 
   const utils = api.useUtils();
-  const { mutateAsync: uploadTrack, isPending: isLoading } =
+  const { mutateAsync: uploadTrack, isPending } =
     api.track.upload.useMutation();
   const { data: allowUpload } = api.track.checkLimit.useQuery(undefined, {
     enabled: !!file,
@@ -45,34 +46,43 @@ export default function UploadPage() {
       return;
     }
 
-    const { title, password, locked, emails } = data;
-    const { type: contentType } = file;
-    const fileContent = await fileToBase64(file);
+    setIsLoading(true);
 
-    const track = await uploadTrack({
-      contentType,
-      fileContent,
-      title,
-      password: locked ? password.trim() : undefined,
-      emails,
-    });
+    try {
+      const { title, password, locked, emails } = data;
+      const { type: contentType } = file;
+      const fileContent = await fileToBase64(file);
 
-    if (!track) return;
-    void utils.track.invalidate();
-    router.push(route(ROUTES.listen, track.id));
+      const track = await uploadTrack({
+        contentType,
+        fileContent,
+        title,
+        password: locked ? password.trim() : undefined,
+        emails,
+      });
+
+      if (!track) return;
+      void utils.track.invalidate();
+      router.push(route(ROUTES.listen, track.id));
+    } catch (_) {
+      toast({
+        title: "Something went wrong.",
+        description: "Sorry please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const triggerInput = () => {
     if (inputRef.current) inputRef.current.click();
   };
 
-  const handleDragging = useCallback(
-    (e: DragEvent<HTMLDivElement>, status: boolean) => {
-      e.preventDefault();
-      e.stopPropagation();
-    },
-    [],
-  );
+  const handleDragging = useCallback((e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
   const handleFileInput = (rawFile: File) => {
     if (!rawFile?.type.includes("audio")) {
@@ -89,9 +99,9 @@ export default function UploadPage() {
 
   return (
     <div
-      onDragEnter={(e) => handleDragging(e, true)}
-      onDragLeave={(e) => handleDragging(e, false)}
-      onDragOver={(e) => handleDragging(e, true)}
+      onDragEnter={(e) => handleDragging(e)}
+      onDragLeave={(e) => handleDragging(e)}
+      onDragOver={(e) => handleDragging(e)}
       onDrop={(e) => handleFileInput(e.dataTransfer.files[0]!)}
       className="flex min-h-screen flex-col items-center justify-center bg-accent"
     >
@@ -133,7 +143,7 @@ export default function UploadPage() {
           <TrackInputContainer
             file={file}
             onFile={triggerInput}
-            isLoading={isLoading}
+            isLoading={isLoading || isPending}
             onClick={(data) => handleUpload(data as CreateState)}
           />
         )}

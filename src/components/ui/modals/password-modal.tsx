@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { Button } from "../button";
 import { useRouter } from "next/navigation";
 import { REGEX } from "~/constants/regex";
+import Text from "~/components/typography/text";
 
 interface PasswordModalProps {
   isVisible: boolean;

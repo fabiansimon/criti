@@ -28,6 +28,7 @@ import { useToast } from "~/hooks/use-toast";
 import { LocalStorage } from "~/lib/localStorage";
 import { cn, copyToClipboard, generateShareableLink } from "~/lib/utils";
 import { useModal } from "~/providers/modal-provider";
+import { type SimplfiedTrack } from "~/server/api/routers/track/trackTypes";
 
 import { api } from "~/trpc/react";
 
@@ -97,7 +98,12 @@ export default function ListenPage() {
 
   const handleEdit = () => {
     if (!track) return;
-    showModal(<EditTrackModal track={track} onFinish={hideModal} />);
+    showModal(
+      <EditTrackModal
+        track={{ ...track, openComments: false }}
+        onFinish={hideModal}
+      />,
+    );
   };
 
   const handleVolume = (volume: number) => {

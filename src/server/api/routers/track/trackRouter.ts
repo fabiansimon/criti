@@ -344,6 +344,7 @@ const getTrackById = publicProcedure
       return {
         ...track,
         expiresIn: expiresIn({ daysLimit: expiryLimit, createdAt }),
+        locked: !!password,
       };
     } catch (error) {
       console.error(error);

@@ -4,11 +4,10 @@ import TrackInputContainer, {
 } from "../track-input-container";
 import { api } from "~/trpc/react";
 import { useLoading } from "~/providers/loading-provider";
-import { type Track } from "@prisma/client";
 import { type SimplfiedTrack } from "~/server/api/routers/track/trackTypes";
 
 interface EditTrackModalProps {
-  track: Track | SimplfiedTrack;
+  track: SimplfiedTrack;
   onFinish: () => void;
 }
 export default function EditTrackModal({
@@ -38,7 +37,7 @@ export default function EditTrackModal({
     >
       <TrackInputContainer
         isLoading={isPending}
-        updateState={{ ...track, password: "" }}
+        updateState={{ ...track }}
         onClick={(data) => handleUpdate(data as UpdateState)}
       />
     </Card>

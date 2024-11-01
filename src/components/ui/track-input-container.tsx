@@ -21,6 +21,7 @@ import EmailChip from "./email-chip";
 import Modal from "./modals/modal";
 import Card from "./card";
 import { api } from "~/trpc/react";
+import { useModal } from "~/providers/modal-provider";
 
 interface InputType {
   title: string;
@@ -31,7 +32,7 @@ interface InputType {
 export interface UpdateState {
   id: string;
   title: string;
-  password: string;
+  locked: boolean;
 }
 
 export interface CreateState {
@@ -59,10 +60,10 @@ export default function TrackInputContainer({
   const [pwVisible, setPwVisible] = useState<boolean>(false);
   const [emails, setEmails] = useState<Set<string>>(new Set());
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [locked, setLocked] = useState<boolean>(!!updateState?.password);
+  const [locked, setLocked] = useState<boolean>(!!updateState?.locked);
   const [input, setInput] = useState<InputType>({
     email: "",
-    password: !!updateState?.password ? "*******" : "",
+    password: "",
     title: updateState?.title ?? file?.name ?? "",
   });
 
@@ -75,12 +76,17 @@ export default function TrackInputContainer({
     [input.email],
   );
 
+  const validUpdate = useMemo(() => {
+    return true;
+  }, []);
+
   const validInput = useMemo(() => {
+    if (update) return validUpdate;
     const validTitle = input.title.trim().length > 1;
     const validPw = !locked || REGEX.roomPassword.test(input.password.trim());
 
     return validTitle && validPw && !!file;
-  }, [file, locked, input]);
+  }, [file, locked, input, update, validUpdate]);
 
   useEffect(() => {
     if (!file) return;
@@ -214,6 +220,11 @@ export default function TrackInputContainer({
               </div>
             )}
           </div>
+          {locked && !REGEX.roomPassword.test(input.password.trim()) && (
+            <Text.Body className="text-right text-[11px] text-red-500">
+              Password must be at least 8 characters.
+            </Text.Body>
+          )}
         </div>
       )}
 
@@ -248,7 +259,9 @@ export default function TrackInputContainer({
                   "flex min-h-9 w-full grow cursor-pointer items-center rounded-md border border-zinc-200 bg-transparent px-3 py-1 shadow-sm",
                 )}
               >
-                <Text.Body>Change password</Text.Body>
+                <Text.Body>
+                  {updateState.locked ? "Change password" : "Set Password"}
+                </Text.Body>
               </div>
             </div>
           )}
@@ -328,6 +341,8 @@ function PasswordUpdateModal({
   const [password, setPassword] = useState<string>("");
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
+  const { hide } = useModal();
+
   const { mutateAsync: updatePassword } =
     api.track.updatePassword.useMutation();
   const utils = api.useUtils();
@@ -339,7 +354,7 @@ function PasswordUpdateModal({
     try {
       await updatePassword({ id: trackId, password });
       await utils.track.invalidate();
-      onRequestClose();
+      hide();
     } finally {
       setIsLoading(false);
     }
@@ -349,7 +364,7 @@ function PasswordUpdateModal({
     <Modal isVisible={isVisible} onRequestClose={onRequestClose}>
       <Card
         title="Set new password"
-        subtitle="Must be at least 5 characters long"
+        subtitle="Must be at least 8 characters long"
         className="md:min-w-[500px]"
       >
         <div className={cn("relative mt-4 flex h-12 space-x-2")}>

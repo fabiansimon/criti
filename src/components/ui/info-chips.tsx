@@ -30,7 +30,7 @@ export function InfoChip({
           textColor,
         )}
       >
-        {icon}
+        {/* {icon} */}
         <Text.Subtitle className={cn("text-[10px] font-normal", textColor)}>
           {text}
         </Text.Subtitle>

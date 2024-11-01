@@ -7,8 +7,8 @@ import { Toaster } from "~/components/ui/toaster";
 import InitRoot from "~/components/ui/init-root";
 
 export const metadata: Metadata = {
-  title: "Criti",
-  description: "MVP",
+  title: "beatback.io",
+  description: "Best website on this planet",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 

@@ -7,7 +7,6 @@ import {
   Home11Icon,
   Menu01Icon,
   Playlist02Icon,
-  UserIcon,
 } from "hugeicons-react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
@@ -22,6 +21,8 @@ import MembershipModal from "../modals/membership-modal";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
+import BeatbackLogo from "public/logo.svg";
 
 type SessionUser = {
   id: string;
@@ -67,21 +68,27 @@ export default function NavBar() {
       {isSmall && (
         <div
           onClick={() => setExpanded(true)}
-          className="ml-2 flex h-10 w-10 cursor-pointer items-center justify-center"
+          className="pointer-events-auto ml-2 flex h-10 w-10 cursor-pointer items-center justify-center"
         >
           <Menu01Icon />
+          <div className="pointer-events-none absolute left-0 right-0 flex items-center justify-center">
+            <LogoContainer />
+          </div>
         </div>
       )}
       {!isSmall && (
         <div className="mx-auto flex w-full justify-between space-x-2 px-10 md:max-w-screen-lg">
-          <div className="flex space-x-2">
-            {options.map((option, index) => (
-              <NavItem
-                active={option.route ? path.includes(option.route) : false}
-                key={index}
-                option={option}
-              />
-            ))}
+          <LogoContainer />
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center px-[50%]">
+            <div className="pointer-events-auto flex h-12 space-x-2">
+              {options.map((option, index) => (
+                <NavItem
+                  active={option.route ? path.includes(option.route) : false}
+                  key={index}
+                  option={option}
+                />
+              ))}
+            </div>
           </div>
           <div className="my-2 w-[1px] bg-neutral-100" />
           {data?.user && <UserTile className="" user={data.user} />}
@@ -200,7 +207,7 @@ function NavItem({ option, className, active }: NavItemProps) {
           active && "opacity-100",
         )}
       >
-        {active && activeIcon ? activeIcon : icon}
+        {/* {active && activeIcon ? activeIcon : icon} */}
         <Text.Body>{title}</Text.Body>
       </div>
     </div>
@@ -256,6 +263,23 @@ function UserTile({ user, onClick, className }: UserTileProps) {
           <Text.Body className="text-sm">{name ?? ""}</Text.Body>
         </div>
       </Dropdown>
+    </div>
+  );
+}
+
+function LogoContainer() {
+  const router = useRouter();
+  return (
+    <div
+      onClick={() => router.push(route(ROUTES.landing))}
+      className="pointer-events-auto flex h-12 cursor-pointer items-center space-x-2 rounded-md px-2 hover:bg-neutral-100"
+    >
+      <Image
+        src={BeatbackLogo as string}
+        alt="beatback logo"
+        className="size-6"
+      />
+      <Text.Body>beatback</Text.Body>
     </div>
   );
 }

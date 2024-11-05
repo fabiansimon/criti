@@ -10,6 +10,8 @@ import { useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import { LocalStorage } from "~/lib/localStorage";
 import LoadingProvider from "~/providers/loading-provider";
+import Image from "next/image";
+import CoffeeButton from "./coffee-button";
 
 export default function InitRoot({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -50,6 +52,9 @@ function Root({ children }: { children: React.ReactNode }) {
     <div>
       <NavBar />
       {children}
+      <div className="absolute bottom-10 right-10">
+        <CoffeeButton />
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { MEMBERSHIPS } from "~/constants/membership";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
+import CoffeeButton from "../coffee-button";
 
 interface Benefit {
   render: React.ReactNode;
@@ -112,6 +113,17 @@ export default function MembershipModal() {
 
     router.push(checkout.url);
   };
+
+  if (true) {
+    return (
+      <Card
+        title="Sorry you've reached the current limit."
+        subtitle="Premium membership are yet to be implemented."
+      >
+        <CoffeeButton className="mx-auto mt-4 h-10" />
+      </Card>
+    );
+  }
 
   return (
     <Card omitPadding className="mx-auto max-w-[80%] overflow-hidden bg-accent">

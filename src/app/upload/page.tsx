@@ -19,6 +19,7 @@ import { useSession } from "next-auth/react";
 import { useModal } from "~/providers/modal-provider";
 import MembershipModal from "~/components/ui/modals/membership-modal";
 import useIsMobile from "~/hooks/use-is-mobile";
+import LoadingModal from "~/components/ui/modals/loading-modal";
 
 export default function UploadPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -28,7 +29,7 @@ export default function UploadPage() {
 
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { show } = useModal();
+  const { show, hide } = useModal();
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -72,6 +73,7 @@ export default function UploadPage() {
       });
     } finally {
       setIsLoading(false);
+      hide();
     }
   };
 
@@ -148,6 +150,7 @@ export default function UploadPage() {
           />
         )}
       </Card>
+      {/* <LoadingModal isVisible={isLoading} /> */}
     </div>
   );
 }

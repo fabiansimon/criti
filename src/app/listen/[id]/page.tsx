@@ -42,7 +42,6 @@ export default function ListenPage() {
 
   const { id } = useParams<{ id: string }>();
   const { isLoading: downloadLoading, download } = useDownload();
-  const { toast } = useToast();
   const { show: showModal, hide: hideModal } = useModal();
 
   const { data } = useSession();
@@ -150,13 +149,15 @@ export default function ListenPage() {
             <div className="flex">
               {track?.expiresIn && <ExpirationChip hours={track.expiresIn} />}
             </div>
-            <div className={cn("flex space-x-2")}>
-              <Text.Body className="text-xs">Mark comments</Text.Body>
-              <Switch
-                checked={markComments}
-                onCheckedChange={setMarkComments}
-              />
-            </div>
+            {isAdmin && (
+              <div className={cn("flex space-x-2")}>
+                <Text.Body className="text-xs">Mark comments</Text.Body>
+                <Switch
+                  checked={markComments}
+                  onCheckedChange={setMarkComments}
+                />
+              </div>
+            )}
           </div>
         }
       >

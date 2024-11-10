@@ -6,8 +6,8 @@ import { db } from "~/server/db";
 import { deleteFiles } from "~/server/supabase";
 
 export async function GET() {
-  const cronKey = headers().get("cron-secret-key");
-  if (cronKey !== env.CRON_SECRET_KEY) {
+  const cronKey = headers().get("authorization");
+  if (cronKey !== env.CRON_SECRET) {
     console.warn("Unauthorized access attempt with incorrect cron key.");
     return new NextResponse("Unauthorized", { status: 403 });
   }

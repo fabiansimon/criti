@@ -2,10 +2,7 @@
   "crons": [
     {
       "path": "/api/cronjob",
-      "schedule": "0 0 * * *",
-      "headers": {
-        "cron-secret-key": "@cron_secret_key"
-      }
+      "schedule": "0 0 * * *"
     }
   ]
 }

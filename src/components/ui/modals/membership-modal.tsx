@@ -35,13 +35,13 @@ const BENEFITS = {
   noExpiration: (
     <Text.Body>
       <span>Your tracks stay </span>
-      <span className="font-semibold">live indefinitely</span>
+      <span className="font-semibold">live for 365 days</span>
     </Text.Body>
   ),
   saveMoney: (
     <Text.Body>
       <span>Save</span>
-      <span className="font-semibold"> 30%</span>
+      <span className="font-semibold"> 40%</span>
     </Text.Body>
   ),
 };
@@ -71,7 +71,7 @@ const MEMBERSHIP_TYPES: MembershipType[] = [
   {
     title: MEMBERSHIPS.V1_ANNUALLY.name,
     priceId: MEMBERSHIPS.V1_ANNUALLY.priceId,
-    description: "🎤 Pay once and save 30%",
+    description: "🎤 Pay yearly and save 40%",
     monthlyPrice: 5.99,
     color: "#8ED6FF",
     prioritized: true,
@@ -114,7 +114,7 @@ export default function MembershipModal() {
     router.push(checkout.url);
   };
 
-  if (true) {
+  if (false) {
     return (
       <Card
         title="Sorry you've reached the current limit."
@@ -126,7 +126,10 @@ export default function MembershipModal() {
   }
 
   return (
-    <Card omitPadding className="mx-auto max-w-[80%] overflow-hidden bg-accent">
+    <Card
+      omitPadding
+      className="mx-auto overflow-hidden bg-accent xl:max-w-[80%]"
+    >
       <div className="flex justify-center bg-white py-4">
         <div className={cn("text-center", isSmall ? "mx-4" : "w-2/3")}>
           <Text.Headline type="h3">
@@ -150,14 +153,13 @@ export default function MembershipModal() {
             membership={membership}
           />
         ))}
-        {/* <MembershipCard membership={membership} /> */}
       </div>
     </Card>
   );
 }
 
 interface MembershipCardProps {
-  onClick: () => void;
+  onClick?: () => void;
   membership: MembershipType;
   className?: string;
 }
@@ -185,7 +187,7 @@ function MembershipCard({
         style={{ backgroundColor: color }}
         className="relative space-y-2 px-3 py-2"
       >
-        <Text.Headline type="h4">{title}</Text.Headline>
+        <Text.Subtitle className="text-md">{title}</Text.Subtitle>
         <Text.Body>{description}</Text.Body>
         {prioritized && (
           <div className="absolute right-1 top-1 rounded-full bg-white px-3 py-1">

@@ -8,17 +8,20 @@ import { deleteFiles } from "~/server/supabase";
 export async function GET() {
   const cronKey = headers().get("cron-secret-key");
   if (cronKey !== env.CRON_SECRET_KEY) {
+    console.warn("Unauthorized access attempt with incorrect cron key.");
     return new NextResponse("Unauthorized", { status: 403 });
   }
 
   try {
     const now = new Date();
+    console.log(`Cron job started at ${now.toISOString()}`);
+
     // Remove all expired sessions
     await db.trustedSession.deleteMany({
       where: { expiresAt: { lte: now } },
     });
+    console.log("Expired sessions removed.");
 
-    // Remove all expired sessions
     const [freeDays, premiumDays] = [
       env.FREE_EXPIRE_IN_DAYS,
       env.PREMIUM_V1_EXPIRE_IN_DAYS,
@@ -48,21 +51,28 @@ export async function GET() {
 
     const expiredIds: string[] = [];
     const expiredPaths: string[] = [];
-    // Sending out emails + collection ids to delete
+    let emailCount = 0;
+
     expiredTracks.forEach(
       ({ id, file: { url }, creator: { name, email }, title }) => {
         expiredIds.push(id);
         expiredPaths.push(url);
         if (email) {
-          console.log("=== SENDING EMAIL TO:", title, name, email);
           void sendExpirationNotificationEmail({
             title,
             name: name ?? "",
             email,
           });
+          emailCount += 1;
+          console.log(
+            `Notification email sent to ${email} for track: ${title}`,
+          );
         }
       },
     );
+
+    console.log(`${emailCount} expiration notification emails sent.`);
+    console.log(`Archiving ${expiredIds.length} expired tracks.`);
 
     // Archive tracks for now
     await db.track.updateMany({
@@ -80,12 +90,15 @@ export async function GET() {
 
     if (relativePaths.length > 0) {
       await deleteFiles(relativePaths);
+      console.log(`Deleted ${relativePaths.length} files from storage.`);
     }
 
+    console.log("Cron job completed successfully.");
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
+    console.error("Cron job failed with error:", error);
     return NextResponse.json(
-      { success: false, error: `"Internal Server Error": $${error as string}` },
+      { success: false, error: `"Internal Server Error": ${error as string}` },
       { status: 500 },
     );
   }

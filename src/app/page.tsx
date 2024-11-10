@@ -10,9 +10,13 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Text from "~/components/typography/text";
+import BannerImage from "public/banner.png";
+import LogoImage from "public/logo.svg";
 import { Button } from "~/components/ui/button";
 import { ROUTES } from "~/constants/routes";
 import { cn } from "~/lib/utils";
+import Image from "next/image";
+import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 
 const LANDING_DATA = {
   title: "Transform Your Music with Pro-Level Feedback.",
@@ -42,6 +46,7 @@ export default function Home() {
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const stepsRef = useRef<HTMLDivElement | null>(null);
 
+  const isSmall = useBreakpoint(BREAKPOINTS.sm);
   const router = useRouter();
 
   useEffect(() => {
@@ -56,41 +61,74 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const opacity = scrollProgress / 14;
+  const translateX = Math.min(scrollProgress * 10 - 100, 1);
+  const translateY = -Math.min(scrollProgress * 20, 200);
+
   return (
     <div className="flex min-h-screen flex-col overflow-y-auto bg-gradient-to-t from-neutral-100 to-white no-scrollbar">
       <div
         className="fixed left-0 top-0 z-50 h-1 bg-neutral-950 transition-all duration-300 ease-out"
         style={{ width: `${scrollProgress}%` }}
       />
-      <section className="flex h-[100vh] w-full grow flex-col items-center justify-center bg-accent text-center">
-        <Text.Headline
-          type="h1"
-          className="animate-fade-in-up max-w-[90%] md:max-w-[50%]"
+      <section className="relative flex h-[100vh] w-full grow flex-col bg-accent text-center">
+        <div
+          style={{ transform: isSmall ? "" : `translateY(${translateY}px)` }}
+          className="mt-[400px] flex flex-col items-center justify-center"
         >
-          {LANDING_DATA.title}
-        </Text.Headline>
-        <Text.Body
-          subtle
-          className="text-md animate-fade-in-up mt-2 max-w-[90%] md:max-w-[50%]"
-        >
-          {LANDING_DATA.subtitle}
-        </Text.Body>
-        <div className="animate-fade-in-up mt-4 flex flex-col gap-2 md:flex-row">
-          <Button
-            onClick={() => router.push(ROUTES.auth)}
-            icon={<Rocket01Icon size={18} className="animate-float" />}
-            title="Get started"
-            className="h-12 transition-transform hover:scale-105"
+          <Image
+            src={LogoImage as string}
+            alt="logo"
+            className="animate-fade-in-up mb-10"
           />
-          <Button
-            title="Learn more"
-            className="h-12 transition-transform hover:scale-105"
-            variant="outline"
-            onClick={() =>
-              stepsRef.current?.scrollIntoView({ behavior: "smooth" })
-            }
-          />
+          <Text.Headline
+            type="h1"
+            className="animate-fade-in-up max-w-[90%] md:max-w-[50%]"
+          >
+            {LANDING_DATA.title}
+          </Text.Headline>
+          <Text.Body
+            subtle
+            className="text-md animate-fade-in-up mt-2 max-w-[90%] md:max-w-[50%]"
+          >
+            {LANDING_DATA.subtitle}
+          </Text.Body>
+
+          <div className="animate-fade-in-up mt-4 flex flex-col gap-2 md:flex-row">
+            <Button
+              onClick={() => router.push(ROUTES.auth)}
+              icon={<Rocket01Icon size={18} className="animate-float" />}
+              title="Get started"
+              className="h-12 transition-transform hover:scale-105"
+            />
+            <Button
+              title="Learn more"
+              className="h-12 transition-transform hover:scale-105"
+              variant="outline"
+              onClick={() =>
+                stepsRef.current?.scrollIntoView({ behavior: "smooth" })
+              }
+            />
+          </div>
         </div>
+        {!isSmall && (
+          <div
+            style={{
+              opacity,
+              transform: `translateX(${translateX}px)`,
+              transition: "opacity 0.3s ease, transform 0.3s ease",
+            }}
+            className="absolute bottom-[200px] mt-[200px] max-h-[300px] w-full"
+          >
+            <Image
+              priority
+              src={BannerImage}
+              alt="mockup render"
+              layout="responsive"
+              className="max-h-[300px] w-full object-contain"
+            />
+          </div>
+        )}
       </section>
       <section
         ref={stepsRef}

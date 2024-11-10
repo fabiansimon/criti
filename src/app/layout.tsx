@@ -1,6 +1,7 @@
 import "~/styles/globals.css";
 import { GeistSans } from "geist/font/sans";
-import { type Viewport, type Metadata } from "next";
+import { type Viewport } from "next";
+import { Analytics } from "@vercel/analytics/react";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { Toaster } from "~/components/ui/toaster";
@@ -59,6 +60,7 @@ export default function RootLayout({
           <InitRoot>{children}</InitRoot>
         </TRPCReactProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );

@@ -16,7 +16,7 @@ import { useLoading } from "~/providers/loading-provider";
 import EditTrackModal from "./modals/edit-track-modal";
 import { useModal } from "~/providers/modal-provider";
 import ShareModal from "./modals/share-modal";
-import { ExpirationChip, InfoChip } from "./info-chips";
+import { ExpirationChip, InfoChip, OpenCommentsChip } from "./info-chips";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;
@@ -106,14 +106,7 @@ export default function ProjectListItem({
             <Text.Body>{title}</Text.Body>
             <div className="-mt-2 ml-1 flex space-x-1">
               <ExpirationChip hours={track.expiresIn} />
-              {openComments && (
-                <InfoChip
-                  backgroundColor="bg-blue-300/30"
-                  textColor="text-blue-700"
-                  icon={<Comment01Icon size={13} />}
-                  text="open comments"
-                />
-              )}
+              {openComments && <OpenCommentsChip />}
             </div>
           </div>
           <Text.Subtitle className="font-normal" subtle>

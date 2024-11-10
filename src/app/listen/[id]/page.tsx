@@ -17,18 +17,16 @@ import VolumeControl from "~/components/ui/audio/volume-control";
 import Card from "~/components/ui/card";
 import { CommentsContainer } from "~/components/ui/comment/comments-container";
 import Dropdown, { type MenuOption } from "~/components/ui/dropdown-menu";
-import { ExpirationChip, OpenCommentsChip } from "~/components/ui/info-chips";
+import { ExpirationChip } from "~/components/ui/info-chips";
 import EditTrackModal from "~/components/ui/modals/edit-track-modal";
 import PasswordModal from "~/components/ui/modals/password-modal";
 import ShareModal from "~/components/ui/modals/share-modal";
 import { Switch } from "~/components/ui/switch";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import useDownload from "~/hooks/use-download";
-import { useToast } from "~/hooks/use-toast";
 import { LocalStorage } from "~/lib/localStorage";
-import { cn, copyToClipboard, generateShareableLink } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 import { useModal } from "~/providers/modal-provider";
-import { type SimplfiedTrack } from "~/server/api/routers/track/trackTypes";
 
 import { api } from "~/trpc/react";
 

@@ -25,7 +25,7 @@ export default function NavItem({ option, className, active }: NavItemProps) {
       <div
         className={cn(
           "flex items-center space-x-2 opacity-50",
-          active && "opacity-100",
+          active && "font-medium opacity-100",
         )}
       >
         {/* {active && activeIcon ? activeIcon : icon} */}

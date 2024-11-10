@@ -19,8 +19,6 @@ export function InfoChip({
   textColor,
   infoText,
 }: InfoChipProps) {
-  const isSmall = useBreakpoint(BREAKPOINTS.sm);
-
   return (
     <Popover text={infoText}>
       <div

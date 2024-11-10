@@ -61,7 +61,7 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const opacity = scrollProgress / 14;
+  const opacity = scrollProgress / 10;
   const translateX = Math.min(scrollProgress * 10 - 100, 1);
   const translateY = -Math.min(scrollProgress * 20, 200);
 

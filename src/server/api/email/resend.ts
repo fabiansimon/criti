@@ -22,7 +22,7 @@ export async function sendVerificationRequest(
 
   try {
     await sendEmail({
-      from: "Acme <onboarding@resend.dev>",
+      from,
       to: [email],
       subject: "Login Link to your Account",
       body: MagicLinkEmail({ url }),
@@ -44,7 +44,7 @@ export async function sendExpirationWarningEmail({
   url: string;
 }) {
   return await sendEmail({
-    from: "Vocast <onboarding@resend.dev>",
+    from: "beatback <noreply@beatback.io>",
     to: [...email],
     subject: "Warning! Your Project will expire soon",
     body: ProjectExpiredWarningEmail({ title, name, url }),
@@ -61,7 +61,7 @@ export async function sendExpirationNotificationEmail({
   name: string;
 }) {
   return await sendEmail({
-    from: "Vocast <onboarding@resend.dev>",
+    from: "beatback <noreply@beatback.io>",
     to: [...email],
     subject: "Expirated Project",
     body: ProjectExpiredNotificationEmail({ title, name }),
@@ -76,7 +76,7 @@ export async function sendInvitationEmail({
   trackId: string;
 }) {
   return await sendEmail({
-    from: "Vocast <onboarding@resend.dev>",
+    from: "beatback <onboarding@beatback.io>",
     to: [...emails],
     subject: "Hello world",
     body: InviteEmail({
@@ -99,7 +99,7 @@ export async function sendCommentNotificationEmail({
   comment: Comment;
 }) {
   return await sendEmail({
-    from: "Vocast <onboarding@resend.dev>",
+    from: "beatback <noreply@beatback.io>",
     to: [...email],
     subject: "Fresh commment added",
     body: CommentNotificationEmail({
@@ -123,7 +123,7 @@ async function sendEmail({
 }) {
   try {
     return await resend.emails.send({
-      from: "beatback <help@beatback.io>",
+      from,
       to,
       subject,
       react: body,

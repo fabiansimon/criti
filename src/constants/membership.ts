@@ -10,14 +10,16 @@
 //   },
 // };
 
+import { env } from "~/env";
+
 // Production Products
 export const MEMBERSHIPS = {
   V1_MONTHLY: {
-    priceId: "price_1QJZCvEsfTIBY629SN31U1UD",
+    priceId: env.NEXT_PUBLIC_PREMIUM_MONTHLY_PRICE_ID,
     name: "Pro Collaborator - Monthly",
   },
   V1_ANNUALLY: {
-    priceId: "price_1QJZEsEsfTIBY629oycCgyK9",
+    priceId: env.NEXT_PUBLIC_PREMIUM_YEARLY_PRICE_ID,
     name: "Pro Collaborator - Yearly",
   },
 };

@@ -89,7 +89,7 @@ export function copyToClipboard(value: string) {
 
 export function getBaseUrl() {
   if (typeof window !== "undefined") return window.location.origin;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  if (process.env.CUSTOM_DOMAIN) return process.env.CUSTOM_DOMAIN;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 

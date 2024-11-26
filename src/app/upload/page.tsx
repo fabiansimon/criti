@@ -5,7 +5,13 @@ import IconContainer from "~/components/ui/icon-container";
 
 import Text from "~/components/typography/text";
 import { Button } from "~/components/ui/button";
-import { type DragEvent, useCallback, useRef, useState } from "react";
+import {
+  type DragEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { fileToBase64 } from "~/lib/utils";
 import { useToast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
@@ -19,7 +25,24 @@ import { useSession } from "next-auth/react";
 import { useModal } from "~/providers/modal-provider";
 import MembershipModal from "~/components/ui/modals/membership-modal";
 import useIsMobile from "~/hooks/use-is-mobile";
-import LoadingModal from "~/components/ui/modals/loading-modal";
+import LoadingSpinner from "~/components/ui/loading-spinner";
+
+const MAX_SIZE_MB = 200;
+const MAX_FILE_SIZE = MAX_SIZE_MB * 1024 * 1024; // 200MB in bytes
+
+const ACCEPTED_MIMES = [
+  "audio/mpeg",
+  "audio/wav",
+  "audio/ogg",
+  "audio/aac",
+  "audio/flac",
+  "audio/mp4",
+];
+
+interface FileError {
+  title: string;
+  description: string;
+}
 
 export default function UploadPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -63,8 +86,8 @@ export default function UploadPage() {
       });
 
       if (!track) return;
-      void utils.track.invalidate();
       router.push(route(ROUTES.listen, track.id));
+      void utils.track.invalidate();
     } catch (_) {
       toast({
         title: "Something went wrong.",
@@ -86,13 +109,38 @@ export default function UploadPage() {
     e.stopPropagation();
   }, []);
 
-  const handleFileInput = (rawFile: File) => {
-    if (!rawFile?.type.includes("audio")) {
+  const checkFile = (file: File) => {
+    let error: FileError | undefined;
+
+    if (!ACCEPTED_MIMES.includes(file.type)) {
+      error = {
+        title: "Unsupported File Format",
+        description:
+          "The uploaded file format is not supported. Please upload a valid audio file (e.g., MP3, WAV, or OGG).",
+      };
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      error = {
+        title: "File Too Large",
+        description: `The uploaded file exceeds the maximum size of ${MAX_SIZE_MB}MB. Please upload a smaller audio file.`,
+      };
+    }
+
+    if (error) {
+      const { title, description } = error;
       toast({
-        title: "Wrong format.",
-        description: "This service is only made for audio files.",
+        title,
+        description,
         variant: "destructive",
       });
+    }
+
+    return !!!error;
+  };
+
+  const handleFileInput = (rawFile: File) => {
+    if (!checkFile(rawFile)) {
       return;
     }
 
@@ -118,6 +166,7 @@ export default function UploadPage() {
             if (!files || files.length === 0) return;
             handleFileInput(files[0]!);
           }}
+          accept={ACCEPTED_MIMES.join(", ")}
           ref={inputRef}
           type="file"
           id="fileInput"
@@ -149,8 +198,42 @@ export default function UploadPage() {
             onClick={(data) => handleUpload(data as CreateState)}
           />
         )}
+
+        {isLoading && <LoadingContainer />}
       </Card>
-      {/* <LoadingModal isVisible={isLoading} /> */}
+      {/* <LoadingModal isVisible={true} /> */}
+    </div>
+  );
+}
+
+function LoadingContainer() {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const interval = Math.random() * (150 - 50) + 50;
+
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(timer);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="absolute bottom-0 left-0 right-0 top-0 flex flex-col items-center justify-center bg-white">
+      <Text.Body className="font-semibold">
+        Uploading your masterpiece
+      </Text.Body>
+      <Text.Body className="mb-3 mt-2" subtle>
+        {`${progress}% - Almost there!`}
+      </Text.Body>
+      <LoadingSpinner className="size-8" />
     </div>
   );
 }

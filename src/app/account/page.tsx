@@ -171,11 +171,11 @@ export default function AccountPage() {
             </Text.Subtitle>
           </div>
           <div className="my-4 h-[1px] w-full bg-neutral-100" />
-          {/* <div className="cursor-pointer" onClick={handleDelete}>
+          <div className="cursor-pointer" onClick={handleDelete}>
             <Text.Body className="text-center text-xs text-red-600 underline">
               Delete Account
             </Text.Body>
-          </div> */}
+          </div>
         </div>
       </Card>
     </div>

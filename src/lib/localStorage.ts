@@ -21,4 +21,8 @@ export class LocalStorage {
   static cleanSessionId() {
     localStorage.removeItem(KEYS.sessionId);
   }
+
+  static clean() {
+    localStorage.clear();
+  }
 }

@@ -10,8 +10,8 @@ import { useEffect } from "react";
 import { v4 as uuid } from "uuid";
 import { LocalStorage } from "~/lib/localStorage";
 import LoadingProvider from "~/providers/loading-provider";
-import Image from "next/image";
 import CoffeeButton from "./coffee-button";
+import LoadingSpinner from "./loading-spinner";
 
 export default function InitRoot({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -50,11 +50,20 @@ function Root({ children }: { children: React.ReactNode }) {
 
   return (
     <div>
-      <NavBar />
-      {children}
-      <div className="absolute bottom-10 right-10">
-        <CoffeeButton />
-      </div>
+      {status === "loading" && (
+        <div className="flex min-h-screen flex-col items-center justify-center">
+          <LoadingSpinner />
+        </div>
+      )}
+      {status !== "loading" && (
+        <>
+          <NavBar />
+          {children}
+          <div className="absolute bottom-10 right-10">
+            <CoffeeButton />
+          </div>
+        </>
+      )}
     </div>
   );
 }

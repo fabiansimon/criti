@@ -58,8 +58,10 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    NEXT_PUBLIC_PREMIUM_MONTHLY_PRICE_ID: process.env.PREMIUM_MONTHLY_PRICE_ID,
-    NEXT_PUBLIC_PREMIUM_YEARLY_PRICE_ID: process.env.PREMIUM_YEARLY_PRICE_ID,
+    NEXT_PUBLIC_PREMIUM_MONTHLY_PRICE_ID:
+      process.env.NEXT_PUBLIC_PREMIUM_MONTHLY_PRICE_ID,
+    NEXT_PUBLIC_PREMIUM_YEARLY_PRICE_ID:
+      process.env.NEXT_PUBLIC_PREMIUM_YEARLY_PRICE_ID,
     FREE_TRACK_LIMIT: parseInt(process.env.FREE_TRACK_LIMIT ?? "0", 10),
     FREE_EXPIRE_IN_DAYS: parseInt(process.env.FREE_EXPIRE_IN_DAYS ?? "0", 10),
     PREMIUM_V1_TRACK_LIMIT: parseInt(

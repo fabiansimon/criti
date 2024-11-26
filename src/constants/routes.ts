@@ -4,10 +4,16 @@ export const ROUTES = {
   auth: "auth",
   upload: "upload",
   account: "account",
+  admin: "admin",
   landing: "",
 };
 
-export const openRoutes = new Set([ROUTES.landing, ROUTES.listen, ROUTES.auth]);
+export const openRoutes = new Set([
+  ROUTES.landing,
+  ROUTES.listen,
+  ROUTES.auth,
+  ROUTES.admin,
+]);
 
 export function route(name: string, ...params: string[]) {
   let post = "";

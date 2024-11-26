@@ -14,6 +14,7 @@ import { ZodError } from "zod";
 import { getServerAuthSession } from "~/server/auth";
 import { db } from "~/server/db";
 import { stripe } from "../stripe/client";
+import { env } from "~/env";
 
 /**
  * 1. CONTEXT
@@ -86,11 +87,11 @@ export const createTRPCRouter = t.router;
  * You can remove this if you don't like it, but it can help catch unwanted waterfalls by simulating
  * network latency that would occur in production but not in local development.
  */
-const timingMiddleware = t.middleware(async ({ next, path }) => {
+export const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 
-  if (false) {
-    // if (t._config.isDev) {
+  if (t._config.isDev) {
+    console.log("=== CALLED TIMEOUT FUNCTION");
     // artificial delay in dev
     const waitMs = Math.floor(Math.random() * 400) + 100;
     await new Promise((resolve) => setTimeout(resolve, waitMs));

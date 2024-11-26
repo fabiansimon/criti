@@ -10,6 +10,7 @@ import { CommentTile } from "./comment-tile";
 import { LocalStorage } from "~/lib/localStorage";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import { useSession } from "next-auth/react";
+import { Skeleton } from "../skeleton";
 
 interface CommentsContainerProps {
   time: number;
@@ -40,7 +41,7 @@ export function CommentsContainer({
   const utils = api.useUtils();
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
 
-  const { data: initComments } = api.comment.getAll.useQuery({
+  const { data: initComments, isLoading } = api.comment.getAll.useQuery({
     trackId,
   });
 
@@ -127,15 +128,23 @@ export function CommentsContainer({
           isSmall && "max-h-none border-none pb-[180px] shadow-none",
         )}
       >
-        {empty && (
-          <div className="mt-10 text-center">
+        {isLoading && (
+          <div className="space-y-1 p-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-[60px] w-full rounded-md" />
+            ))}
+          </div>
+        )}
+
+        {!isLoading && empty && (
+          <div className="mt-[16%] text-center">
             <Text.Body subtle>No comments</Text.Body>
             <Text.Subtitle subtle>Be the first one to critique.</Text.Subtitle>
           </div>
         )}
 
         {/* Sorting Container */}
-        {!empty && (
+        {!isLoading && !empty && (
           <div
             className={
               "sticky left-0 right-0 top-0 z-10 flex h-[40px] items-center justify-between border-b border-b-neutral-100 bg-white px-[10px]"

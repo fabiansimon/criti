@@ -118,13 +118,12 @@ export default function Home() {
               transform: `translateX(${translateX}px)`,
               transition: "opacity 0.3s ease, transform 0.3s ease",
             }}
-            className="absolute bottom-[200px] mt-[200px] max-h-[300px] w-full"
+            className="pointer-events-none absolute bottom-[200px] mt-[200px] max-h-[300px] w-full"
           >
             <Image
               priority
               src={BannerImage}
               alt="mockup render"
-              layout="responsive"
               className="max-h-[300px] w-full object-contain"
             />
           </div>

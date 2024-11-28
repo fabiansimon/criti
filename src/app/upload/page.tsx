@@ -27,7 +27,7 @@ import MembershipModal from "~/components/ui/modals/membership-modal";
 import useIsMobile from "~/hooks/use-is-mobile";
 import LoadingSpinner from "~/components/ui/loading-spinner";
 
-const MAX_SIZE_MB = 200;
+const MAX_SIZE_MB = 50;
 const MAX_FILE_SIZE = MAX_SIZE_MB * 1024 * 1024; // 200MB in bytes
 
 const ACCEPTED_MIMES = [

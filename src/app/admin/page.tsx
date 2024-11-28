@@ -1,13 +1,12 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "~/components/ui/button";
 import Card from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { WHITELISTED_EMAILS } from "~/constants/dev";
-import { ROUTES } from "~/constants/routes";
 import { LocalStorage } from "~/lib/localStorage";
 import { useDialog } from "~/providers/dialog-provider";
 import { api } from "~/trpc/react";
@@ -15,20 +14,25 @@ import { api } from "~/trpc/react";
 export default function AdminPage() {
   const { mutateAsync: resetDB } = api.dashboard.resetDB.useMutation();
 
-  const { data } = useSession();
+  const { data, status } = useSession();
   const router = useRouter();
   const { show } = useDialog();
 
   useEffect(() => {
-    if (!WHITELISTED_EMAILS.includes(data?.user?.email ?? "")) {
-      router.push(ROUTES.landing);
+    if (
+      status !== "loading" &&
+      !WHITELISTED_EMAILS.includes(data?.user?.email ?? "")
+    ) {
+      router.push("/");
     }
-  }, [data, router]);
+  }, [data, router, status]);
 
   if (!data) return;
+
   const handleReset = async () => {
     await resetDB({ includeProd: false });
-    router.push(ROUTES.landing);
+    await signOut();
+    router.push("/");
     LocalStorage.clean();
   };
 

@@ -6,7 +6,10 @@ import { db } from "~/server/db";
 
 const sendEmails = protectedProcedure
   .input(SendEmailsInput)
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input, ctx }) => {
+    const {
+      session: { user },
+    } = ctx;
     const { emails, trackId } = input;
     try {
       const track = await db.track.findUnique({
@@ -17,7 +20,12 @@ const sendEmails = protectedProcedure
         throw new TRPCError({ message: "Track not found.", code: "NOT_FOUND" });
       }
 
-      await sendInvitationEmail({ emails, trackId });
+      await sendInvitationEmail({
+        emails,
+        trackId,
+        sender: user.name ?? "Someone 👀",
+        title: track.title,
+      });
     } catch (error) {
       if (error instanceof Error) {
         console.error(error);

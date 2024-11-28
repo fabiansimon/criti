@@ -1,9 +1,9 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useModal } from "~/providers/modal-provider";
 import MembershipModal from "../modals/membership-modal";
-import { Door02Icon, Playlist02Icon } from "hugeicons-react";
+import { Door02Icon, Playlist02Icon, Rocket01Icon } from "hugeicons-react";
 import { route, ROUTES } from "~/constants/routes";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { cn } from "~/lib/utils";
 import UserTile, { type SessionUser } from "./user-tile";
@@ -26,6 +26,9 @@ export default function Drawer({
   const path = usePathname();
   const router = useRouter();
   const { show } = useModal();
+  const { status } = useSession();
+
+  const isAuth = status !== "unauthenticated";
 
   const mobileOptions: NavOption[] = [
     {
@@ -57,34 +60,48 @@ export default function Drawer({
         variants={{ visible: { translateX: 0 }, hidden: { translateX: -1000 } }}
         className="flex h-full w-[80%] flex-col items-start space-y-4 bg-white px-4 py-10"
       >
-        {user && (
+        {isAuth && user && (
           <UserTile
             onClick={() => router.push(route(ROUTES.account))}
             user={user}
           />
         )}
-        {[...options, ...mobileOptions].map((option, index) => (
-          <NavItem
-            active={option.route ? path.includes(option.route) : false}
-            key={index}
-            option={{
-              ...option,
-              onClick: () => {
-                onRequestClose();
-                option.onClick();
-              },
-            }}
-          />
-        ))}
+        {isAuth &&
+          [...options, ...mobileOptions].map((option, index) => (
+            <NavItem
+              active={option.route ? path.includes(option.route) : false}
+              key={index}
+              option={{
+                ...option,
+                onClick: () => {
+                  onRequestClose();
+                  option.onClick();
+                },
+              }}
+            />
+          ))}
         <NavItem
-          active
-          className="absolute bottom-6 left-4 text-red-700"
+          active={false}
           option={{
-            icon: <Door02Icon size={16} className="text-red-700" />,
-            onClick: () => void handleLogout(),
-            title: "Log out",
+            icon: <Rocket01Icon />,
+            onClick: () => {
+              router.push(route(ROUTES.auth));
+              onRequestClose();
+            },
+            title: "Get started",
           }}
         />
+        {isAuth && (
+          <NavItem
+            active
+            className="absolute bottom-6 left-4 text-red-700"
+            option={{
+              icon: <Door02Icon size={16} className="text-red-700" />,
+              onClick: () => void handleLogout(),
+              title: "Log out",
+            }}
+          />
+        )}
       </motion.div>
     </motion.div>
   );

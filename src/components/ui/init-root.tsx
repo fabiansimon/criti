@@ -41,7 +41,12 @@ function Root({ children }: { children: React.ReactNode }) {
   const auth = status === "authenticated";
 
   if (!auth && openRoutes.has(path.split("/")[1] ?? "")) {
-    return children;
+    return (
+      <div>
+        <NavBar />
+        {children}
+      </div>
+    );
   }
 
   if (status === "unauthenticated") {

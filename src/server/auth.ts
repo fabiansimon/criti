@@ -76,7 +76,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.GITHUB_SECRET,
     }),
     EmailProvider({
-      from: "example@resend.com",
+      from: "authenticate@beatback.io",
       sendVerificationRequest,
     }),
   ],

@@ -62,7 +62,7 @@ const createComment = anonPossibleProcedure
 
       const { creator } = track;
 
-      const byAdmin = !!session && session.user.id === creator.id;
+      const byAdmin = session?.user.id === creator.id;
 
       const comment = await db.comment.create({
         data: {
@@ -79,11 +79,12 @@ const createComment = anonPossibleProcedure
         },
       });
 
-      if (!byAdmin && session?.user.email) {
+      if (!byAdmin && creator.email) {
         const { id, title } = track;
+        console.log("=== EMAIL", creator.email);
         void sendCommentNotificationEmail({
           comment,
-          email: session.user.email,
+          email: creator.email,
           id: id,
           title: title,
         });

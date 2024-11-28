@@ -49,7 +49,8 @@ export default function AccountPage() {
   const validInput = useMemo(() => {
     if (!activeChanges) return false;
     if (name.length < 2 || name.length > MAX_NAME_LENGTH) return false;
-    return REGEX.username.test(name);
+    return true;
+    // return REGEX.username.test(name);
   }, [name, activeChanges]);
 
   useEffect(() => {

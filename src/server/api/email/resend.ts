@@ -23,7 +23,7 @@ export async function sendVerificationRequest(
   try {
     await sendEmail({
       from,
-      to: [email],
+      to: email,
       subject: "Login Link to your Account",
       body: MagicLinkEmail({ url }),
     });
@@ -45,7 +45,7 @@ export async function sendExpirationWarningEmail({
 }) {
   return await sendEmail({
     from: "beatback <noreply@beatback.io>",
-    to: [...email],
+    to: email,
     subject: "Warning! Your Project will expire soon",
     body: ProjectExpiredWarningEmail({ title, name, url }),
   });
@@ -62,7 +62,7 @@ export async function sendExpirationNotificationEmail({
 }) {
   return await sendEmail({
     from: "beatback <noreply@beatback.io>",
-    to: [...email],
+    to: email,
     subject: "Expirated Project",
     body: ProjectExpiredNotificationEmail({ title, name }),
   });
@@ -71,17 +71,21 @@ export async function sendExpirationNotificationEmail({
 export async function sendInvitationEmail({
   emails,
   trackId,
+  sender,
+  title,
 }: {
   emails: string[];
   trackId: string;
+  title: string;
+  sender: string;
 }) {
   return await sendEmail({
-    from: "beatback <onboarding@beatback.io>",
-    to: [...emails],
-    subject: "Hello world",
+    from: "beatback <invite@beatback.io>",
+    to: emails,
+    subject: "You're invited!",
     body: InviteEmail({
-      title: "Project",
-      by: "Someone",
+      title,
+      by: sender,
       link: generateShareableLink(trackId),
     }),
   });
@@ -98,16 +102,18 @@ export async function sendCommentNotificationEmail({
   email: string;
   comment: Comment;
 }) {
-  return await sendEmail({
+  const res = await sendEmail({
     from: "beatback <noreply@beatback.io>",
-    to: [...email],
-    subject: "Fresh commment added",
+    to: email,
+    subject: "New commment added!",
     body: CommentNotificationEmail({
       content: comment,
       title,
       url: generateShareableLink(id),
     }),
   });
+
+  return res;
 }
 
 async function sendEmail({
@@ -117,18 +123,20 @@ async function sendEmail({
   body,
 }: {
   from: string;
-  to: string[];
+  to: string | string[];
   subject: string;
   body: React.ReactNode;
 }) {
-  try {
-    return await resend.emails.send({
-      from,
-      to,
-      subject,
-      react: body,
-    });
-  } catch (error) {
-    console.error("Error sending email", error);
+  const res = await resend.emails.send({
+    from,
+    to,
+    subject,
+    react: body,
+  });
+
+  if (res.error) {
+    console.error("Error when sending email", res.error);
   }
+
+  return res;
 }

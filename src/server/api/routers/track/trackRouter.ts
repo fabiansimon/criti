@@ -138,7 +138,7 @@ const uploadTrack = protectedProcedure
   .mutation(async ({ input, ctx: { db, session } }) => {
     const { contentType, fileContent, title, emails, password } = input;
     const {
-      user: { id: creatorId },
+      user: { id: creatorId, name },
     } = session;
 
     let hashedPassword = null;
@@ -182,7 +182,12 @@ const uploadTrack = protectedProcedure
       });
 
       if (emails.length > 0) {
-        await sendInvitationEmail({ emails, trackId: track.id });
+        await sendInvitationEmail({
+          emails,
+          trackId: track.id,
+          sender: name ?? "Someone 👀",
+          title: track.title,
+        });
       }
 
       return track;

@@ -57,6 +57,7 @@ export default function ProvidersLogin({
     icon: <Mail01Icon size={18} />,
     onClick: onEmail,
   };
+
   return (
     <motion.div
       ref={ref}
@@ -73,8 +74,13 @@ export default function ProvidersLogin({
           <AuthOption key={index} option={option} />
         ))}
       </div>
-      <div className="my-4 h-[1px] w-full bg-neutral-100" />
-      <AuthOption option={emailOption} />
+      <div className="pointer-events-none cursor-not-allowed opacity-50">
+        <div className="my-4 h-[1px] w-full bg-neutral-100" />
+        <AuthOption option={emailOption} />
+        <Text.Body className="mt-2 text-center text-[11px]">
+          Email login coming soon
+        </Text.Body>
+      </div>
     </motion.div>
   );
 }

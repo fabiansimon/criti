@@ -1,6 +1,12 @@
 "use client";
 
-import { Add01Icon, Add02Icon, Home11Icon, Menu01Icon } from "hugeicons-react";
+import {
+  Add01Icon,
+  Add02Icon,
+  Home11Icon,
+  Menu01Icon,
+  Rocket01Icon,
+} from "hugeicons-react";
 import { useSession } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { route, ROUTES } from "~/constants/routes";
@@ -10,6 +16,7 @@ import LogoContainer from "./logo-container";
 import NavItem from "./navigation-item";
 import UserTile from "./user-tile";
 import Drawer from "./drawer";
+import Text from "~/components/typography/text";
 
 export interface NavOption {
   title: string;
@@ -21,11 +28,13 @@ export interface NavOption {
 
 export default function NavBar() {
   const [expanded, setExpanded] = useState<boolean>(false);
-  const { data } = useSession();
+
+  const { data, status } = useSession();
   const router = useRouter();
   const path = usePathname();
 
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
+  const isAuth = status !== "unauthenticated";
 
   const options: NavOption[] = [
     {
@@ -44,8 +53,6 @@ export default function NavBar() {
     },
   ];
 
-  if (path === "/") return;
-
   return (
     <div className="fixed left-0 right-0 top-0 z-20 flex min-h-14 items-center border-b border-b-neutral-200 bg-white">
       {isSmall && (
@@ -62,19 +69,29 @@ export default function NavBar() {
       {!isSmall && (
         <div className="mx-auto flex w-full justify-between space-x-2 px-10 md:max-w-screen-lg">
           <LogoContainer user={data?.user} />
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center px-[50%]">
-            <div className="pointer-events-auto flex h-12 space-x-2">
-              {options.map((option, index) => (
-                <NavItem
-                  active={option.route ? path.includes(option.route) : false}
-                  key={index}
-                  option={option}
-                />
-              ))}
+          {isAuth && (
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center px-[50%]">
+              <div className="pointer-events-auto flex h-12 space-x-2">
+                {options.map((option, index) => (
+                  <NavItem
+                    active={option.route ? path.includes(option.route) : false}
+                    key={index}
+                    option={option}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="my-2 w-[1px] bg-neutral-100" />
-          {data?.user && <UserTile className="" user={data.user} />}
+          )}
+          {isAuth && data?.user && <UserTile className="" user={data.user} />}
+          {!isAuth && (
+            <div
+              onClick={() => router.push(route(ROUTES.auth))}
+              className="flex cursor-pointer items-center space-x-2 rounded-lg p-2 text-right hover:bg-neutral-100"
+            >
+              <Rocket01Icon className="size-5" />
+              <Text.Body className="font-semibold">{"Sign up"}</Text.Body>
+            </div>
+          )}
         </div>
       )}
       {isSmall && (

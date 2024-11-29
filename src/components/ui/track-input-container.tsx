@@ -33,6 +33,7 @@ export interface UpdateState {
   id: string;
   title: string;
   locked: boolean;
+  isPublic: boolean;
 }
 
 export interface CreateState {
@@ -40,6 +41,7 @@ export interface CreateState {
   emails: string[];
   password: string;
   locked: boolean;
+  isPublic: boolean;
 }
 
 interface TrackInputContainerProps {
@@ -59,6 +61,7 @@ export default function TrackInputContainer({
 }: TrackInputContainerProps) {
   const [pwVisible, setPwVisible] = useState<boolean>(false);
   const [emails, setEmails] = useState<Set<string>>(new Set());
+  const [isPublic, setIsPublic] = useState<boolean>(!!updateState?.isPublic);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [locked, setLocked] = useState<boolean>(!!updateState?.locked);
   const [input, setInput] = useState<InputType>({
@@ -103,6 +106,7 @@ export default function TrackInputContainer({
         title,
         locked,
         password,
+        isPublic,
       });
     }
 
@@ -111,6 +115,7 @@ export default function TrackInputContainer({
       emails: [...emails],
       password,
       locked,
+      isPublic,
     });
   };
 
@@ -175,10 +180,26 @@ export default function TrackInputContainer({
           )}
         </div>
       </div>
+
+      {/* Make public Container */}
+      <div className="mb-2 mt-4 flex justify-between rounded-md border border-neutral-200 bg-neutral-50 px-3 py-[8.5px]">
+        <div className="flex flex-col space-y-1">
+          <Text.Body className="font-semibold">Make your work public</Text.Body>
+          <Text.Body className="text-xs" subtle>
+            That way you can get feedback from people all over the world
+          </Text.Body>
+        </div>
+        <Switch
+          className="opacity-100"
+          checked={isPublic}
+          onCheckedChange={setIsPublic}
+        />
+      </div>
+
       <div className="my-4 border-t border-neutral-200" />
 
       {/* Password Input */}
-      {!update && (
+      {!update && !isPublic && (
         <div className={"space-y-1"}>
           <div className="mb-2 flex justify-between">
             <Text.Body className="ml-1 text-xs" subtle>
@@ -190,6 +211,7 @@ export default function TrackInputContainer({
               onCheckedChange={setLocked}
             />
           </div>
+
           <div
             className={cn(
               "relative flex h-12 space-x-2",
@@ -229,7 +251,7 @@ export default function TrackInputContainer({
       )}
 
       {/* Update Password Input */}
-      {update && (
+      {update && !isPublic && (
         <div className={"space-y-1"}>
           <div className="mb-2 flex justify-between">
             <Text.Body className="ml-1 text-xs" subtle>
@@ -306,6 +328,7 @@ export default function TrackInputContainer({
           />
         ))}
       </div>
+
       <Button
         onClick={handleClick}
         isLoading={isLoading}

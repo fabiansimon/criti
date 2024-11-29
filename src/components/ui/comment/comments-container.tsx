@@ -95,7 +95,11 @@ export function CommentsContainer({
     setAscending((prev) => !prev);
   };
 
-  const handleAddComment = async ({ content, timestamp }: CommentContent) => {
+  const handleAddComment = async ({
+    content,
+    timestamp,
+    type,
+  }: CommentContent) => {
     let sessionId: string | undefined;
     if (!isAdmin) {
       sessionId = LocalStorage.fetchSessionId();
@@ -109,10 +113,13 @@ export function CommentsContainer({
       updatedAt: new Date(),
       creatorId: data?.user.id ?? "",
       id: localId,
-      open: true,
+      status: "OPEN",
       sessionId: sessionId ?? null,
       timestamp: timestamp ?? null,
       trackId,
+      type,
+      pinned: false,
+      mediaURL: null,
     };
 
     setComments((prev) => [...prev, newComment]);

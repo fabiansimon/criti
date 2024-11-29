@@ -13,6 +13,17 @@ enum Membership {
   PREMIUM_V1
 }
 
+model Genre {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+
+  tracks Track[]
+}
+
 model Track {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -22,10 +33,17 @@ model Track {
   creator   User   @relation(fields: [creatorId], references: [id])
 
   title    String
-  fileId   String  @unique
   password String?
 
-  file     File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  isPublic Boolean @default(false)
+  streams  Int     @default(0)
+
+  genreId String?
+  genre   Genre?  @relation(fields: [genreId], references: [id])
+
+  fileId String @unique
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
   comments Comment[]
 
   trustedSessions TrustedSession[]
@@ -44,19 +62,61 @@ model TrustedSession {
   Track   Track  @relation(fields: [trackId], references: [id])
 }
 
+enum CommentStatus {
+  OPEN
+  IN_PROGRESS
+  DISMISSED
+  UNDER_REVIEW
+  COMPLETED
+}
+
+enum CommentType {
+  MIX
+  LYRIC
+  DROP
+  TRANSITION
+  GENERAL
+}
+
 model Comment {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   content   String
   timestamp Int?
-  trackId   String
-  open      Boolean  @default(true)
-  byAdmin   Boolean  @default(false)
+
+  status  CommentStatus @default(OPEN)
+  byAdmin Boolean       @default(false)
+
+  pinned   Boolean     @default(false)
+  type     CommentType @default(GENERAL)
+  mediaURL String?
+
   creatorId String?
+  creator   User?   @relation(fields: [creatorId], references: [id])
+
+  sessionId String?
+  thread    Reply[]
+
+  trackId String
+  track   Track  @relation(fields: [trackId], references: [id], onDelete: Cascade)
+}
+
+model Reply {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  creatorId String?
+  creator   User?   @relation(fields: [creatorId], references: [id])
+  byAdmin   Boolean @default(false)
+
+  content   String
   sessionId String?
 
-  track Track @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  commentId String
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
 }
 
 model File {
@@ -113,6 +173,8 @@ model User {
   accounts   Account[]
   sessions   Session[]
   tracks     Track[]
+  comments   Comment[]
+  replies    Reply[]
 
   stripeCustomerId        String?
   stripeSubscriptionId    String?

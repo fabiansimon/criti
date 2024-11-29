@@ -4,9 +4,11 @@ import { REGEX } from "~/constants/regex";
 import { cn, convertTimestamp, generateTimestamp } from "~/lib/utils";
 import { Button } from "../button";
 import { Popover, type PopoverRef } from "../tooltip";
+import CommentTypeSelector from "../comment-type-selector";
+import { CommentType } from "~/server/api/routers/comment/commentTypes";
 
 interface CommentInputProps {
-  onCreate: ({ content, timestamp }: CommentContent) => void;
+  onCreate: ({ content, timestamp, type }: CommentContent) => void;
   time: number;
   maxTime: number;
   className?: string;
@@ -15,6 +17,7 @@ interface CommentInputProps {
 export interface CommentContent {
   content: string;
   timestamp?: number;
+  type: CommentType;
 }
 
 export default function CommentInput({
@@ -23,6 +26,7 @@ export default function CommentInput({
   time,
   maxTime,
 }: CommentInputProps) {
+  const [type, setType] = useState<CommentType>("GENERAL");
   const [timestamp, setTimestamp] = useState<string>("");
   const [input, setInput] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
@@ -50,7 +54,7 @@ export default function CommentInput({
 
   const handleCreate = () => {
     const converted = convertTimestamp(timestamp);
-    onCreate({ content: input, timestamp: converted });
+    onCreate({ content: input, timestamp: converted, type });
     setInput("");
     setTimestamp("");
   };
@@ -83,7 +87,7 @@ export default function CommentInput({
         className={cn(
           "flex min-h-9 w-full grow rounded-md border border-zinc-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-zinc-950 placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:file:text-zinc-50 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300",
           isFocused ? "border-black" : "border-red",
-          "bg-neutral-50",
+          "relative bg-neutral-50",
         )}
       >
         <Popover className="mb-1 mr-3" destructive ref={timestampErrorRef}>
@@ -124,6 +128,10 @@ export default function CommentInput({
               handleCreate();
             }
           }}
+        />
+        <CommentTypeSelector
+          onChange={setType}
+          className="absolute right-3 top-5 -translate-y-1/2 transform"
         />
       </div>
       <div className="rounded-md bg-white">

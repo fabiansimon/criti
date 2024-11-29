@@ -11,7 +11,7 @@ import { api } from "~/trpc/react";
 import ProjectListItem from "~/components/ui/project-list-item";
 import { pluralize } from "~/lib/utils";
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
 
   const { data: tracks, isLoading } = api.track.getAll.useQuery();

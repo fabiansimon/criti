@@ -5,6 +5,8 @@ import { stripeRouter } from "./routers/stripe/stripeRouter";
 import { userRouter } from "./routers/user/userRouter";
 import { emailRouter } from "./routers/email/emailRouter";
 import { dashboardRouter } from "./routers/dashboard/dashboardRouter";
+import { publicRouter } from "./routers/public/publicRouter";
+import { replyRouter } from "./routers/reply/replyRouter";
 
 /**
  * This is the primary router for your server.
@@ -18,6 +20,8 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   email: emailRouter,
   dashboard: dashboardRouter,
+  public: publicRouter,
+  reply: replyRouter,
 });
 
 // export type definition of API

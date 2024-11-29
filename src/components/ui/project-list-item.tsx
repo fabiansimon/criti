@@ -1,22 +1,21 @@
-import { cn, getDateDifference } from "~/lib/utils";
+import { getDateDifference } from "~/lib/utils";
 import { type SimplfiedTrack } from "~/server/api/routers/track/trackTypes";
 import Dropdown, { type MenuOption } from "./dropdown-menu";
 import IconContainer from "./icon-container";
 import {
-  Comment01Icon,
   Key02Icon,
   MoreVerticalCircle01Icon,
   MusicNote02Icon,
 } from "hugeicons-react";
 import Text from "../typography/text";
 import { api } from "~/trpc/react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useDialog } from "~/providers/dialog-provider";
 import { useLoading } from "~/providers/loading-provider";
 import EditTrackModal from "./modals/edit-track-modal";
 import { useModal } from "~/providers/modal-provider";
 import ShareModal from "./modals/share-modal";
-import { ExpirationChip, InfoChip, OpenCommentsChip } from "./info-chips";
+import { ExpirationChip, OpenCommentsChip } from "./info-chips";
 
 interface ProjectListItemProps {
   track: SimplfiedTrack;

@@ -45,7 +45,7 @@ const getTrackComments = anonPossibleProcedure
 const createComment = anonPossibleProcedure
   .input(CreateCommentInput)
   .mutation(async ({ input, ctx: { db, session } }) => {
-    const { content, trackId, timestamp, sessionId } = input;
+    const { content, trackId, timestamp, sessionId, type } = input;
 
     try {
       const track = await db.track.findUnique({
@@ -71,17 +71,13 @@ const createComment = anonPossibleProcedure
           creatorId: session?.user?.id ?? null,
           byAdmin,
           sessionId: sessionId ?? null,
-          track: {
-            connect: {
-              id: trackId,
-            },
-          },
+          type,
+          trackId,
         },
       });
 
       if (!byAdmin && creator.email) {
         const { id, title } = track;
-        console.log("=== EMAIL", creator.email);
         void sendCommentNotificationEmail({
           comment,
           email: creator.email,
@@ -177,7 +173,7 @@ const updateComment = protectedProcedure
       await db.comment.update({
         where: { id },
         data: {
-          open: !done,
+          status: "COMPLETED",
         },
       });
     } catch (error) {

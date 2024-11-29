@@ -9,6 +9,7 @@ export const GetTracksByUserOutput = z
       createdAt: z.date(),
       openComments: z.boolean(),
       expiresIn: z.number(),
+      isPublic: z.boolean(),
     }),
   )
   .default([]);
@@ -38,6 +39,7 @@ export const UploadTrackInput = z.object({
   contentType: z.string(),
   password: z.string().optional(),
   emails: z.array(z.string().email()),
+  isPublic: z.boolean().default(false),
 });
 
 export const UpdateTrackInput = UploadTrackInput.omit({

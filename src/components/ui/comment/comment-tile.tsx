@@ -1,15 +1,16 @@
 import { type Comment } from "@prisma/client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import Dropdown, { type MenuOption } from "../dropdown-menu";
 import Text from "~/components/typography/text";
 import { motion } from "framer-motion";
 import { cn, generateTimestamp, getDateDifference } from "~/lib/utils";
 import { Checkbox } from "../checkbox";
-import { ArrowDown01Icon, MoreVerticalCircle01Icon } from "hugeicons-react";
+import { Comment01Icon, MoreVerticalCircle01Icon } from "hugeicons-react";
 import { LocalStorage } from "~/lib/localStorage";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
+import { useModal } from "~/providers/modal-provider";
+import ThreadModal from "../modals/thread-modal";
 
 interface CommenTileProps {
   live: boolean;
@@ -29,11 +30,13 @@ export function CommentTile({
   className,
 }: CommenTileProps) {
   const [deleted, setDeleted] = useState<boolean>(false);
-  const [checked, setChecked] = useState<boolean>(!comment.open);
+  const [checked, setChecked] = useState<boolean>(comment.status !== "OPEN");
+  const [hovered, setHovered] = useState<boolean>(false);
 
   const { content, timestamp, createdAt, id } = comment;
 
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
+  const { show } = useModal();
 
   const { mutate: updateComment } = api.comment.update.useMutation({
     onError: () => setChecked((prev) => !prev),
@@ -57,6 +60,11 @@ export function CommentTile({
       onClick: () => handleDeleteComment(),
       disabled: !isAdmin && !isCreator,
     },
+    {
+      title: "Reply",
+      onClick: () => handleDeleteComment(),
+      disabled: !isAdmin && !isCreator,
+    },
   ];
 
   const { bg, label } = useMemo(
@@ -73,6 +81,10 @@ export function CommentTile({
     [timestamp],
   );
 
+  const handleReply = () => {
+    show(<ThreadModal isAdmin={isAdmin} comment={comment} />);
+  };
+
   const handleDeleteComment = () => {
     removeComment({ id, sessionId: !isAdmin ? sessionId : undefined });
     setDeleted(true);
@@ -85,6 +97,8 @@ export function CommentTile({
 
   return (
     <motion.div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onClick={onClick}
       initial="visible"
       animate={deleted ? "hidden" : "visible"}
@@ -168,7 +182,7 @@ export function CommentTile({
       </div>
 
       {!isSmall && (
-        <Text.Subtitle className="min-w-24 text-right" subtle>
+        <Text.Subtitle className="text-right" subtle>
           {getDateDifference({ date: createdAt }).text}
         </Text.Subtitle>
       )}
@@ -181,6 +195,22 @@ export function CommentTile({
           <MoreVerticalCircle01Icon fill="black" size={20} />
         </Dropdown>
       )}
+      <motion.div
+        initial="hidden"
+        animate={hovered ? "expanded" : "hidden"}
+        variants={{ expanded: { width: 100 }, hidden: { width: 0, border: 0 } }}
+        className="flex items-center justify-center overflow-hidden border-l border-l-neutral-50"
+      >
+        <div
+          onClick={handleReply}
+          className="flex h-full w-full items-center justify-center space-x-2 rounded-md py-2 hover:bg-neutral-100"
+        >
+          <Comment01Icon className="text-neutral-700" size={12} />
+          <Text.Subtitle className="text-xs" subtle>
+            Reply
+          </Text.Subtitle>
+        </div>
+      </motion.div>
     </motion.div>
   );
 }

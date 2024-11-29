@@ -1,7 +1,7 @@
 "use client";
 
 import { SessionProvider, useSession } from "next-auth/react";
-import ModalProvider from "~/providers/modal-provider";
+import ModalProvider, { useModal } from "~/providers/modal-provider";
 import NavBar from "./navbar/navbar";
 import DialogProvider from "~/providers/dialog-provider";
 import { usePathname, useRouter } from "next/navigation";
@@ -12,6 +12,7 @@ import { LocalStorage } from "~/lib/localStorage";
 import LoadingProvider from "~/providers/loading-provider";
 import CoffeeButton from "./coffee-button";
 import LoadingSpinner from "./loading-spinner";
+import ThreadModal from "./modals/thread-modal";
 
 export default function InitRoot({ children }: { children: React.ReactNode }) {
   useEffect(() => {

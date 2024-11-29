@@ -26,6 +26,8 @@ import { useModal } from "~/providers/modal-provider";
 import MembershipModal from "~/components/ui/modals/membership-modal";
 import useIsMobile from "~/hooks/use-is-mobile";
 import LoadingSpinner from "~/components/ui/loading-spinner";
+import CommentTypeSelector from "~/components/ui/comment-type-selector";
+import ThreadModal from "~/components/ui/modals/thread-modal";
 
 const MAX_SIZE_MB = 50;
 const MAX_FILE_SIZE = MAX_SIZE_MB * 1024 * 1024; // 200MB in bytes
@@ -73,7 +75,7 @@ export default function UploadPage() {
     setIsLoading(true);
 
     try {
-      const { title, password, locked, emails } = data;
+      const { title, password, locked, emails, isPublic } = data;
       const { type: contentType } = file;
       const fileContent = await fileToBase64(file);
 
@@ -81,8 +83,9 @@ export default function UploadPage() {
         contentType,
         fileContent,
         title,
-        password: locked ? password.trim() : undefined,
+        password: locked && !isPublic ? password.trim() : undefined,
         emails,
+        isPublic,
       });
 
       if (!track) return;

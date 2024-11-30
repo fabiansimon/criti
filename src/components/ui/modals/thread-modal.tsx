@@ -2,15 +2,8 @@ import { type Comment } from "@prisma/client";
 import Card from "../card";
 import { api } from "~/trpc/react";
 import Text from "~/components/typography/text";
-import {
-  convertTimestamp,
-  generateTimestamp,
-  getDateDifference,
-} from "~/lib/utils";
-import {
-  commentTypeOptions,
-  SelectorContainer,
-} from "../comment-type-selector";
+import { generateTimestamp, getDateDifference } from "~/lib/utils";
+import { SelectorContainer } from "../comment-type-selector";
 import { Input } from "../input";
 import { Button } from "../button";
 import { useState } from "react";
@@ -45,7 +38,8 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
     });
 
   const { mutateAsync: sendReply } = api.reply.create.useMutation();
-  const { mutateAsync: removeReply } = api.reply.remove.useMutation();
+  const { mutateAsync: removeReply, isPending: removePending } =
+    api.reply.remove.useMutation();
 
   const sessionId = LocalStorage.fetchSessionId();
 
@@ -79,12 +73,7 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
   return (
     <Card className="flex w-full">
       <div className="mb-1 mr-auto flex">
-        <SelectorContainer
-          type={
-            commentTypeOptions.find(({ type }) => type) ??
-            commentTypeOptions[0]!
-          }
-        />
+        <SelectorContainer type={type} />
       </div>
       <div className="mb-2 w-[80%] rounded-md border border-neutral-100 bg-neutral-50 px-3 py-2">
         {byAdmin && (
@@ -109,7 +98,7 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
 
       <div className="flex max-h-[300px] flex-col space-y-2 overflow-y-auto no-scrollbar">
         {initLoading &&
-          Array.from({ length: 2 }).map((_, index) => (
+          Array.from({ length: 1 }).map((_, index) => (
             <Skeleton
               key={index}
               className="ml-auto min-h-[90px] w-[80%] rounded-md"
@@ -122,16 +111,16 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
             return (
               <Dropdown
                 key={reply.id}
-                disabled={!(isCreator || isAdmin)}
+                disabled={!(isCreator || isAdmin) || removePending}
                 options={[
                   {
                     title: "Delete",
                     destructive: true,
-                    onClick: () => handleDeletion(reply.id),
+                    onClick: () => void handleDeletion(reply.id),
                   },
                 ]}
               >
-                <div className="ml-auto flex w-[80%] flex-col items-end justify-end rounded-md border border-neutral-100 bg-neutral-50 px-4 py-4">
+                <div className="ml-auto flex w-[80%] flex-col items-end justify-end rounded-md border border-neutral-100 bg-neutral-50 px-4 py-4 hover:bg-neutral-100">
                   {reply.byAdmin && (
                     <Text.Subtitle className="text-[11px] text-green-900">
                       {"Admin:"}
@@ -159,7 +148,7 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
           disabled={isLoading}
           onKeyDown={(e) => {
             if (input.trim().length > 0 && e.key === "Enter") {
-              handleReply();
+              void handleReply();
             }
           }}
         />

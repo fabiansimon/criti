@@ -57,6 +57,7 @@ export default function CommentInput({
     if (timestamp) {
       _timestamp = convertTimestamp(timestamp);
     }
+
     onCreate({ content: input, timestamp: _timestamp, type });
     setInput("");
     setTimestamp("");

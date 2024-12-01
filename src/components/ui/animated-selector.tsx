@@ -47,7 +47,7 @@ export default function AnimatedSelector<T>({
       <div
         className={cn(
           "flex flex-col space-y-1",
-          isVisible && "z-50",
+          isVisible && "z-[100]",
           className,
         )}
       >
@@ -77,7 +77,7 @@ export default function AnimatedSelector<T>({
         animate={isVisible ? "visible" : "hidden"}
         variants={{ visible: { opacity: 0.5 }, hidden: { opacity: 0 } }}
         className={cn(
-          "fixed -left-10 bottom-0 right-0 top-0 z-40 bg-black",
+          "fixed -left-10 bottom-0 right-0 top-0 z-[99] bg-black",
           !isVisible && "pointer-events-none",
         )}
         onClick={() => setIsVisible(false)}

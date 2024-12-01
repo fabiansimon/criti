@@ -133,7 +133,7 @@ export function CommentsContainer({
     <div className={cn("relative", isSmall && "-mx-[20px]")}>
       <div
         className={cn(
-          "relative max-h-[400px] min-h-[400px] grow overflow-y-auto rounded-md border-[.5px] border-neutral-200 bg-white pb-20 shadow-md shadow-neutral-100 no-scrollbar",
+          "relative max-h-[400px] min-h-[400px] grow overflow-y-scroll rounded-md border-[.5px] border-neutral-200 bg-white pb-20 shadow-md shadow-neutral-100 no-scrollbar",
           className,
           isSmall && "max-h-none border-none pb-[180px] shadow-none",
         )}
@@ -205,7 +205,7 @@ export function CommentsContainer({
                   }
                   className={cn(
                     !last && "border-b border-b-neutral-100",
-                    "px-4 pb-4",
+                    "px-3 py-2",
                   )}
                   comment={comment}
                   live={comment.id === liveCommentId}

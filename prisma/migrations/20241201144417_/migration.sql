@@ -2,6 +2,7 @@
   Warnings:
 
   - You are about to drop the column `open` on the `Comment` table. All the data in the column will be lost.
+  - You are about to drop the column `locked` on the `Track` table. All the data in the column will be lost.
 
 */
 -- CreateEnum
@@ -18,7 +19,8 @@ ADD COLUMN     "status" "CommentStatus" NOT NULL DEFAULT 'OPEN',
 ADD COLUMN     "type" "CommentType" NOT NULL DEFAULT 'GENERAL';
 
 -- AlterTable
-ALTER TABLE "Track" ADD COLUMN     "genreId" TEXT,
+ALTER TABLE "Track" DROP COLUMN "locked",
+ADD COLUMN     "genreId" TEXT,
 ADD COLUMN     "isPublic" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "streams" INTEGER NOT NULL DEFAULT 0;
 
@@ -57,4 +59,4 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_creatorId_fkey" FOREIGN KEY ("crea
 ALTER TABLE "Reply" ADD CONSTRAINT "Reply_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Reply" ADD CONSTRAINT "Reply_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Reply" ADD CONSTRAINT "Reply_commentId_fkey" FOREIGN KEY ("commentId") REFERENCES "Comment"("id") ON DELETE CASCADE ON UPDATE CASCADE;

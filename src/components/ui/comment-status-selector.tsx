@@ -15,27 +15,27 @@ const options: CommentSelectorType[] = [
   {
     type: "OPEN",
     title: "Open",
-    color: "#3a86ff",
+    color: "#8F8F8F",
   },
   {
     type: "COMPLETED",
     title: "Completed",
-    color: "#353535",
+    color: "#65a30d",
   },
   {
     type: "DISMISSED",
     title: "Dismissed",
-    color: "#fb5607",
+    color: "#E5494E",
   },
   {
     type: "IN_PROGRESS",
     title: "In Progress",
-    color: "#ff006e",
+    color: "#0072F6",
   },
   {
     type: "UNDER_REVIEW",
-    title: "Under Review",
-    color: "#8338ec",
+    title: "In Review",
+    color: "#8E4EC6",
   },
 ];
 

@@ -208,7 +208,7 @@ export default function UploadPage() {
           comment={{
             byAdmin: false,
             content:
-              "Die Adlibs klingen hier noch bischen robotig. Bitte mach noch bisschen höhen weg",
+              "Die Adlibs klingen hier noch bischen robotig. Bitte mach noch bisschen höhen weg Die Adlibs klingen hier noch bischen robotig. Bitte mach noch bisschen höhen weg Die Adlibs klingen hier noch bischen robotig. Bitte mach noch bisschen höhen weg",
             createdAt: new Date(),
             creatorId: "aödskf",
             id: "231232",
@@ -216,10 +216,11 @@ export default function UploadPage() {
             pinned: false,
             sessionId: "32132",
             status: "OPEN",
-            timestamp: 23,
+            timestamp: 12,
             trackId: "232",
             type: "LYRIC",
             updatedAt: new Date(),
+            replies: 3,
           }}
           isAdmin={true}
           live={true}

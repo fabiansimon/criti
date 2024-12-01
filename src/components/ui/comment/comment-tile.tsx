@@ -1,15 +1,10 @@
-import { type Comment } from "@prisma/client";
 import { useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import Dropdown, { type MenuOption } from "../dropdown-menu";
 import Text from "~/components/typography/text";
 import { motion } from "framer-motion";
 import { cn, generateTimestamp, getDateDifference } from "~/lib/utils";
-import {
-  Comment01Icon,
-  MoreVerticalCircle01Icon,
-  PinLocation02Icon,
-} from "hugeicons-react";
+import { Comment01Icon, MoreVerticalCircle01Icon } from "hugeicons-react";
 import { LocalStorage } from "~/lib/localStorage";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import { useModal } from "~/providers/modal-provider";
@@ -103,7 +98,7 @@ export function CommentTile({
         variant: "destructive",
       });
     } finally {
-      void utils.comment.invalidate();
+      // void utils.comment.invalidate();
     }
   };
 
@@ -113,31 +108,39 @@ export function CommentTile({
       onMouseLeave={() => setHovered(false)}
       onClick={onClick}
       className={cn(
-        "relative flex cursor-pointer flex-col space-y-3",
+        "relative flex w-full cursor-pointer items-center transition-all duration-75 hover:bg-neutral-50",
         className,
       )}
     >
-      <LiveOverlay isLive={live} />
-      <div className="relative flex items-center justify-between">
-        <div className="flex h-7 space-x-2">
-          <CommentStatusSelector
-            className="-translate-y-[56px] transform"
-            status={status}
-            onChange={handleUpdateCheck}
-          />
-          <CommentInfoContainer
-            onClick={handleReply}
-            replies={replies}
-            type={type}
-            timestamp={timestamp}
-          />
-        </div>
-        {!isSmall && (
-          <Text.Subtitle className="mr-2" subtle>
-            {getDateDifference({ date: createdAt }).text}
-          </Text.Subtitle>
-        )}
-        {!live && byAdmin && (
+      <div className="flex w-full flex-col space-y-3">
+        {/* <LiveOverlay isLive={live} /> */}
+        <div className="relative flex items-center justify-between">
+          <div className="px-auto absolute left-0 right-0 flex w-full justify-center">
+            <CommentInfoContainer
+              isLive={live}
+              onClick={handleReply}
+              replies={replies}
+              type={type}
+              timestamp={timestamp}
+            />
+          </div>
+          <div className="flex h-7 w-full items-center justify-between">
+            {isAdmin ? (
+              <CommentStatusSelector
+                status={status}
+                onChange={handleUpdateCheck}
+              />
+            ) : (
+              <div />
+            )}
+
+            {!isSmall && (
+              <Text.Subtitle className="mr-2" subtle>
+                {getDateDifference({ date: createdAt }).text}
+              </Text.Subtitle>
+            )}
+          </div>
+          {/* {!live && byAdmin && (
           <div className="pointer-events-none absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center">
             <div className="mx-auto -mt-3 flex items-center space-x-1">
               <PinLocation02Icon size={14} className="text-black/70" />
@@ -145,20 +148,19 @@ export function CommentTile({
                 {"by Admin"}
               </Text.Body>
             </div>
-          </div>
-        )}
-      </div>
-      <div className="flex w-full justify-between">
+          </div> */}
+          {/* )} */}
+        </div>
         <Text.Body className="flex w-full">{content}</Text.Body>
-        {editable && (
-          <Dropdown
-            className={cn("", isSmall ? "absolute right-4 top-3" : "mr-2")}
-            options={menuOptions}
-          >
-            <MoreVerticalCircle01Icon fill="black" size={18} />
-          </Dropdown>
-        )}
       </div>
+      {/* {editable && (
+        <Dropdown
+          className={cn("", isSmall ? "absolute right-4 top-3" : "mr-2")}
+          options={menuOptions}
+        >
+          <MoreVerticalCircle01Icon fill="black" size={18} />
+        </Dropdown>
+      )} */}
     </div>
   );
 
@@ -268,6 +270,7 @@ export function CommentTile({
 interface CommentInfoContainerProps {
   onClick: () => void;
   type: CommentType;
+  isLive: boolean;
   replies: number;
   timestamp: number | null;
 }
@@ -275,53 +278,52 @@ function CommentInfoContainer({
   onClick,
   type,
   timestamp,
+  isLive,
   replies,
 }: CommentInfoContainerProps) {
   return (
     <motion.div
+      initial="hidden"
+      animate={isLive ? "live" : "normal"}
+      variants={{ live: { width: 70 }, normal: { width: "auto" } }}
       onClick={onClick}
-      className="flex min-w-48 items-center rounded-full border border-neutral-200 bg-neutral-50 px-1 transition-all duration-75 hover:bg-white"
+      className="relative flex h-7 items-center space-x-2 overflow-hidden rounded-full bg-neutral-100 px-2 transition-all duration-75 hover:bg-neutral-200"
     >
-      <div className="flex w-full grow justify-center">
+      <motion.div
+        initial="hidden"
+        animate={isLive ? "visible" : "hidden"}
+        variants={{ visible: { translateY: 0 }, hidden: { translateY: -50 } }}
+        className="absolute bottom-0 left-0 right-0 top-0 -my-4 flex items-center justify-center space-x-[5px] bg-red-500 py-4"
+      >
+        <div
+          className={cn(
+            "size-[5px] rounded-full bg-white",
+            isLive && "animate-pulse",
+          )}
+        />
+        <Text.Body className={cn("text-white", isLive && "animate-pulse")}>
+          Live
+        </Text.Body>
+      </motion.div>
+      <div className="ml-2 min-w-10">
         <Text.Body subtle className="px-1 text-xs">
           #{`${type.slice(0, 1)}${type.slice(1).toLowerCase()}`}
         </Text.Body>
       </div>
-
-      {timestamp !== null && (
-        <div className="flex w-full grow justify-center">
-          <Text.Body subtle className="text-xs">
-            @{generateTimestamp(timestamp)}
+      {timestamp && <div className="h-full w-[1px] bg-neutral-200" />}
+      {timestamp && (
+        <div className="min-w-10">
+          <Text.Body subtle className="px-1 text-center text-xs">
+            {generateTimestamp(timestamp)}
           </Text.Body>
         </div>
       )}
-      <div className="flex w-full grow items-center justify-center space-x-1">
-        <Comment01Icon className="text-black/50" size={12} />
-        <Text.Body subtle className="text-xs">
+      <div className="h-full w-[1px] bg-neutral-200" />
+      <div className="mr-2 flex min-w-10 items-center justify-center space-x-[1px]">
+        <Comment01Icon className="text-black/50" size={13} />
+        <Text.Body subtle className="px-1 text-xs">
           {replies}
         </Text.Body>
-      </div>
-    </motion.div>
-  );
-}
-
-interface LiveOverlayProps {
-  isLive: boolean;
-}
-function LiveOverlay({ isLive }: LiveOverlayProps) {
-  return (
-    <motion.div
-      className={cn(
-        "pointer-events-none absolute bottom-0 left-0 right-0 top-0 flex overflow-hidden opacity-0",
-        isLive && "opacity-1",
-      )}
-      initial={"hidden"}
-      animate={isLive ? "visible" : "hidden"}
-      variants={{ visible: { translateY: 0 }, hidden: { translateY: -300 } }}
-    >
-      <div className="mx-auto mb-auto mt-2 flex animate-pulse items-center space-x-1 rounded-full">
-        <div className="size-2 rounded-full bg-red-700" />
-        <Text.Subtitle className="text-red-700">{"Live"}</Text.Subtitle>
       </div>
     </motion.div>
   );

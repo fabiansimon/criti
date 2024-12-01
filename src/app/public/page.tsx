@@ -1,15 +1,15 @@
 "use client";
 
-import Card from "~/components/ui/card";
 import { useRouter } from "next/navigation";
 import { route, ROUTES } from "~/constants/routes";
 import { api } from "~/trpc/react";
-import ProjectListItem from "~/components/ui/project-list-item";
-import Pagination, { PaginationInfo } from "~/components/ui/pagination";
+import Pagination, { type PaginationInfo } from "~/components/ui/pagination";
 import PublicProjectListItem from "~/components/ui/public-track-list-item";
 import Text from "~/components/typography/text";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LoadingSpinner from "~/components/ui/loading-spinner";
+import EmptyInfo from "~/components/ui/empty-info";
+import { Switch } from "~/components/ui/switch";
 
 export default function PublicPage() {
   const [pagination, setPagination] = useState<PaginationInfo>({
@@ -23,6 +23,13 @@ export default function PublicPage() {
     page: pagination.page,
     size: pagination.size,
   });
+  const { data: userTracks } = api.track.getFiltered.useQuery(
+    {
+      amount: 3,
+      isPublic: false,
+    },
+    { enabled: !isLoading && data?.tracks.length === 0 },
+  );
 
   const tracks = data?.tracks ?? [];
 
@@ -33,6 +40,25 @@ export default function PublicPage() {
         <Text.Body subtle>{"Explore the publicly shared tracks"}</Text.Body>
 
         {isLoading && <LoadingSpinner className="mx-auto mt-[40%]" />}
+        {!isLoading && tracks.length === 0 && (
+          <div>
+            <EmptyInfo
+              className="mt-[35%]"
+              title="No public tracks yet."
+              subtitle="Be the first one to share one."
+            />
+            {(userTracks ?? []).length > 0 && (
+              <div className="mx-auto mt-4 w-[30%] space-y-2 rounded-md border border-neutral-100 p-2">
+                <Text.Body className="text-center font-medium" subtle>
+                  Make public
+                </Text.Body>
+                {userTracks?.map(({ id, title }) => (
+                  <TrackTile key={id} title={title} id={id} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         {!isLoading && (
           <div className="-mx-2 mt-4 flex min-h-full grow flex-col space-y-2">
             {tracks.map((track) => (
@@ -52,6 +78,30 @@ export default function PublicPage() {
         className="mt-auto"
         totalPages={data?.meta.pages ?? 0}
       />
+    </div>
+  );
+}
+
+interface TrackTitleProps {
+  title: string;
+  id: string;
+}
+function TrackTile({ title, id }: TrackTitleProps) {
+  const [isPublic, setIsPublic] = useState<boolean>(false);
+
+  const { mutateAsync: updateTrack } = api.track.update.useMutation();
+  const utils = api.useUtils();
+
+  const update = async () => {
+    setIsPublic(true);
+    await updateTrack({ isPublic: true, id });
+    setTimeout(() => void utils.public.invalidate(), 1_000);
+  };
+
+  return (
+    <div className="flex justify-between space-x-1">
+      <Text.Body>{title}</Text.Body>
+      <Switch checked={isPublic} disabled={isPublic} onCheckedChange={update} />
     </div>
   );
 }

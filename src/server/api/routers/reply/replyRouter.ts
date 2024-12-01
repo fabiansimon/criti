@@ -9,7 +9,6 @@ import {
   FetchRepliesInput,
   RemoveReplyInput,
 } from "./replyTypes";
-import { sendCommentNotificationEmail } from "../../email/resend";
 
 const fetchReplies = publicProcedure
   .input(FetchRepliesInput)

@@ -12,12 +12,12 @@ const fetchTracks = publicProcedure
     try {
       const [tracks, count] = await Promise.all([
         ctx.db.track.findMany({
-          where: { isPublic: true },
+          where: { isPublic: true, isArchived: false },
           skip: offset,
           take: size,
         }),
         ctx.db.track.count({
-          where: { isPublic: true },
+          where: { isPublic: true, isArchived: false },
         }),
       ]);
 

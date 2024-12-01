@@ -1,4 +1,3 @@
-import { SimplfiedTrack } from "./../track/trackTypes";
 import { z } from "zod";
 
 export const FetchTracksInput = z.object({

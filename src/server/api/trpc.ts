@@ -90,8 +90,7 @@ export const createTRPCRouter = t.router;
 export const timingMiddleware = t.middleware(async ({ next, path }) => {
   const start = Date.now();
 
-  if (t._config.isDev) {
-    console.log("=== CALLED TIMEOUT FUNCTION");
+  if (false) {
     // artificial delay in dev
     const waitMs = Math.floor(Math.random() * 400) + 100;
     await new Promise((resolve) => setTimeout(resolve, waitMs));

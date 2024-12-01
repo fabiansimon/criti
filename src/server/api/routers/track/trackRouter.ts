@@ -7,6 +7,7 @@ import {
 } from "~/server/api/trpc";
 import {
   ArchiveProjectInput,
+  GetFilteredTracksInput,
   GetTrackByIdInput,
   GetTracksByUserOutput,
   UpdateProjectPasswordInput,
@@ -369,6 +370,34 @@ const getTrackById = publicProcedure
     }
   });
 
+const getFilteredTracks = protectedProcedure
+  .input(GetFilteredTracksInput)
+  .query(async ({ ctx: { db, session }, input }) => {
+    const {
+      user: { id: userId },
+    } = session;
+    const { amount, isPublic } = input;
+
+    try {
+      const tracks = await db.track.findMany({
+        where: { creatorId: userId, isArchived: false, isPublic },
+        orderBy: { createdAt: "asc" },
+        take: amount,
+      });
+
+      return tracks ?? [];
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+          cause: error,
+        });
+      }
+    }
+  });
+
 const getAllTracksByUser = protectedProcedure
   .output(GetTracksByUserOutput)
   .query(async ({ ctx: { db, session } }) => {
@@ -495,4 +524,5 @@ export const trackRouter = createTRPCRouter({
   getById: getTrackById,
   checkLimit: checkTrackLimit,
   updatePassword: updateTrackPassword,
+  getFiltered: getFilteredTracks,
 });

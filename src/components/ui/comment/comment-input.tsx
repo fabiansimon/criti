@@ -5,7 +5,7 @@ import { cn, convertTimestamp, generateTimestamp } from "~/lib/utils";
 import { Button } from "../button";
 import { Popover, type PopoverRef } from "../tooltip";
 import CommentTypeSelector from "../comment-type-selector";
-import { CommentType } from "~/server/api/routers/comment/commentTypes";
+import { type CommentType } from "~/server/api/routers/comment/commentTypes";
 
 interface CommentInputProps {
   onCreate: ({ content, timestamp, type }: CommentContent) => void;
@@ -53,8 +53,11 @@ export default function CommentInput({
   };
 
   const handleCreate = () => {
-    const converted = convertTimestamp(timestamp);
-    onCreate({ content: input, timestamp: converted, type });
+    let _timestamp: number | undefined;
+    if (timestamp) {
+      _timestamp = convertTimestamp(timestamp);
+    }
+    onCreate({ content: input, timestamp: _timestamp, type });
     setInput("");
     setTimestamp("");
   };

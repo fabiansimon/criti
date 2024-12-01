@@ -3,7 +3,6 @@ import Card from "../card";
 import { api } from "~/trpc/react";
 import Text from "~/components/typography/text";
 import { generateTimestamp, getDateDifference } from "~/lib/utils";
-import { SelectorContainer } from "../comment-type-selector";
 import { Input } from "../input";
 import { Button } from "../button";
 import { useState } from "react";
@@ -11,6 +10,8 @@ import { LocalStorage } from "~/lib/localStorage";
 import { toast } from "~/hooks/use-toast";
 import Dropdown from "../dropdown-menu";
 import { Skeleton } from "../skeleton";
+import { SelectorContainer } from "../animated-selector";
+import { commentsSelectorOptions } from "../comment-type-selector";
 
 interface ThreadModalProps {
   isAdmin: boolean;
@@ -52,7 +53,7 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
       }
       await sendReply({ commentId, content: input, sessionId });
       await utils.reply.invalidate();
-    } catch (error) {
+    } catch (_) {
       toast({
         title: "Something went wrong.",
         description:
@@ -70,12 +71,16 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
     await utils.reply.invalidate();
   };
 
+  const safeType =
+    commentsSelectorOptions.find(({ type }) => type === type) ??
+    commentsSelectorOptions[0]!;
+
   return (
-    <Card className="flex w-full">
+    <Card className="relative flex md:max-w-[400px]">
       <div className="mb-1 mr-auto flex">
-        <SelectorContainer type={type} />
+        <SelectorContainer type={safeType} />
       </div>
-      <div className="mb-2 w-[80%] rounded-md border border-neutral-100 bg-neutral-50 px-3 py-2">
+      <div className="mb-2 mr-20 max-w-full grow rounded-md border border-neutral-100 bg-neutral-50 px-3 py-2">
         {byAdmin && (
           <Text.Subtitle className="text-[11px] text-green-900">
             {"Admin:"}
@@ -120,7 +125,7 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
                   },
                 ]}
               >
-                <div className="ml-auto flex w-[80%] flex-col items-end justify-end rounded-md border border-neutral-100 bg-neutral-50 px-4 py-4 hover:bg-neutral-100">
+                <div className="ml-20 flex flex-col items-end justify-end rounded-md border border-neutral-100 bg-neutral-50 px-4 py-4 hover:bg-neutral-100">
                   {reply.byAdmin && (
                     <Text.Subtitle className="text-[11px] text-green-900">
                       {"Admin:"}

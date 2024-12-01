@@ -20,8 +20,10 @@ const getTrackComments = anonPossibleProcedure
     try {
       const track = await db.track.findUnique({
         where: { id: trackId },
-        include: { comments: true },
+        include: { comments: { include: { thread: true } } },
       });
+
+      console.log(track?.comments);
 
       if (!track) {
         throw new TRPCError({
@@ -30,7 +32,7 @@ const getTrackComments = anonPossibleProcedure
         });
       }
 
-      return track.comments;
+      return track.comments.map((c) => ({ ...c, replies: c.thread.length }));
     } catch (error) {
       if (error instanceof Error) {
         console.error(error);
@@ -145,7 +147,7 @@ const removeComment = anonPossibleProcedure
 const updateComment = protectedProcedure
   .input(UpdateCommentInput)
   .mutation(async ({ input, ctx: { db, session } }) => {
-    const { id, done } = input;
+    const { id, ...updates } = input;
     const {
       user: { id: userId },
     } = session;
@@ -173,7 +175,7 @@ const updateComment = protectedProcedure
       await db.comment.update({
         where: { id },
         data: {
-          status: "COMPLETED",
+          ...updates,
         },
       });
     } catch (error) {

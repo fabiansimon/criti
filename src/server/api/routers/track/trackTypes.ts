@@ -14,6 +14,11 @@ export const GetTracksByUserOutput = z
   )
   .default([]);
 
+export const GetFilteredTracksInput = z.object({
+  amount: z.number().default(3),
+  isPublic: z.boolean().default(false),
+});
+
 export const ArchiveProjectInput = z.object({
   id: z.string().uuid(),
 });
@@ -66,3 +71,4 @@ export type UpdateProjectPasswordInput = z.infer<
 >;
 export type IsTrackLockedInput = z.infer<typeof IsTrackLockedInput>;
 export type SimplfiedTrack = z.infer<typeof GetTracksByUserOutput>[number];
+export type GetFilteredTracksInput = z.infer<typeof GetFilteredTracksInput>;

@@ -21,7 +21,6 @@ export default function Card({
   children,
   className,
   isLoading,
-
   trailing,
   omitPadding,
 }: CardProps) {

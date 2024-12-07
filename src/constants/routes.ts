@@ -5,6 +5,7 @@ export const ROUTES = {
   upload: "upload",
   account: "account",
   admin: "admin",
+  public: "public",
   landing: "",
 };
 
@@ -13,6 +14,7 @@ export const openRoutes = new Set([
   ROUTES.listen,
   ROUTES.auth,
   ROUTES.admin,
+  ROUTES.public,
 ]);
 
 export function route(name: string, ...params: string[]) {

@@ -7,6 +7,7 @@ import {
 } from "~/server/api/trpc";
 import {
   ArchiveProjectInput,
+  GetFilteredTracksInput,
   GetTrackByIdInput,
   GetTracksByUserOutput,
   UpdateProjectPasswordInput,
@@ -109,6 +110,7 @@ const updateTrack = protectedProcedure
       if (updates.password) {
         const salt = await bcrypt.genSalt(10);
         updates.password = await bcrypt.hash(updates.password, salt);
+        updates.isPublic = false;
 
         await db.trustedSession.deleteMany({
           where: { trackId: id },
@@ -117,7 +119,10 @@ const updateTrack = protectedProcedure
 
       await db.track.update({
         where: { id },
-        data: updates,
+        data: {
+          ...updates,
+          password: updates.password ?? null,
+        },
       });
 
       return track;
@@ -136,13 +141,14 @@ const updateTrack = protectedProcedure
 const uploadTrack = protectedProcedure
   .input(UploadTrackInput)
   .mutation(async ({ input, ctx: { db, session } }) => {
-    const { contentType, fileContent, title, emails, password } = input;
+    const { contentType, fileContent, title, emails, password, isPublic } =
+      input;
     const {
       user: { id: creatorId, name },
     } = session;
 
     let hashedPassword = null;
-    if (password) {
+    if (password && !isPublic) {
       const salt = await bcrypt.genSalt(10);
       hashedPassword = await bcrypt.hash(password, salt);
     }
@@ -177,6 +183,7 @@ const uploadTrack = protectedProcedure
           creatorId,
           password: hashedPassword,
           fileId: file.id,
+          isPublic,
         },
         include: { file: true },
       });
@@ -288,7 +295,7 @@ const updateTrackPassword = protectedProcedure
 
       await db.track.update({
         where: { id },
-        data: { password: hashedPassword },
+        data: { password: hashedPassword, isPublic: false },
       });
 
       return { success: true };
@@ -363,6 +370,34 @@ const getTrackById = publicProcedure
     }
   });
 
+const getFilteredTracks = protectedProcedure
+  .input(GetFilteredTracksInput)
+  .query(async ({ ctx: { db, session }, input }) => {
+    const {
+      user: { id: userId },
+    } = session;
+    const { amount, isPublic } = input;
+
+    try {
+      const tracks = await db.track.findMany({
+        where: { creatorId: userId, isArchived: false, isPublic },
+        orderBy: { createdAt: "asc" },
+        take: amount,
+      });
+
+      return tracks ?? [];
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        throw new TRPCError({
+          message: error.message,
+          code: "INTERNAL_SERVER_ERROR",
+          cause: error,
+        });
+      }
+    }
+  });
+
 const getAllTracksByUser = protectedProcedure
   .output(GetTracksByUserOutput)
   .query(async ({ ctx: { db, session } }) => {
@@ -373,7 +408,11 @@ const getAllTracksByUser = protectedProcedure
     try {
       const tracks = await db.track.findMany({
         where: { creatorId: userId, isArchived: false },
-        include: { comments: { where: { open: true } } },
+        include: {
+          comments: {
+            where: { status: { notIn: ["COMPLETED", "DISMISSED"] } },
+          },
+        },
       });
 
       const user = await db.user.findUnique({
@@ -392,16 +431,15 @@ const getAllTracksByUser = protectedProcedure
       }
 
       const formatted = tracks.map(
-        ({ id, title, createdAt, comments, password }) => {
+        ({ id, title, createdAt, comments, password, isPublic }) => {
           return {
             id,
             title,
             createdAt,
             locked: !!password,
-            openComments:
-              comments.filter(({ byAdmin, open }) => !byAdmin && open).length >
-              0,
+            openComments: !!comments,
             expiresIn: expiresIn({ daysLimit: expiryLimit, createdAt }),
+            isPublic,
           };
         },
       );
@@ -486,4 +524,5 @@ export const trackRouter = createTRPCRouter({
   getById: getTrackById,
   checkLimit: checkTrackLimit,
   updatePassword: updateTrackPassword,
+  getFiltered: getFilteredTracks,
 });

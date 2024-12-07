@@ -11,11 +11,12 @@ import { LocalStorage } from "~/lib/localStorage";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import { useSession } from "next-auth/react";
 import { Skeleton } from "../skeleton";
+import EmptyInfo from "../empty-info";
+import { timeStamp } from "console";
 
 interface CommentsContainerProps {
   time: number;
   trackId: string;
-  markComments: boolean;
   maxTime: number;
   isAdmin: boolean;
   onTimestamp: (timestamp: number) => void;
@@ -24,18 +25,19 @@ interface CommentsContainerProps {
 
 type SortFilter = "timestamp" | "posted";
 
+export type SummarizedComment = Comment & { replies: number };
+
 export function CommentsContainer({
   time,
   maxTime,
   trackId,
   className,
-  markComments,
   isAdmin,
   onTimestamp,
 }: CommentsContainerProps) {
   const [sortBy, setSortBy] = useState<SortFilter>("timestamp");
   const [ascending, setAscending] = useState<boolean>(true);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<SummarizedComment[]>([]);
 
   const { data } = useSession();
   const utils = api.useUtils();
@@ -95,24 +97,32 @@ export function CommentsContainer({
     setAscending((prev) => !prev);
   };
 
-  const handleAddComment = async ({ content, timestamp }: CommentContent) => {
+  const handleAddComment = async ({
+    content,
+    timestamp,
+    type,
+  }: CommentContent) => {
     let sessionId: string | undefined;
     if (!isAdmin) {
       sessionId = LocalStorage.fetchSessionId();
     }
 
     const localId = uuid();
-    const newComment: Comment = {
+    const newComment: SummarizedComment = {
       byAdmin: isAdmin,
       content,
       createdAt: new Date(),
       updatedAt: new Date(),
       creatorId: data?.user.id ?? "",
       id: localId,
-      open: true,
+      status: "OPEN",
       sessionId: sessionId ?? null,
       timestamp: timestamp ?? null,
       trackId,
+      type,
+      pinned: false,
+      mediaURL: null,
+      replies: 0,
     };
 
     setComments((prev) => [...prev, newComment]);
@@ -123,7 +133,7 @@ export function CommentsContainer({
     <div className={cn("relative", isSmall && "-mx-[20px]")}>
       <div
         className={cn(
-          "relative max-h-[400px] min-h-[400px] grow overflow-y-auto rounded-md border-[.5px] border-neutral-200 bg-white pb-20 shadow-md shadow-neutral-100 no-scrollbar",
+          "relative max-h-[400px] min-h-[400px] grow overflow-y-scroll rounded-md border-[.5px] border-neutral-200 bg-white pb-20 shadow-md shadow-neutral-100 no-scrollbar",
           className,
           isSmall && "max-h-none border-none pb-[180px] shadow-none",
         )}
@@ -137,10 +147,11 @@ export function CommentsContainer({
         )}
 
         {!isLoading && empty && (
-          <div className="mt-[16%] text-center">
-            <Text.Body subtle>No comments</Text.Body>
-            <Text.Subtitle subtle>Be the first one to critique.</Text.Subtitle>
-          </div>
+          <EmptyInfo
+            className="mt-[16%]"
+            title="No comments"
+            subtitle="Be the first one to critique."
+          />
         )}
 
         {/* Sorting Container */}
@@ -187,13 +198,15 @@ export function CommentsContainer({
               const last = index === sortedComments.length - 1;
               return (
                 <CommentTile
+                  key={comment.id}
                   isAdmin={isAdmin}
-                  markable={markComments}
                   onClick={() =>
                     comment.timestamp && onTimestamp(comment.timestamp)
                   }
-                  className={!last ? "border-b border-b-neutral-100" : ""}
-                  key={comment.id}
+                  className={cn(
+                    !last && "border-b border-b-neutral-100",
+                    "px-3 py-2",
+                  )}
                   comment={comment}
                   live={comment.id === liveCommentId}
                 />

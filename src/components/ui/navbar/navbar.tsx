@@ -4,6 +4,7 @@ import {
   Add01Icon,
   Add02Icon,
   Home11Icon,
+  Megaphone01Icon,
   Menu01Icon,
   Rocket01Icon,
 } from "hugeicons-react";
@@ -43,6 +44,13 @@ export default function NavBar() {
       title: "Home",
       route: ROUTES.home,
       onClick: () => router.push(route(ROUTES.home)),
+    },
+    {
+      icon: <Megaphone01Icon size={16} className="text-neutral-700" />,
+      activeIcon: <Megaphone01Icon size={16} className="text-neutral-700" />,
+      title: "Public",
+      route: ROUTES.public,
+      onClick: () => router.push(route(ROUTES.public)),
     },
     {
       icon: <Add01Icon size={16} className="text-neutral-700" />,

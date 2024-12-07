@@ -9,9 +9,15 @@ export const GetTracksByUserOutput = z
       createdAt: z.date(),
       openComments: z.boolean(),
       expiresIn: z.number(),
+      isPublic: z.boolean(),
     }),
   )
   .default([]);
+
+export const GetFilteredTracksInput = z.object({
+  amount: z.number().default(3),
+  isPublic: z.boolean().default(false),
+});
 
 export const ArchiveProjectInput = z.object({
   id: z.string().uuid(),
@@ -38,6 +44,7 @@ export const UploadTrackInput = z.object({
   contentType: z.string(),
   password: z.string().optional(),
   emails: z.array(z.string().email()),
+  isPublic: z.boolean().default(false),
 });
 
 export const UpdateTrackInput = UploadTrackInput.omit({
@@ -64,3 +71,4 @@ export type UpdateProjectPasswordInput = z.infer<
 >;
 export type IsTrackLockedInput = z.infer<typeof IsTrackLockedInput>;
 export type SimplfiedTrack = z.infer<typeof GetTracksByUserOutput>[number];
+export type GetFilteredTracksInput = z.infer<typeof GetFilteredTracksInput>;

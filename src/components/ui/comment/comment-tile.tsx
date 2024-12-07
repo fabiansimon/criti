@@ -1,21 +1,26 @@
-import { type Comment } from "@prisma/client";
 import { useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import Dropdown, { type MenuOption } from "../dropdown-menu";
 import Text from "~/components/typography/text";
 import { motion } from "framer-motion";
 import { cn, generateTimestamp, getDateDifference } from "~/lib/utils";
-import { Checkbox } from "../checkbox";
-import { ArrowDown01Icon, MoreVerticalCircle01Icon } from "hugeicons-react";
+import { Comment01Icon, MoreVerticalCircle01Icon } from "hugeicons-react";
 import { LocalStorage } from "~/lib/localStorage";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
-import { ChevronDownIcon } from "@radix-ui/react-icons";
+import { useModal } from "~/providers/modal-provider";
+import ThreadModal from "../modals/thread-modal";
+import {
+  type CommentStatus,
+  type CommentType,
+} from "~/server/api/routers/comment/commentTypes";
+import CommentStatusSelector from "../comment-status-selector";
+import { toast } from "~/hooks/use-toast";
+import { type SummarizedComment } from "./comments-container";
 
 interface CommenTileProps {
   live: boolean;
-  markable: boolean;
   isAdmin: boolean;
-  comment: Comment;
+  comment: SummarizedComment;
   onClick: () => void;
   className?: string;
 }
@@ -24,23 +29,23 @@ export function CommentTile({
   isAdmin,
   comment,
   live,
-  markable,
   onClick,
   className,
 }: CommenTileProps) {
   const [deleted, setDeleted] = useState<boolean>(false);
-  const [checked, setChecked] = useState<boolean>(!comment.open);
+  const [hovered, setHovered] = useState<boolean>(false);
 
-  const { content, timestamp, createdAt, id } = comment;
+  const { content, timestamp, createdAt, id, status, type, byAdmin, replies } =
+    comment;
 
   const isSmall = useBreakpoint(BREAKPOINTS.sm);
+  const { show } = useModal();
 
-  const { mutate: updateComment } = api.comment.update.useMutation({
-    onError: () => setChecked((prev) => !prev),
-  });
+  const { mutateAsync: updateComment } = api.comment.update.useMutation();
   const { mutate: removeComment } = api.comment.delete.useMutation({
     onError: () => setDeleted(false),
   });
+  const utils = api.useUtils();
 
   const sessionId = LocalStorage.fetchSessionId();
   const isCreator = comment.sessionId === sessionId;
@@ -48,12 +53,12 @@ export function CommentTile({
 
   const menuOptions: MenuOption[] = [
     {
-      title: `Mark as ${checked ? "un" : ""}done`,
-      onClick: () => handleUpdateCheck(!checked),
-      disabled: !markable,
+      title: "Delete",
+      onClick: () => handleDeleteComment(),
+      disabled: !isAdmin && !isCreator,
     },
     {
-      title: "Delete",
+      title: "Reply",
       onClick: () => handleDeleteComment(),
       disabled: !isAdmin && !isCreator,
     },
@@ -73,18 +78,96 @@ export function CommentTile({
     [timestamp],
   );
 
+  const handleReply = () => {
+    show(<ThreadModal isAdmin={isAdmin} comment={comment} />);
+  };
+
   const handleDeleteComment = () => {
     removeComment({ id, sessionId: !isAdmin ? sessionId : undefined });
     setDeleted(true);
   };
 
-  const handleUpdateCheck = (status: boolean) => {
-    updateComment({ done: status, id: id });
-    setChecked(status);
+  const handleUpdateCheck = async (status: CommentStatus) => {
+    try {
+      await updateComment({ status, id: id });
+    } catch (_) {
+      toast({
+        title: "Something went wrong.",
+        description:
+          "Sorry we can't update the comment at the moment. Try again later",
+        variant: "destructive",
+      });
+    } finally {
+      // void utils.comment.invalidate();
+    }
   };
 
   return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+      className={cn(
+        "relative flex w-full cursor-pointer items-center transition-all duration-75 hover:bg-neutral-50",
+        className,
+      )}
+    >
+      <div className="flex w-full flex-col space-y-3">
+        {/* <LiveOverlay isLive={live} /> */}
+        <div className="relative flex items-center justify-between">
+          <div className="px-auto absolute left-0 right-0 flex w-full justify-center">
+            <CommentInfoContainer
+              isLive={live}
+              onClick={handleReply}
+              replies={replies}
+              type={type}
+              timestamp={timestamp}
+            />
+          </div>
+          <div className="flex h-7 w-full items-center justify-between">
+            {isAdmin ? (
+              <CommentStatusSelector
+                status={status}
+                onChange={handleUpdateCheck}
+              />
+            ) : (
+              <div />
+            )}
+
+            {!isSmall && (
+              <Text.Subtitle className="mr-2" subtle>
+                {getDateDifference({ date: createdAt }).text}
+              </Text.Subtitle>
+            )}
+          </div>
+          {/* {!live && byAdmin && (
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center">
+            <div className="mx-auto -mt-3 flex items-center space-x-1">
+              <PinLocation02Icon size={14} className="text-black/70" />
+              <Text.Body subtle className="text-xs">
+                {"by Admin"}
+              </Text.Body>
+            </div>
+          </div> */}
+          {/* )} */}
+        </div>
+        <Text.Body className="flex w-full">{content}</Text.Body>
+      </div>
+      {/* {editable && (
+        <Dropdown
+          className={cn("", isSmall ? "absolute right-4 top-3" : "mr-2")}
+          options={menuOptions}
+        >
+          <MoreVerticalCircle01Icon fill="black" size={18} />
+        </Dropdown>
+      )} */}
+    </div>
+  );
+
+  return (
     <motion.div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onClick={onClick}
       initial="visible"
       animate={deleted ? "hidden" : "visible"}
@@ -99,23 +182,6 @@ export function CommentTile({
         !deleted && "min-h-[60px] py-4",
       )}
     >
-      {/* Checkbox */}
-      <motion.div
-        variants={{
-          visible: { width: 30, opacity: 1 },
-          hidden: { width: 0, opacity: 0 },
-        }}
-        transition={{ duration: 0.05 }}
-        initial={"hidden"}
-        animate={markable ? "visible" : "hidden"}
-      >
-        <Checkbox
-          className="mb-2 ml-2"
-          checked={checked}
-          onCheckedChange={handleUpdateCheck}
-        />
-      </motion.div>
-
       <div
         className={cn(
           "flex w-full grow items-center gap-2",
@@ -181,6 +247,84 @@ export function CommentTile({
           <MoreVerticalCircle01Icon fill="black" size={20} />
         </Dropdown>
       )}
+      <motion.div
+        initial="hidden"
+        animate={hovered ? "expanded" : "hidden"}
+        variants={{ expanded: { width: 100 }, hidden: { width: 0, border: 0 } }}
+        className="flex items-center justify-center overflow-hidden border-l border-l-neutral-50"
+      >
+        <div
+          onClick={handleReply}
+          className="flex h-full w-full items-center justify-center space-x-2 rounded-md py-2 hover:bg-neutral-100"
+        >
+          <Comment01Icon className="text-neutral-700" size={12} />
+          <Text.Subtitle className="text-xs" subtle>
+            Reply
+          </Text.Subtitle>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+interface CommentInfoContainerProps {
+  onClick: () => void;
+  type: CommentType;
+  isLive: boolean;
+  replies: number;
+  timestamp: number | null;
+}
+function CommentInfoContainer({
+  onClick,
+  type,
+  timestamp,
+  isLive,
+  replies,
+}: CommentInfoContainerProps) {
+  return (
+    <motion.div
+      initial="hidden"
+      animate={isLive ? "live" : "normal"}
+      variants={{ live: { width: 70 }, normal: { width: "auto" } }}
+      onClick={onClick}
+      className="relative flex h-7 items-center space-x-2 overflow-hidden rounded-full bg-neutral-100 px-2 transition-all duration-75 hover:bg-neutral-200"
+    >
+      <motion.div
+        initial="hidden"
+        animate={isLive ? "visible" : "hidden"}
+        variants={{ visible: { translateY: 0 }, hidden: { translateY: -50 } }}
+        className="absolute bottom-0 left-0 right-0 top-0 -my-4 flex items-center justify-center space-x-[5px] bg-red-500 py-4"
+      >
+        <div
+          className={cn(
+            "size-[5px] rounded-full bg-white",
+            isLive && "animate-pulse",
+          )}
+        />
+        <Text.Body className={cn("text-white", isLive && "animate-pulse")}>
+          Live
+        </Text.Body>
+      </motion.div>
+      <div className="ml-2 min-w-10">
+        <Text.Body subtle className="px-1 text-xs">
+          #{`${type.slice(0, 1)}${type.slice(1).toLowerCase()}`}
+        </Text.Body>
+      </div>
+      {timestamp && <div className="h-full w-[1px] bg-neutral-200" />}
+      {timestamp && (
+        <div className="min-w-10">
+          <Text.Body subtle className="px-1 text-center text-xs">
+            {generateTimestamp(timestamp)}
+          </Text.Body>
+        </div>
+      )}
+      <div className="h-full w-[1px] bg-neutral-200" />
+      <div className="mr-2 flex min-w-10 items-center justify-center space-x-[1px]">
+        <Comment01Icon className="text-black/50" size={13} />
+        <Text.Body subtle className="px-1 text-xs">
+          {replies}
+        </Text.Body>
+      </div>
     </motion.div>
   );
 }

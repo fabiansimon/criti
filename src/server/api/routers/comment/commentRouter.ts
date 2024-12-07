@@ -23,8 +23,6 @@ const getTrackComments = anonPossibleProcedure
         include: { comments: { include: { thread: true } } },
       });
 
-      console.log(track?.comments);
-
       if (!track) {
         throw new TRPCError({
           message: "Track with that ID not found.",

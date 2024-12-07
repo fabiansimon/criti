@@ -108,7 +108,10 @@ export function SelectorContainer<T>({
       )}
     >
       <div
-        onClick={onClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (onClick) onClick();
+        }}
         className="flex cursor-pointer px-2 py-[4.5px]"
         style={{
           backgroundColor: `rgba(${rgb}, 0.15)`,

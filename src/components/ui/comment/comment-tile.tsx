@@ -59,28 +59,14 @@ export function CommentTile({
     {
       title: "Delete",
       onClick: () => handleDeleteComment(),
-      disabled: !isAdmin && !isCreator,
+      disabled: !editable,
     },
     {
       title: "Reply",
       onClick: () => handleDeleteComment(),
-      disabled: !isAdmin && !isCreator,
+      disabled: !editable,
     },
   ].filter(({ disabled }) => !disabled);
-
-  const { bg, label } = useMemo(
-    () => ({
-      bg: timestamp ? "bg-neutral-950" : "bg-neutral-200",
-      label: timestamp ? (
-        <Text.Subtitle className="text-white">
-          {generateTimestamp(timestamp)}
-        </Text.Subtitle>
-      ) : (
-        <Text.Subtitle className="mr-1">{"General"}</Text.Subtitle>
-      ),
-    }),
-    [timestamp],
-  );
 
   const handleReply = () => {
     show(<ThreadModal isAdmin={isAdmin} comment={comment} />);
@@ -106,6 +92,8 @@ export function CommentTile({
     }
   };
 
+  if (deleted) return;
+
   return (
     <div
       onMouseEnter={() => setHovered(true)}
@@ -119,15 +107,17 @@ export function CommentTile({
       <div className="flex w-full flex-col space-y-3">
         {/* <LiveOverlay isLive={live} /> */}
         <div className="relative flex items-center justify-between">
-          <div className="px-auto absolute left-0 right-0 flex w-full justify-center">
-            <CommentInfoContainer
-              isLive={live}
-              onClick={handleReply}
-              replies={replies}
-              type={type}
-              timestamp={timestamp}
-            />
-          </div>
+          {!isSmall && (
+            <div className="px-auto absolute left-0 right-0 flex w-full justify-center">
+              <CommentInfoContainer
+                isLive={live}
+                onClick={handleReply}
+                replies={replies}
+                type={type}
+                timestamp={timestamp}
+              />
+            </div>
+          )}
           <div className="flex h-7 w-full items-center justify-between">
             <div className="flex items-center">
               <CommentStatusSelector
@@ -144,10 +134,18 @@ export function CommentTile({
                 </div>
               )}
             </div>
-            {!isSmall && (
+            {!isSmall ? (
               <Text.Subtitle className="mr-2" subtle>
                 {getDateDifference({ date: createdAt }).text}
               </Text.Subtitle>
+            ) : (
+              <CommentInfoContainer
+                isLive={live}
+                onClick={handleReply}
+                replies={replies}
+                type={type}
+                timestamp={timestamp}
+              />
             )}
           </div>
         </div>
@@ -156,17 +154,14 @@ export function CommentTile({
           {menuOptions.length !== 0 && (
             <Dropdown
               disabled={menuOptions.length === 0}
-              className={cn("", isSmall ? "absolute right-4 top-3" : "mr-2")}
+              className={cn("")}
               options={menuOptions}
             >
-              <motion.div
-                initial={"hidden"}
-                animate={hovered ? "visible" : "hidden"}
-                variants={{
-                  visible: { width: 60, paddingInline: 18 },
-                  hidden: { width: 0, paddingInline: 0 },
-                }}
-                className="flex cursor-pointer items-center justify-center space-x-1 overflow-hidden rounded-lg py-[6px] opacity-70 hover:bg-neutral-200"
+              <div
+                className={cn(
+                  "flex cursor-pointer items-center justify-center space-x-1 overflow-hidden rounded-lg px-2 py-[6px] opacity-0 hover:bg-neutral-200",
+                  hovered && "opacity-100",
+                )}
               >
                 <Text.Body className="text-xs">{"more"}</Text.Body>
                 <MoreVerticalCircle01Icon
@@ -174,7 +169,7 @@ export function CommentTile({
                   className="text-black/70"
                   size={16}
                 />
-              </motion.div>
+              </div>
             </Dropdown>
           )}
         </div>
@@ -202,7 +197,10 @@ function CommentInfoContainer({
       initial="hidden"
       animate={isLive ? "live" : "normal"}
       variants={{ live: { width: 70 }, normal: { width: "auto" } }}
-      onClick={onClick}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
       className="relative flex h-7 items-center space-x-2 overflow-hidden rounded-full bg-neutral-100 px-2 transition-all duration-75 hover:bg-neutral-200"
     >
       <motion.div
@@ -226,13 +224,15 @@ function CommentInfoContainer({
           #{`${type.slice(0, 1)}${type.slice(1).toLowerCase()}`}
         </Text.Body>
       </div>
-      {timestamp && <div className="h-full w-[1px] bg-neutral-200" />}
-      {timestamp && (
+      {timestamp ? <div className="h-full w-[1px] bg-neutral-200" /> : <></>}
+      {timestamp ? (
         <div className="min-w-10">
           <Text.Body subtle className="px-1 text-center text-xs">
             {generateTimestamp(timestamp)}
           </Text.Body>
         </div>
+      ) : (
+        <></>
       )}
       <div className="h-full w-[1px] bg-neutral-200" />
       <div className="mr-2 flex min-w-10 items-center justify-center space-x-[1px]">

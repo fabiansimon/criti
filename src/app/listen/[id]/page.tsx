@@ -21,7 +21,6 @@ import { ExpirationChip } from "~/components/ui/info-chips";
 import EditTrackModal from "~/components/ui/modals/edit-track-modal";
 import PasswordModal from "~/components/ui/modals/password-modal";
 import ShareModal from "~/components/ui/modals/share-modal";
-import { Switch } from "~/components/ui/switch";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import useDownload from "~/hooks/use-download";
 import { LocalStorage } from "~/lib/localStorage";
@@ -161,11 +160,9 @@ export default function ListenPage() {
 
         {/* Audio Controls */}
         <div
-          className={
-            isSmall
-              ? "fixed bottom-0 left-0 right-0 flex min-h-[120px] flex-col rounded-tl-lg rounded-tr-lg border-t border-t-neutral-200 bg-white px-4 pb-6 shadow-upward"
-              : ""
-          }
+          className={cn(
+            "fixed bottom-0 left-0 right-0 flex min-h-[120px] flex-col rounded-tl-lg rounded-tr-lg border-t border-t-neutral-200 bg-white px-4 pb-6 shadow-upward",
+          )}
         >
           <div
             className={cn(

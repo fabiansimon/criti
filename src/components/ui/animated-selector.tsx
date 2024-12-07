@@ -9,8 +9,9 @@ export interface SelectorType<T> {
   title: string;
 }
 
-interface AnimatedSelectorProps<T> {
+export interface AnimatedSelectorProps<T> {
   initValue: SelectorType<T>;
+  disabled?: boolean;
   options: SelectorType<T>[];
   className: string;
   onChange: (value: SelectorType<T>) => void;
@@ -20,6 +21,7 @@ export default function AnimatedSelector<T>({
   initValue,
   options,
   className,
+  disabled,
   onChange,
 }: AnimatedSelectorProps<T>) {
   const [selected, setSelected] = useState<SelectorType<T>>(initValue);
@@ -66,7 +68,7 @@ export default function AnimatedSelector<T>({
                   translateY: direction * 20 * Math.abs(i - midpoint),
                 },
               }}
-              className={cn(!visible && "pointer-events-none")}
+              className={cn((!visible || disabled) && "pointer-events-none")}
             >
               <SelectorContainer type={s} onClick={() => handleChoice(s)} />
             </motion.div>

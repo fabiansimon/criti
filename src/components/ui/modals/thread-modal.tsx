@@ -68,6 +68,7 @@ export default function ThreadModal({ isAdmin, comment }: ThreadModalProps) {
 
   const handleDeletion = async (id: string) => {
     await removeReply({ id, sessionId });
+    await utils.comment.invalidate();
     await utils.reply.invalidate();
   };
 

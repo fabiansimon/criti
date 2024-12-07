@@ -4,6 +4,7 @@ import AnimatedSelector, { type SelectorType } from "./animated-selector";
 import { useMemo } from "react";
 
 interface CommentStatusSelectorProps {
+  disabled?: boolean;
   status: CommentStatus;
   onChange: (type: CommentStatus) => void;
   className?: string;
@@ -42,6 +43,7 @@ const options: CommentSelectorType[] = [
 export default function CommentStatusSelector({
   status,
   className,
+  disabled,
   onChange,
 }: CommentStatusSelectorProps) {
   const initValue = useMemo(
@@ -51,6 +53,7 @@ export default function CommentStatusSelector({
 
   return (
     <AnimatedSelector
+      disabled={disabled}
       options={options}
       initValue={initValue}
       onChange={(choice) => onChange(choice.type)}

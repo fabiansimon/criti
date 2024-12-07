@@ -204,28 +204,6 @@ export default function UploadPage() {
         )}
 
         {isLoading && <LoadingContainer />}
-        <CommentTile
-          comment={{
-            byAdmin: false,
-            content:
-              "Die Adlibs klingen hier noch bischen robotig. Bitte mach noch bisschen höhen weg Die Adlibs klingen hier noch bischen robotig. Bitte mach noch bisschen höhen weg Die Adlibs klingen hier noch bischen robotig. Bitte mach noch bisschen höhen weg",
-            createdAt: new Date(),
-            creatorId: "aödskf",
-            id: "231232",
-            mediaURL: "",
-            pinned: false,
-            sessionId: "32132",
-            status: "OPEN",
-            timestamp: 12,
-            trackId: "232",
-            type: "LYRIC",
-            updatedAt: new Date(),
-            replies: 3,
-          }}
-          isAdmin={true}
-          live={true}
-          onClick={() => console.log("ökdjsad")}
-        />
       </Card>
       {/* <LoadingModal isVisible={true} /> */}
     </div>

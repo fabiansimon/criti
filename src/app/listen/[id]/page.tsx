@@ -25,13 +25,12 @@ import { Switch } from "~/components/ui/switch";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import useDownload from "~/hooks/use-download";
 import { LocalStorage } from "~/lib/localStorage";
-import { cn } from "~/lib/utils";
+import { cn, pluralize } from "~/lib/utils";
 import { useModal } from "~/providers/modal-provider";
 
 import { api } from "~/trpc/react";
 
 export default function ListenPage() {
-  const [markComments, setMarkComments] = useState<boolean>(false);
   const [time, setTime] = useState<number>(0);
   const [play, setPlay] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
@@ -78,7 +77,7 @@ export default function ListenPage() {
   ];
 
   const subtitle = useMemo(() => {
-    return `Shared by ${track?.creator.name}`;
+    return pluralize(track?.streams ?? 0, "stream");
   }, [track]);
 
   const handleDownload = () => {
@@ -147,15 +146,6 @@ export default function ListenPage() {
             <div className="flex">
               {track?.expiresIn && <ExpirationChip hours={track.expiresIn} />}
             </div>
-            {isAdmin && (
-              <div className={cn("flex space-x-2")}>
-                <Text.Body className="text-xs">Mark comments</Text.Body>
-                <Switch
-                  checked={markComments}
-                  onCheckedChange={setMarkComments}
-                />
-              </div>
-            )}
           </div>
         }
       >
@@ -163,7 +153,6 @@ export default function ListenPage() {
         <CommentsContainer
           maxTime={duration ?? Infinity}
           isAdmin={isAdmin}
-          markComments={markComments}
           onTimestamp={handleTimeUpdate}
           time={time}
           trackId={id}

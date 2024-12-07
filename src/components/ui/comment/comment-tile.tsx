@@ -4,7 +4,11 @@ import Dropdown, { type MenuOption } from "../dropdown-menu";
 import Text from "~/components/typography/text";
 import { motion } from "framer-motion";
 import { cn, generateTimestamp, getDateDifference } from "~/lib/utils";
-import { Comment01Icon, MoreVerticalCircle01Icon } from "hugeicons-react";
+import {
+  Comment01Icon,
+  MoreVerticalCircle01Icon,
+  PinLocation02Icon,
+} from "hugeicons-react";
 import { LocalStorage } from "~/lib/localStorage";
 import useBreakpoint, { BREAKPOINTS } from "~/hooks/use-breakpoint";
 import { useModal } from "~/providers/modal-provider";
@@ -62,7 +66,7 @@ export function CommentTile({
       onClick: () => handleDeleteComment(),
       disabled: !isAdmin && !isCreator,
     },
-  ];
+  ].filter(({ disabled }) => !disabled);
 
   const { bg, label } = useMemo(
     () => ({
@@ -98,7 +102,7 @@ export function CommentTile({
         variant: "destructive",
       });
     } finally {
-      // void utils.comment.invalidate();
+      void utils.comment.invalidate();
     }
   };
 
@@ -125,145 +129,57 @@ export function CommentTile({
             />
           </div>
           <div className="flex h-7 w-full items-center justify-between">
-            {isAdmin ? (
+            <div className="flex items-center">
               <CommentStatusSelector
+                disabled={!isAdmin}
                 status={status}
                 onChange={handleUpdateCheck}
               />
-            ) : (
-              <div />
-            )}
-
+              {byAdmin && (
+                <div className="w-30 rounddd-br-full -ml-4 flex h-[25px] items-center space-x-1 rounded-br-full rounded-tr-full bg-green-300/30 px-4 pl-6">
+                  <PinLocation02Icon size={12} className="text-green-700" />
+                  <Text.Body subtle className="text-xs text-green-700">
+                    {"by Admin"}
+                  </Text.Body>
+                </div>
+              )}
+            </div>
             {!isSmall && (
               <Text.Subtitle className="mr-2" subtle>
                 {getDateDifference({ date: createdAt }).text}
               </Text.Subtitle>
             )}
           </div>
-          {/* {!live && byAdmin && (
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 top-0 flex items-center justify-center">
-            <div className="mx-auto -mt-3 flex items-center space-x-1">
-              <PinLocation02Icon size={14} className="text-black/70" />
-              <Text.Body subtle className="text-xs">
-                {"by Admin"}
-              </Text.Body>
-            </div>
-          </div> */}
-          {/* )} */}
         </div>
-        <Text.Body className="flex w-full">{content}</Text.Body>
-      </div>
-      {/* {editable && (
-        <Dropdown
-          className={cn("", isSmall ? "absolute right-4 top-3" : "mr-2")}
-          options={menuOptions}
-        >
-          <MoreVerticalCircle01Icon fill="black" size={18} />
-        </Dropdown>
-      )} */}
-    </div>
-  );
-
-  return (
-    <motion.div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={onClick}
-      initial="visible"
-      animate={deleted ? "hidden" : "visible"}
-      variants={{
-        hidden: { height: 0, opacity: 0 },
-        visible: { height: "auto", opacity: 1 },
-      }}
-      className={cn(
-        "relative flex cursor-pointer items-center space-x-2 overflow-hidden px-[15px]",
-        comment.byAdmin && "bg-green-400/10",
-        className,
-        !deleted && "min-h-[60px] py-4",
-      )}
-    >
-      <div
-        className={cn(
-          "flex w-full grow items-center gap-2",
-          isSmall && "flex-col items-start",
-        )}
-      >
-        {/* Timestamp Container */}
-        <div className="w-full max-w-[70px]">
-          <div
-            className={cn(
-              "relative my-auto flex h-6 items-center justify-center space-x-1 overflow-hidden rounded-full",
-              bg,
-              live && "bg-blue-700",
-            )}
-          >
-            <motion.div
-              initial="normal"
-              animate={live ? "live" : "normal"}
-              variants={{
-                live: { translateY: 0 },
-                normal: { translateY: -100 },
-              }}
-              className="absolute left-auto right-auto"
+        <div className="flex w-full">
+          <Text.Body className="flex grow">{content}</Text.Body>
+          {menuOptions.length !== 0 && (
+            <Dropdown
+              disabled={menuOptions.length === 0}
+              className={cn("", isSmall ? "absolute right-4 top-3" : "mr-2")}
+              options={menuOptions}
             >
-              <Text.Subtitle className="text-white">{"Live"}</Text.Subtitle>
-            </motion.div>
-            <motion.div
-              initial="normal"
-              animate={live ? "live" : "normal"}
-              variants={{
-                live: { translateY: +100 },
-                normal: { translateY: 0 },
-              }}
-              className="absolute left-auto right-auto"
-            >
-              {label}
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex w-full grow flex-col">
-          {comment.byAdmin && (
-            <Text.Subtitle className="text-[11px] text-green-900">
-              {"Admin:"}
-            </Text.Subtitle>
+              <motion.div
+                initial={"hidden"}
+                animate={hovered ? "visible" : "hidden"}
+                variants={{
+                  visible: { width: 60, paddingInline: 18 },
+                  hidden: { width: 0, paddingInline: 0 },
+                }}
+                className="flex cursor-pointer items-center justify-center space-x-1 overflow-hidden rounded-lg py-[6px] opacity-70 hover:bg-neutral-200"
+              >
+                <Text.Body className="text-xs">{"more"}</Text.Body>
+                <MoreVerticalCircle01Icon
+                  fill="black"
+                  className="text-black/70"
+                  size={16}
+                />
+              </motion.div>
+            </Dropdown>
           )}
-          <Text.Body className="font-light">{content}</Text.Body>
         </div>
       </div>
-
-      {!isSmall && (
-        <Text.Subtitle className="min-w-24 text-right" subtle>
-          {getDateDifference({ date: createdAt }).text}
-        </Text.Subtitle>
-      )}
-
-      {editable && (
-        <Dropdown
-          className={cn("", isSmall ? "absolute right-3 top-3" : "mr-4")}
-          options={menuOptions}
-        >
-          <MoreVerticalCircle01Icon fill="black" size={20} />
-        </Dropdown>
-      )}
-      <motion.div
-        initial="hidden"
-        animate={hovered ? "expanded" : "hidden"}
-        variants={{ expanded: { width: 100 }, hidden: { width: 0, border: 0 } }}
-        className="flex items-center justify-center overflow-hidden border-l border-l-neutral-50"
-      >
-        <div
-          onClick={handleReply}
-          className="flex h-full w-full items-center justify-center space-x-2 rounded-md py-2 hover:bg-neutral-100"
-        >
-          <Comment01Icon className="text-neutral-700" size={12} />
-          <Text.Subtitle className="text-xs" subtle>
-            Reply
-          </Text.Subtitle>
-        </div>
-      </motion.div>
-    </motion.div>
+    </div>
   );
 }
 

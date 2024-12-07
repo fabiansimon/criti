@@ -353,6 +353,11 @@ const getTrackById = publicProcedure
         expiryLimit = env.PREMIUM_V1_EXPIRE_IN_DAYS;
       }
 
+      await db.track.update({
+        where: { id },
+        data: { streams: { increment: 1 } },
+      });
+
       return {
         ...track,
         expiresIn: expiresIn({ daysLimit: expiryLimit, createdAt }),
